@@ -13,7 +13,7 @@ export default function KompetisiPage() {
       try {
         const res = await fetch('https://api.football-data.org/v4/competitions/SA/standings', {
           headers: {
-            'X-Auth-Token': process.env.NEXT_PUBLIC_FOOTBALL_DATA_API_KEY || '',
+            'X-Auth-Token': process.env.NEXT_PUBLIC_FOOTBALL_DATA_API_KEY || '7a3c9383187f412589f1a57a27a3e04f',
           },
         });
         const data = await res.json();
