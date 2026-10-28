@@ -384,14 +384,77 @@ body:has(.kp) { background: #eff1f6; }
 .kp-mini-red { color: var(--kp-red); border-color: #f0b4ba; }
 .kp-mini-gold { color: #8a6a1c; }
 .kp-mini-share { color: var(--kp-red); }
-.kp-detail { margin-top: 10px; padding: 9px 12px; border-radius: 8px; background: #f1f3f8; font-size: 13px; color: #4b5266; }
 
-.kp button:focus-visible, .kp a:focus-visible { outline: 2px solid var(--kp-red); outline-offset: 2px; }
+/* Filter kompetisi */
+.kp-filter { padding: 0 20px 16px; }
+.kp-select { appearance: none; padding: 9px 38px 9px 16px; border: 1px solid #cfd3de; border-radius: 999px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%235b6275' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 14px center; font-size: 14px; font-weight: 600; color: var(--kp-ink); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Ringkasan kejadian: gol dua tim + kartu merah */
+.kp-scorer.opp { color: var(--kp-muted); }
+.kp-ev-team { font-style: normal; font-size: 10px; font-weight: 800; letter-spacing: .4px; color: var(--kp-muted); }
+.kp-red-card { width: 8px; height: 12px; border-radius: 1.5px; background: var(--kp-loss); display: inline-block; }
+
+/* Panel detail pertandingan */
+.kp-detail { margin-top: 12px; padding: 14px; border-radius: 10px; background: #f6f7fb; border: 1px solid var(--kp-line); font-size: 13px; color: #3b4256; }
+.kp-detail-records { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.kp-detail-records b { font-weight: 700; color: var(--kp-ink); }
+.kp-stats-head { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 13px; }
+.kp-stat { display: grid; grid-template-columns: 52px 1fr 52px; align-items: center; gap: 8px; padding: 5px 0; }
+.kp-stat-v { font-variant-numeric: tabular-nums; font-weight: 700; }
+.kp-stat-v:last-child { text-align: right; }
+.kp-stat-mid { text-align: center; }
+.kp-stat-label { display: block; font-size: 12px; color: var(--kp-muted); margin-bottom: 3px; }
+.kp-stat-bar { height: 5px; border-radius: 3px; background: #d9dce6; overflow: hidden; }
+.kp-stat-bar i { display: block; height: 100%; background: var(--kp-ink); }
+.kp-detail-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--kp-line); }
+.kp-detail-foot a { color: var(--kp-red); font-weight: 700; }
+
+/* Pertandingan seluruh kompetisi */
+.kp-sm { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 12px; align-items: center; padding: 11px 20px; border-bottom: 1px solid #eceef4; }
+.kp-sm.me { background: #fdecee; }
+.kp-sm-teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 10px; font-weight: 600; }
+.kp-sm-team { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.kp-sm-team.home { justify-content: flex-end; text-align: right; }
+.kp-sm-score { font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; min-width: 44px; text-align: center; }
+.kp-sm-score.pre { color: var(--kp-muted); font-weight: 600; }
+.kp-sm-round { grid-column: 2; font-size: 12px; color: var(--kp-muted); text-align: center; margin-top: -4px; }
+.kp-table-players .c-club { min-width: 0; }
+
+/* Halaman Juventus */
+.kp-team-head { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.kp-team-logo { width: 64px; height: 64px; object-fit: contain; }
+.kp-team-name { margin: 0; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 40px; font-weight: 800; line-height: 1; }
+.kp a.kp-tab { display: inline-flex; align-items: center; justify-content: center; }
+.kp-grid-even { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.kp-grid-even > :last-child { grid-column: 1 / -1; }
+.kp-hero { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px 20px 24px; text-align: center; }
+.kp-hero-teams { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 24px; font-weight: 700; }
+.kp-hero-teams span { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.kp-hero-score { font-size: 44px; font-weight: 800; }
+.kp-hero-when { font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 800; }
+.kp-logo-lg { width: 56px; height: 56px; object-fit: contain; }
+.kp-filter-top { padding: 0 0 16px; }
+.kp-mt-group { padding: 0 20px 8px; }
+.kp-mt-month { margin: 14px 0 8px; font-size: 18px; font-weight: 800; }
+.kp-mt { width: 100%; border-collapse: collapse; font-size: 14px; }
+.kp-mt th { text-align: left; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .5px; color: var(--kp-muted); padding: 8px 10px; border-top: 1px solid var(--kp-line); border-bottom: 1px solid var(--kp-line); }
+.kp-mt td { padding: 10px; border-bottom: 1px solid #eceef4; vertical-align: middle; }
+.kp-mt tr:nth-child(even) td { background: #fafbfd; }
+.kp-mt-match { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.kp-mt-match b.me { color: var(--kp-red); }
+.kp-score-sm { font-size: 20px; }
+.kp-squad { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 0; }
+.kp-player { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-bottom: 1px solid #eceef4; }
+.kp-player b { font-weight: 700; }
+.kp-jersey { flex: none; width: 36px; height: 36px; border-radius: 50%; background: #0f172a; color: #fff; display: grid; place-items: center; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; }
+
+.kp button:focus-visible, .kp a:focus-visible, .kp select:focus-visible { outline: 2px solid var(--kp-red); outline-offset: 2px; }
 
 @media(max-width:950px){
   .nav-wrap{gap:12px;padding:0 16px}.wrap{padding:20px 16px 35px}.dashboard-grid{grid-template-columns:1fr}
   .right-stack{grid-template-columns:1fr 1fr}.league-cards,.preview-grid,.broadcast-grid,.sub-widget-grid{grid-template-columns:1fr}
-  .kp-metrics{grid-template-columns:1fr 1fr}.kp-grid{grid-template-columns:1fr}
+  .kp-metrics{grid-template-columns:1fr 1fr}.kp-grid,.kp-grid-even{grid-template-columns:1fr}
 }
 @media(max-width:620px){
   .hero-header{padding:16px}.brand-title{font-size:32px}.right-stack,.otd-grid{grid-template-columns:1fr}
@@ -400,125 +463,3 @@ body:has(.kp) { background: #eff1f6; }
   .kp-card-head{flex-direction:column;align-items:flex-start}.kp-card-head small{text-align:left}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
-/* Container Utama & Grid */
-.wrap {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-/* Top Metrics Bar */
-.top-metrics {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.metric-card {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.purple-bg {
-  background: linear-gradient(135deg, #2d1b4e 0%, #1a103c 100%);
-  color: #ffffff;
-  border: none;
-}
-
-.metric-label { font-size: 11px; text-transform: uppercase; font-weight: 700; opacity: 0.8; }
-.metric-val { font-size: 28px; font-weight: 900; margin: 4px 0; }
-.metric-sub { font-size: 11px; opacity: 0.7; }
-
-/* Sub Nav Tabs */
-.sub-tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #e5e7eb;
-  padding-bottom: 8px;
-}
-
-.tab-btn {
-  padding: 8px 16px;
-  border: none;
-  background: transparent;
-  font-weight: 700;
-  font-size: 13px;
-  color: #6b7280;
-  cursor: pointer;
-  border-radius: 6px;
-}
-
-.tab-btn.active {
-  background: #ffffff;
-  color: #111827;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-/* Table Klasemen */
-.panel {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.standings {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-.standings th {
-  color: #6b7280;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 10px 8px;
-  border-bottom: 1px solid #e5e7eb;
-  text-align: left;
-}
-
-.standings td {
-  padding: 12px 8px;
-  border-bottom: 1px solid #f3f4f6;
-  vertical-align: middle;
-}
-
-.juve-row {
-  background-color: rgba(230, 0, 35, 0.04) !important;
-  font-weight: 700;
-}
-
-.club-cell {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Badge 5 Laga Terakhir */
-.form-badges {
-  display: flex;
-  gap: 3px;
-}
-
-.badge-f {
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
-  font-size: 9px;
-  font-weight: 800;
-  color: #fff;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bg-m { background: #10b981; }
-.bg-s { background: #6b7280; }
-.bg-k { background: #ef4444; }

@@ -1,50 +1,58 @@
-// Helper bersama untuk data ESPN (Serie A)
+// Helper data ESPN (endpoint publik tidak resmi, tanpa API key)
+import type { PlayerStat } from './types';
+
 export const JUVE_ID = '111';
 export const ESPN_BASE = 'https://site.api.espn.com/apis';
 
-/** Jendela data: awal musim berjalan (1 Agu) sampai 31 Des. Jadwal ditampilkan hanya sampai sini. */
-export function seasonWindow() {
+/** Kompetisi yang diikuti Juventus. `slug` = kode liga di ESPN. */
+export const COMPETITIONS = [
+  { slug: 'ita.1', name: 'Serie A' },
+  { slug: 'uefa.europa', name: 'Liga Europa' },
+  { slug: 'uefa.champions', name: 'Liga Champions' },
+  { slug: 'ita.coppa_italia', name: 'Coppa Italia' },
+  { slug: 'ita.super_cup', name: 'Supercoppa Italiana' },
+] as const;
+
+export const competitionName = (slug: string) =>
+  COMPETITIONS.find((c) => c.slug === slug)?.name ?? slug;
+
+const ymd = (d: Date) =>
+  `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}${String(d.getUTCDate()).padStart(2, '0')}`;
+
+/** 1 Agustus musim berjalan. */
+export function seasonStart(): Date {
   const now = new Date();
-  const startYear = now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
-  return {
-    startYear,
-    start: `${startYear}0801`,
-    end: `${startYear}1231`,
-    endDate: new Date(`${startYear}-12-31T23:59:59+07:00`),
-  };
+  const y = now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1;
+  return new Date(Date.UTC(y, 7, 1));
 }
 
-async function getScoreboard(range: string): Promise<any[]> {
+export const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000);
+
+async function getScoreboard(slug: string, range: string): Promise<any[]> {
   try {
-    const url = `${ESPN_BASE}/site/v2/sports/soccer/ita.1/scoreboard?dates=${range}&limit=1000`;
+    const url = `${ESPN_BASE}/site/v2/sports/soccer/${slug}/scoreboard?dates=${range}&limit=1000`;
     const res = await fetch(url, { next: { revalidate: 1800 } });
     if (!res.ok) return [];
     const data = await res.json();
-    return data?.events ?? [];
+    return (data?.events ?? []).map((e: any) => ({ ...e, _league: slug }));
   } catch {
     return [];
   }
 }
 
-/**
- * Semua pertandingan Serie A dari 1 Agu sampai 31 Des musim berjalan.
- * Coba satu request panjang; kalau kosong, ambil per bulan.
- */
-export async function fetchSeasonEvents(): Promise<any[]> {
-  const w = seasonWindow();
-  let events = await getScoreboard(`${w.start}-${w.end}`);
+/** Semua pertandingan satu liga pada rentang tanggal. Kalau request panjang kosong, ambil per bulan. */
+export async function fetchLeagueEvents(slug: string, from: Date, to: Date): Promise<any[]> {
+  let events = await getScoreboard(slug, `${ymd(from)}-${ymd(to)}`);
 
   if (!events.length) {
-    const y = w.startYear;
-    const months: [string, string][] = [
-      [`${y}0801`, `${y}0831`],
-      [`${y}0901`, `${y}0930`],
-      [`${y}1001`, `${y}1031`],
-      [`${y}1101`, `${y}1130`],
-      [`${y}1201`, `${y}1231`],
-    ];
-    const parts = await Promise.all(months.map(([a, b]) => getScoreboard(`${a}-${b}`)));
-    events = parts.flat();
+    const chunks: Promise<any[]>[] = [];
+    let cur = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), 1));
+    while (cur <= to) {
+      const next = new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth() + 1, 0));
+      chunks.push(getScoreboard(slug, `${ymd(cur < from ? from : cur)}-${ymd(next > to ? to : next)}`));
+      cur = new Date(Date.UTC(cur.getUTCFullYear(), cur.getUTCMonth() + 1, 1));
+    }
+    events = (await Promise.all(chunks)).flat();
   }
 
   const seen = new Set<string>();
@@ -69,13 +77,12 @@ export function toNum(score: any): number {
 
 export type FormLetter = 'W' | 'D' | 'L';
 
-/** Hasil tiap tim (urut lama → baru) dari daftar event selesai. */
+const byDate = (a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime();
+
+/** Hasil tiap tim (urut lama → baru). */
 export function buildFormMap(events: any[]): Record<string, FormLetter[]> {
-  const done = events
-    .filter(isCompleted)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   const map: Record<string, FormLetter[]> = {};
-  for (const ev of done) {
+  for (const ev of events.filter(isCompleted).sort(byDate)) {
     const comps = ev.competitions?.[0]?.competitors ?? [];
     if (comps.length !== 2) continue;
     const [a, b] = comps;
@@ -88,4 +95,78 @@ export function buildFormMap(events: any[]): Record<string, FormLetter[]> {
     put(String(b.team?.id), sb, sa);
   }
   return map;
+}
+
+/**
+ * Rekor liga tiap tim SETELAH pertandingan tertentu, mis. "4-2-2, 14 PTS"
+ * (seperti header skor di ESPN). Hanya untuk satu liga.
+ */
+export function buildRecords(events: any[]): Record<string, Record<string, string>> {
+  const table: Record<string, { w: number; d: number; l: number }> = {};
+  const out: Record<string, Record<string, string>> = {};
+  for (const ev of events.filter(isCompleted).sort(byDate)) {
+    const comps = ev.competitions?.[0]?.competitors ?? [];
+    if (comps.length !== 2) continue;
+    const [a, b] = comps;
+    const sa = toNum(a.score);
+    const sb = toNum(b.score);
+    const upd = (id: string, mine: number, theirs: number) => {
+      const t = (table[id] ||= { w: 0, d: 0, l: 0 });
+      if (mine > theirs) t.w++;
+      else if (mine === theirs) t.d++;
+      else t.l++;
+    };
+    upd(String(a.team?.id), sa, sb);
+    upd(String(b.team?.id), sb, sa);
+    out[String(ev.id)] = {};
+    for (const c of [a, b]) {
+      const t = table[String(c.team?.id)];
+      out[String(ev.id)][String(c.team?.id)] = `${t.w}-${t.d}-${t.l}, ${t.w * 3 + t.d} PTS`;
+    }
+  }
+  return out;
+}
+
+/** Agregasi gol & kartu per pemain dari `details` tiap pertandingan. Bisa dibatasi ke satu tim. */
+export function aggregatePlayers(events: any[], teamId?: string): PlayerStat[] {
+  const names: Record<string, string> = {};
+  const players: Record<string, PlayerStat> = {};
+
+  for (const ev of events) {
+    const comp = ev.competitions?.[0];
+    for (const c of comp?.competitors ?? []) names[String(c.team?.id)] = c.team?.displayName ?? '';
+    for (const d of comp?.details ?? []) {
+      const tid = String(d.team?.id ?? '');
+      if (teamId && tid !== teamId) continue;
+      const a = d.athletesInvolved?.[0];
+      if (!a) continue;
+
+      const isGoal = Boolean(d.scoringPlay) && !d.ownGoal;
+      const isYellow = Boolean(d.yellowCard);
+      const isRed = Boolean(d.redCard) || /red card/i.test(d.type?.text ?? '');
+      if (!isGoal && !isYellow && !isRed) continue;
+
+      const key = `${a.id ?? a.displayName}-${tid}`;
+      const p = (players[key] ||= {
+        id: String(a.id ?? key),
+        name: a.displayName || a.shortName || '',
+        teamId: tid,
+        team: names[tid] || '',
+        goals: 0,
+        pens: 0,
+        yellow: 0,
+        red: 0,
+      });
+      if (isGoal) {
+        p.goals++;
+        if (d.penaltyKick) p.pens++;
+      }
+      if (isYellow) p.yellow++;
+      if (isRed) p.red++;
+    }
+  }
+
+  return Object.values(players).sort(
+    (a, b) => b.goals - a.goals || a.red - b.red || a.yellow - b.yellow || a.name.localeCompare(b.name)
+  );
 }

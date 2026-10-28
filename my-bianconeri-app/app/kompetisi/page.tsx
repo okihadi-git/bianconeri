@@ -1,164 +1,275 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import {
+  EUROPA_ZONES,
+  FormBadges,
+  MatchesCard,
+  RESULT_WORD,
+  SERIE_A_ZONES,
+  ScheduleCard,
+  ScorersCard,
+  StandingsCard,
+  fmtDecimal,
+  fmtSigned,
+  useFetch,
+  type ZoneDef,
+} from '@/components/kp';
+import type { Letter, Match, PlayerStat, SimpleMatch, Team } from '@/lib/types';
+
+interface Comp {
+  key: string;
+  slug: string | null;
+  icon: string;
+  label: string;
+  /** punya tabel klasemen? (Coppa Italia = sistem gugur, tidak ada) */
+  table: boolean;
+  zones: ZoneDef[];
+}
+
+const COMPS: Comp[] = [
+  { key: 'seriea', slug: 'ita.1', icon: '🇮🇹', label: 'Serie A', table: true, zones: SERIE_A_ZONES },
+  { key: 'europa', slug: 'uefa.europa', icon: '🇪🇺', label: 'Liga Europa', table: true, zones: EUROPA_ZONES },
+  { key: 'coppa', slug: 'ita.coppa_italia', icon: '🏆', label: 'Coppa Italia', table: false, zones: [] },
+  { key: 'supercoppa', slug: null, icon: '🛡️', label: 'Supercoppa Italiana', table: false, zones: [] },
+  { key: 'tour', slug: null, icon: '✈️', label: 'Pramusim & Tur', table: false, zones: [] },
+];
+
+const SUB_TABS = [
+  { key: 'klasemen', label: 'Klasemen & jadwal' },
+  { key: 'lagalain', label: 'Laga lain' },
+  { key: 'topskor', label: 'Top skor' },
+  { key: 'trofi', label: 'Jalan ke trofi' },
+  { key: 'peluang', label: 'Peluang juara' },
+  { key: 'gelar', label: 'Perebutan gelar' },
+  { key: 'laju', label: 'Laju poin' },
+] as const;
+
+type SubKey = (typeof SUB_TABS)[number]['key'];
+
+function formOf(matches: Match[]): Letter[] {
+  // `past` urut terbaru → lama; form ditampilkan lama → baru
+  return matches
+    .slice(0, 5)
+    .map((m) => m.result as Letter)
+    .reverse();
+}
 
 export default function KompetisiPage() {
-  const [activeTab, setActiveTab] = useState<'klasemen' | 'lagalain' | 'topskor'>('klasemen');
-  const [scheduleTab, setScheduleTab] = useState<'upcoming' | 'past'>('upcoming');
-  const [otherMatchesTab, setOtherMatchesTab] = useState<'results' | 'upcoming'>('results');
-  const [filterRivalsOnly, setFilterRivalsOnly] = useState(false);
-  const [selectedMatchModal, setSelectedMatchModal] = useState<any>(null);
+  const [compKey, setCompKey] = useState('seriea');
+  const [tab, setTab] = useState<SubKey>('klasemen');
+  const comp = COMPS.find((c) => c.key === compKey)!;
 
-  const [standings, setStandings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  useEffect(() => setTab('klasemen'), [compKey]);
 
-  useEffect(() => {
-    async function initData() {
-      try {
-        const res = await fetch('/api/competitions');
-        const data = await res.json();
-        setStandings(data.standings || []);
-      } catch (e) {
-        console.error(e);
-      } finally {
-        setLoading(false);
-      }
-    }
-    initData();
-  }, []);
+  // Semua pertandingan Juventus: satu kali ambil, disaring per kompetisi di sisi klien
+  const juveRes = useFetch<{ upcoming: Match[]; past: Match[] }>('/api/juventus');
+  const upcoming = useMemo(
+    () => (juveRes.data?.upcoming ?? []).filter((m) => m.league === comp.slug),
+    [juveRes.data, comp.slug]
+  );
+  const past = useMemo(
+    () => (juveRes.data?.past ?? []).filter((m) => m.league === comp.slug),
+    [juveRes.data, comp.slug]
+  );
 
-  const juveData = standings.find((t) => t.name.includes('Juventus'));
-  const topTeam = standings[0];
-  const pointsBehind = topTeam && juveData ? topTeam.points - juveData.points : 0;
+  const standingsRes = useFetch<{ standings: Team[]; week: number; updatedAt: string | null }>(
+    comp.slug && comp.table ? `/api/standings?league=${comp.slug}` : null
+  );
+
+  const needsCompetition = tab === 'lagalain' || tab === 'topskor' || (tab === 'klasemen' && !comp.table);
+  const competitionRes = useFetch<{ matches: SimpleMatch[]; topScorers: PlayerStat[] }>(
+    comp.slug && needsCompetition ? `/api/competition?league=${comp.slug}` : null
+  );
+
+  const standings = standingsRes.data?.standings ?? [];
+  const juve = standings.find((t) => t.name.includes('Juventus'));
+  const leader = standings[0];
+  const last = past[0];
+  const next = upcoming[0];
+
+  const updatedLabel = standingsRes.data?.updatedAt
+    ? new Date(standingsRes.data.updatedAt).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'Asia/Jakarta',
+      })
+    : null;
+
+  const played = past.length;
+  const won = past.filter((m) => m.result === 'W').length;
+  const drawn = past.filter((m) => m.result === 'D').length;
+  const lost = past.filter((m) => m.result === 'L').length;
+  const gf = past.reduce((n, m) => n + m.juveScore, 0);
+  const ga = past.reduce((n, m) => n + m.opponentScore, 0);
+  const lastSentence = last
+    ? `Terakhir: ${RESULT_WORD[last.result as Letter]} ${last.juveScore}–${last.opponentScore} vs ${last.opponent}`
+    : 'Belum ada laga yang dimainkan';
+
+  const tabLabel = (k: SubKey, fallback: string) =>
+    k === 'klasemen' && !comp.table ? 'Pertandingan & jadwal' : fallback;
+
+  const hasData = Boolean(comp.slug);
 
   return (
-    <div className="kompetisi-container">
-      {/* 1. TOP METRICS CARDS */}
-      <div className="top-metrics">
-        <div className="metric-card purple-bg">
-          <div className="metric-label">Posisi</div>
-          <div className="metric-val">#{juveData ? juveData.position : '-'}</div>
-          <div className="metric-sub">
-            {pointsBehind === 0 ? 'Memimpin puncak klasemen' : `${pointsBehind} poin di belakang ${topTeam?.shortName || 'puncak'}`}
-          </div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-label">Poin</div>
-          <div className="metric-val">{juveData ? juveData.points : '-'}</div>
-          <div className="metric-sub">{juveData ? `${juveData.won}M · ${juveData.draw}S · ${juveData.lost}K` : 'Memuat...'}</div>
-        </div>
-        <div className="metric-card">
-          <div className="metric-label">Gol</div>
-          <div className="metric-val">{juveData ? `${juveData.goalsFor}-${juveData.goalsAgainst}` : '-'}</div>
-          <div className="metric-sub">{juveData ? `Selisih ${juveData.goalDifference > 0 ? `+${juveData.goalDifference}` : juveData.goalDifference}` : 'Memuat...'}</div>
-        </div>
+    <div className="kp">
+      {/* Kompetisi */}
+      <div className="kp-comps">
+        {COMPS.map((c) => (
+          <button key={c.key} className={`kp-comp${compKey === c.key ? ' active' : ''}`} onClick={() => setCompKey(c.key)}>
+            <span aria-hidden>{c.icon}</span>
+            {c.label}
+          </button>
+        ))}
       </div>
 
-      {/* 2. SUB-TABS NAVIGASI */}
-      <div className="sub-tabs">
-        <button className={`tab-btn ${activeTab === 'klasemen' ? 'active' : ''}`} onClick={() => setActiveTab('klasemen')}>Klasemen & jadwal</button>
-        <button className={`tab-btn ${activeTab === 'lagalain' ? 'active' : ''}`} onClick={() => setActiveTab('lagalain')}>Laga lain</button>
-        <button className={`tab-btn ${activeTab === 'topskor' ? 'active' : ''}`} onClick={() => setActiveTab('topskor')}>Top skor</button>
-      </div>
-
-      {/* 3. TAB CONTENT: KLASEMEN & JADWAL */}
-      {activeTab === 'klasemen' && (
-        <div className="grid-main">
-          {/* KLASEMEN TABEL */}
-          <div className="panel">
-            <h2 className="sec-title">Klasemen Serie A</h2>
-            <table className="standings">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>KLUB</th>
-                  <th>MN</th>
-                  <th>M</th>
-                  <th>S</th>
-                  <th>K</th>
-                  <th>GM</th>
-                  <th>GK</th>
-                  <th>SG</th>
-                  <th>POIN</th>
-                  <th>5 LAGA TERAKHIR</th>
-                </tr>
-              </thead>
-              <tbody>
-                {standings.map((item) => {
-                  const isJuve = item.name.includes('Juventus');
-                  return (
-                    <tr key={item.id} className={isJuve ? 'juve-row' : ''}>
-                      <td><strong>{item.position}</strong></td>
-                      <td>
-                        <div className="club-cell">
-                          <img src={item.logo} alt={item.name} style={{ width: 18, height: 18 }} />
-                          <span>{item.shortName || item.name}</span>
-                        </div>
-                      </td>
-                      <td>{item.playedGames}</td>
-                      <td>{item.won}</td>
-                      <td>{item.draw}</td>
-                      <td>{item.lost}</td>
-                      <td>{item.goalsFor}</td>
-                      <td>{item.goalsAgainst}</td>
-                      <td style={{ color: item.goalDifference > 0 ? '#10b981' : 'inherit' }}>
-                        {item.goalDifference > 0 ? `+${item.goalDifference}` : item.goalDifference}
-                      </td>
-                      <td><strong>{item.points}</strong></td>
-                      <td>
-                        <div className="form-badges">
-                          {item.form.slice(-5).map((res: string, i: number) => (
-                            <span key={i} className={`badge-f ${res === 'M' ? 'bg-m' : res === 'S' ? 'bg-s' : 'bg-k'}`}>
-                              {res}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-
-          {/* JADWAL SIDEBAR */}
-          <div className="panel">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h2 className="sec-title">Jadwal liga</h2>
-              <div>
-                <button onClick={() => setScheduleTab('upcoming')} className={`btn-sm ${scheduleTab === 'upcoming' ? 'active' : ''}`}>Mendatang</button>
-                <button onClick={() => setScheduleTab('past')} className={`btn-sm ${scheduleTab === 'past' ? 'active' : ''}`}>Hasil</button>
+      {!hasData ? (
+        <div className="kp-card kp-empty">Data {comp.label} belum tersedia.</div>
+      ) : (
+        <>
+          {/* Ringkasan */}
+          {comp.table ? (
+            <div className="kp-metrics">
+              <div className="kp-metric kp-metric-purple">
+                <div className="kp-metric-label">Posisi</div>
+                <div className="kp-metric-val">#{juve ? juve.position : '–'}</div>
+                <div className="kp-metric-sub">
+                  {!juve
+                    ? standingsRes.loading
+                      ? 'Memuat data…'
+                      : 'Belum ada di klasemen'
+                    : juve.position === 1
+                    ? 'Memimpin klasemen'
+                    : `${leader.points - juve.points} poin di belakang ${leader.name}`}
+                </div>
+              </div>
+              <div className="kp-metric">
+                <div className="kp-metric-label">Poin</div>
+                <div className="kp-metric-val">{juve ? juve.points : '–'}</div>
+                <div className="kp-metric-sub">
+                  {juve ? `${juve.won}M · ${juve.draw}S · ${juve.lost}K dari ${juve.playedGames} laga` : 'Memuat data…'}
+                </div>
+              </div>
+              <div className="kp-metric">
+                <div className="kp-metric-label">Gol</div>
+                <div className="kp-metric-val">{juve ? `${juve.goalsFor}-${juve.goalsAgainst}` : '–'}</div>
+                <div className="kp-metric-sub">
+                  {juve
+                    ? `Selisih ${fmtSigned(juve.goalDifference)} · ${fmtDecimal(juve.goalsFor / (juve.playedGames || 1))} gol per laga`
+                    : 'Memuat data…'}
+                </div>
+              </div>
+              <div className="kp-metric">
+                <div className="kp-metric-label">Form 5 laga</div>
+                <div className="kp-metric-hint">lama → terbaru</div>
+                <FormBadges form={juve?.form ?? formOf(past)} />
+                <div className="kp-metric-sub">{lastSentence}</div>
               </div>
             </div>
-
-            {/* Tombol Dummy untuk Membuka Modal Rating */}
-            <button 
-              onClick={() => setSelectedMatchModal({ title: 'JUVENTUS vs INTER MILAN', juveScore: 2, oppScore: 0 })}
-              className="btn-rating-demo"
-            >
-              ★ Lihat Contoh Rating Pemain (Modal)
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 4. MODAL POPUP RATING PEMAIN (Meniru fitur 00:06 di Video) */}
-      {selectedMatchModal && (
-        <div className="modal-overlay" onClick={() => setSelectedMatchModal(null)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>RATING PEMAIN · {selectedMatchModal.title}</h3>
-              <button onClick={() => setSelectedMatchModal(null)}>✕</button>
-            </div>
-            <div className="modal-body">
-              <div className="pitch-container">
-                <p style={{ textAlign: 'center', color: '#fff', padding: '40px 0' }}>
-                  ⚽ Formasi Lapangan 4-3-3 & Rating Pemain Live
-                </p>
+          ) : (
+            <div className="kp-metrics">
+              <div className="kp-metric kp-metric-purple">
+                <div className="kp-metric-label">Laga dimainkan</div>
+                <div className="kp-metric-val">{played}</div>
+                <div className="kp-metric-sub">{played ? `${won}M · ${drawn}S · ${lost}K` : 'Belum ada laga'}</div>
+              </div>
+              <div className="kp-metric">
+                <div className="kp-metric-label">Gol</div>
+                <div className="kp-metric-val">{played ? `${gf}-${ga}` : '–'}</div>
+                <div className="kp-metric-sub">
+                  {played ? `Selisih ${fmtSigned(gf - ga)} · ${fmtDecimal(gf / played)} gol per laga` : 'Belum ada gol'}
+                </div>
+              </div>
+              <div className="kp-metric">
+                <div className="kp-metric-label">Laga berikutnya</div>
+                <div className="kp-metric-val">{next ? next.dateLabel : '–'}</div>
+                <div className="kp-metric-sub">
+                  {next ? `${next.isHome ? 'vs' : '@'} ${next.opponent} · ${next.dayTime}` : juveRes.loading ? 'Memuat data…' : 'Belum dijadwalkan'}
+                </div>
+              </div>
+              <div className="kp-metric">
+                <div className="kp-metric-label">Form {comp.label}</div>
+                <div className="kp-metric-hint">lama → terbaru</div>
+                <FormBadges form={formOf(past)} />
+                <div className="kp-metric-sub">{lastSentence}</div>
               </div>
             </div>
+          )}
+
+          {/* Sub tab */}
+          <div className="kp-tabs" role="tablist">
+            {SUB_TABS.map((t) => (
+              <button
+                key={t.key}
+                role="tab"
+                aria-selected={tab === t.key}
+                className={`kp-tab${tab === t.key ? ' active' : ''}`}
+                onClick={() => setTab(t.key)}
+              >
+                {tabLabel(t.key, t.label)}
+              </button>
+            ))}
           </div>
-        </div>
+
+          {tab === 'klasemen' && (
+            <div className="kp-grid">
+              {comp.table ? (
+                <StandingsCard
+                  subtitle={`${
+                    standingsRes.data?.week ? `Setelah ${comp.key === 'europa' ? 'matchday' : 'pekan'} ${standingsRes.data.week}` : ''
+                  }${updatedLabel ? ` · diperbarui otomatis ${updatedLabel}` : ''} · data ESPN`}
+                  standings={standings}
+                  loading={standingsRes.loading}
+                  error={standingsRes.error}
+                  zones={comp.zones}
+                />
+              ) : (
+                <MatchesCard
+                  title={`Pertandingan ${comp.label}`}
+                  subtitle="Sistem gugur · data ESPN"
+                  matches={competitionRes.data?.matches ?? []}
+                  loading={competitionRes.loading}
+                  error={competitionRes.error}
+                  variant="all"
+                />
+              )}
+              <ScheduleCard
+                subtitle={`${comp.label} · 10 laga ke depan`}
+                upcoming={upcoming}
+                past={past}
+                loading={juveRes.loading}
+                error={juveRes.error}
+                standings={standings}
+              />
+            </div>
+          )}
+
+          {tab === 'lagalain' && (
+            <MatchesCard
+              title={`Laga lain di ${comp.label}`}
+              subtitle="Tanpa Juventus"
+              matches={competitionRes.data?.matches ?? []}
+              loading={competitionRes.loading}
+              error={competitionRes.error}
+              variant="others"
+            />
+          )}
+
+          {tab === 'topskor' && (
+            <ScorersCard
+              title={`Top skor ${comp.label}`}
+              subtitle="Dihitung dari gol tiap pertandingan · data ESPN"
+              players={competitionRes.data?.topScorers ?? []}
+              loading={competitionRes.loading}
+              error={competitionRes.error}
+            />
+          )}
+
+          {!['klasemen', 'lagalain', 'topskor'].includes(tab) && (
+            <div className="kp-card kp-empty">Bagian ini belum tersedia.</div>
+          )}
+        </>
       )}
     </div>
   );
