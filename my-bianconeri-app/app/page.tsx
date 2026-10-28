@@ -1,238 +1,165 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function Home() {
-  const [liveVisible, setLiveVisible] = useState(false);
-  const [liveBadge, setLiveBadge] = useState('OTOMATIS TERDETEKSI');
-  const [matchStatus, setMatchStatus] = useState('SELESAI · SERIE A');
-  const [autoNotice, setAutoNotice] = useState('Panel otomatis aktif selama rentang 48 jam sejak kick-off.');
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, mins: 0, secs: 0 });
+export default function KompetisiPage() {
+  const [activeTab, setActiveTab] = useState<'klasemen' | 'lagalain' | 'topskor'>('klasemen');
+  const [scheduleTab, setScheduleTab] = useState<'upcoming' | 'past'>('upcoming');
+  const [otherMatchesTab, setOtherMatchesTab] = useState<'results' | 'upcoming'>('results');
+  const [filterRivalsOnly, setFilterRivalsOnly] = useState(false);
+  const [selectedMatchModal, setSelectedMatchModal] = useState<any>(null);
+
+  const [standings, setStandings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const targetMatchTime = new Date('2026-10-28T02:45:00+07:00');
-    const FORTY_EIGHT_HOURS_MS = 48 * 60 * 60 * 1000;
-
-    const interval = setInterval(() => {
-      const now = new Date();
-      const diffFromMatchStart = now.getTime() - targetMatchTime.getTime();
-      const isMatchLiveOrRecent = diffFromMatchStart >= 0 && diffFromMatchStart <= FORTY_EIGHT_HOURS_MS;
-
-      if (isMatchLiveOrRecent) {
-        setLiveVisible(true);
-        const hoursElapsed = Math.floor(diffFromMatchStart / (1000 * 60 * 60));
-        if (diffFromMatchStart <= (2 * 60 * 60 * 1000)) {
-          setLiveBadge('● LIVE SEKARANG');
-          setMatchStatus('SEDANG BERLANGSUNG · SERIE A');
-          setAutoNotice('Pertandingan sedang berlangsung. Panel otomatis aktif hingga 48 jam ke depan.');
-        } else {
-          setLiveBadge(`HASIL LAGA (${hoursElapsed}j LALU)`);
-          setMatchStatus('SELESAI · HINGGA 2 HARI POST-MATCH');
-          setAutoNotice(`Panel ini akan tetap tampil hingga 48 jam setelah kick-off (sisa ${48 - hoursElapsed} jam lagi).`);
-        }
-      } else {
-        setLiveVisible(false);
+    async function initData() {
+      try {
+        const res = await fetch('/api/competitions');
+        const data = await res.json();
+        setStandings(data.standings || []);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
       }
-
-      const cdDiff = targetMatchTime.getTime() - now.getTime();
-      if (cdDiff > 0) {
-        setCountdown({
-          days: Math.floor(cdDiff / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((cdDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-          mins: Math.floor((cdDiff % (1000 * 60 * 60)) / (1000 * 60)),
-          secs: Math.floor((cdDiff % (1000 * 60)) / 1000),
-        });
-      } else {
-        setCountdown({ days: 0, hours: 0, mins: 0, secs: 0 });
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
+    }
+    initData();
   }, []);
 
+  const juveData = standings.find((t) => t.name.includes('Juventus'));
+  const topTeam = standings[0];
+  const pointsBehind = topTeam && juveData ? topTeam.points - juveData.points : 0;
+
   return (
-    <div id="beranda">
-      {/* PANEL LIVE SCORE OTOMATIS TERDETEKSI */}
-      {liveVisible && (
-        <section className="panel live-panel">
-          <div className="live-top">
-            <span><strong>● PERTANDINGAN TERDETEKSI</strong> / MATCH CENTRE</span>
-            <span className="badge-auto">{liveBadge}</span>
+    <div className="kompetisi-container">
+      {/* 1. TOP METRICS CARDS */}
+      <div className="top-metrics">
+        <div className="metric-card purple-bg">
+          <div className="metric-label">Posisi</div>
+          <div className="metric-val">#{juveData ? juveData.position : '-'}</div>
+          <div className="metric-sub">
+            {pointsBehind === 0 ? 'Memimpin puncak klasemen' : `${pointsBehind} poin di belakang ${topTeam?.shortName || 'puncak'}`}
           </div>
-          <div className="live-score">
-            <div className="team-side home">
-              <div className="team-monogram">JUV</div>
-              <div><div className="team-title">Juventus</div><div className="team-caption">Tuan rumah</div></div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-label">Poin</div>
+          <div className="metric-val">{juveData ? juveData.points : '-'}</div>
+          <div className="metric-sub">{juveData ? `${juveData.won}M · ${juveData.draw}S · ${juveData.lost}K` : 'Memuat...'}</div>
+        </div>
+        <div className="metric-card">
+          <div className="metric-label">Gol</div>
+          <div className="metric-val">{juveData ? `${juveData.goalsFor}-${juveData.goalsAgainst}` : '-'}</div>
+          <div className="metric-sub">{juveData ? `Selisih ${juveData.goalDifference > 0 ? `+${juveData.goalDifference}` : juveData.goalDifference}` : 'Memuat...'}</div>
+        </div>
+      </div>
+
+      {/* 2. SUB-TABS NAVIGASI */}
+      <div className="sub-tabs">
+        <button className={`tab-btn ${activeTab === 'klasemen' ? 'active' : ''}`} onClick={() => setActiveTab('klasemen')}>Klasemen & jadwal</button>
+        <button className={`tab-btn ${activeTab === 'lagalain' ? 'active' : ''}`} onClick={() => setActiveTab('lagalain')}>Laga lain</button>
+        <button className={`tab-btn ${activeTab === 'topskor' ? 'active' : ''}`} onClick={() => setActiveTab('topskor')}>Top skor</button>
+      </div>
+
+      {/* 3. TAB CONTENT: KLASEMEN & JADWAL */}
+      {activeTab === 'klasemen' && (
+        <div className="grid-main">
+          {/* KLASEMEN TABEL */}
+          <div className="panel">
+            <h2 className="sec-title">Klasemen Serie A</h2>
+            <table className="standings">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>KLUB</th>
+                  <th>MN</th>
+                  <th>M</th>
+                  <th>S</th>
+                  <th>K</th>
+                  <th>GM</th>
+                  <th>GK</th>
+                  <th>SG</th>
+                  <th>POIN</th>
+                  <th>5 LAGA TERAKHIR</th>
+                </tr>
+              </thead>
+              <tbody>
+                {standings.map((item) => {
+                  const isJuve = item.name.includes('Juventus');
+                  return (
+                    <tr key={item.id} className={isJuve ? 'juve-row' : ''}>
+                      <td><strong>{item.position}</strong></td>
+                      <td>
+                        <div className="club-cell">
+                          <img src={item.logo} alt={item.name} style={{ width: 18, height: 18 }} />
+                          <span>{item.shortName || item.name}</span>
+                        </div>
+                      </td>
+                      <td>{item.playedGames}</td>
+                      <td>{item.won}</td>
+                      <td>{item.draw}</td>
+                      <td>{item.lost}</td>
+                      <td>{item.goalsFor}</td>
+                      <td>{item.goalsAgainst}</td>
+                      <td style={{ color: item.goalDifference > 0 ? '#10b981' : 'inherit' }}>
+                        {item.goalDifference > 0 ? `+${item.goalDifference}` : item.goalDifference}
+                      </td>
+                      <td><strong>{item.points}</strong></td>
+                      <td>
+                        <div className="form-badges">
+                          {item.form.slice(-5).map((res: string, i: number) => (
+                            <span key={i} className={`badge-f ${res === 'M' ? 'bg-m' : res === 'S' ? 'bg-s' : 'bg-k'}`}>
+                              {res}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* JADWAL SIDEBAR */}
+          <div className="panel">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h2 className="sec-title">Jadwal liga</h2>
+              <div>
+                <button onClick={() => setScheduleTab('upcoming')} className={`btn-sm ${scheduleTab === 'upcoming' ? 'active' : ''}`}>Mendatang</button>
+                <button onClick={() => setScheduleTab('past')} className={`btn-sm ${scheduleTab === 'past' ? 'active' : ''}`}>Hasil</button>
+              </div>
             </div>
-            <div>
-              <div className="score-big">2 — 1</div>
-              <div className="score-status">{matchStatus}</div>
-            </div>
-            <div className="team-side away">
-              <div><div className="team-title">Inter</div><div className="team-caption">Tim tamu</div></div>
-              <div className="team-monogram">INT</div>
-            </div>
+
+            {/* Tombol Dummy untuk Membuka Modal Rating */}
+            <button 
+              onClick={() => setSelectedMatchModal({ title: 'JUVENTUS vs INTER MILAN', juveScore: 2, oppScore: 0 })}
+              className="btn-rating-demo"
+            >
+              ★ Lihat Contoh Rating Pemain (Modal)
+            </button>
           </div>
-          <div className="event-strip">
-            <span>⚽ <b className="goal">Vlahović 34′</b></span>
-            <span>⚽ <b className="goal">Yıldız 71′</b></span>
-            <span>⚽ Thuram 58′</span>
-            <span>🏟 Allianz Stadium</span>
-          </div>
-          <div className="live-controls">
-            <span>{autoNotice}</span>
-            <button className="ghost-btn">Detail pertandingan ↗</button>
-          </div>
-        </section>
+        </div>
       )}
 
-      {/* PREVIEW MATCHDAY */}
-      <section className="preview-card">
-        <div className="preview-header">
-          <div>
-            <h2 className="preview-title">Preview: Juventus vs Inter</h2>
-            <span style={{ fontSize: '10px', color: 'var(--muted)' }}>Serie A Pekan 10 · Minggu, 1 Nov · 02.45 WIB · Allianz Stadium</span>
-          </div>
-          <button className="share-btn">Bagikan preview ↗</button>
-        </div>
-        <div className="preview-grid">
-          <div className="preview-col">
-            <h4>Lawan Utama</h4>
-            <h3>Inter Milan</h3>
-            <p>Asuhan Simone Inzaghi, peringkat 2 dengan 21 poin setelah menang 2-0 atas Roma.</p>
-          </div>
-          <div className="preview-col">
-            <h4>Jalan Juventus</h4>
-            <h3>Tren Positif Bianconeri</h3>
-            <p>Menang 1-0 atas Lazio di laga terakhir liga lewat gol tunggal Yıldız.</p>
-          </div>
-          <div className="preview-col">
-            <h4>Kabar Skuad Bianconeri</h4>
-            <ul className="team-news-list">
-              <li><strong>• Absen:</strong> Bremer (lutut), Milik (betis), Koopmeiners (rusuk).</li>
-              <li><strong>• Skorsing:</strong> Tidak ada pemain utama yang terkena skorsing.</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* DASHBOARD GRID */}
-      <div className="dashboard-grid">
-        <div className="left-stack">
-          {/* COUNTDOWN MATCH */}
-          <section className="next-match">
-            <div className="next-head"><h2>Agenda berikutnya</h2><span>FIXTURE RADAR / 01</span></div>
-            <div className="match-feature">
-              <span className="comp-tag">SERIE A · PEKAN REGULER</span>
-              <div className="feature-matchup">
-                <div className="club"><div className="club-symbol">J</div><div className="club-name">Juventus</div></div>
-                <div className="versus">VS</div>
-                <div className="club"><div className="club-symbol">INT</div><div className="club-name">Inter</div></div>
-              </div>
-              <div className="match-meta">
-                <span><strong>Minggu, 1 November 2026</strong><br />Kick-off 02.45 WIB · Allianz Stadium</span>
-                <span className="calendar-link">Tambah ke kalender ↗</span>
-              </div>
-              <div className="countdown">
-                <div className="time-box"><b>{countdown.days}</b><span>Hari</span></div>
-                <div className="time-box"><b>{countdown.hours}</b><span>Jam</span></div>
-                <div className="time-box"><b>{countdown.mins}</b><span>Menit</span></div>
-                <div className="time-box"><b>{countdown.secs}</b><span>Detik</span></div>
-              </div>
+      {/* 4. MODAL POPUP RATING PEMAIN (Meniru fitur 00:06 di Video) */}
+      {selectedMatchModal && (
+        <div className="modal-overlay" onClick={() => setSelectedMatchModal(null)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>RATING PEMAIN · {selectedMatchModal.title}</h3>
+              <button onClick={() => setSelectedMatchModal(null)}>✕</button>
             </div>
-          </section>
-
-          {/* PREDIKSI SUSUNAN PEMAIN */}
-          <section className="panel">
-            <div className="section-head">
-              <h2>Prediksi susunan pemain</h2>
-              <small>vs Inter · 1 Nov 2026 · Formasi 3-5-2</small>
-            </div>
-            <div style={{ padding: '20px' }}>
+            <div className="modal-body">
               <div className="pitch-container">
-                <div className="pitch-lines"></div>
-                <div className="pitch-row">
-                  <div className="player-node"><div className="player-avatar">9</div><span className="player-name">Vlahović</span></div>
-                  <div className="player-node"><div className="player-avatar">10</div><span className="player-name">Yıldız</span></div>
-                </div>
-                <div className="pitch-row">
-                  <div className="player-node"><div className="player-avatar">27</div><span className="player-name">Cambiaso</span></div>
-                  <div className="player-node"><div className="player-avatar">5</div><span className="player-name">Locatelli</span></div>
-                  <div className="player-node"><div className="player-avatar">19</div><span className="player-name">Thuram</span></div>
-                  <div className="player-node"><div className="player-avatar">16</div><span className="player-name">McKennie</span></div>
-                  <div className="player-node"><div className="player-avatar">22</div><span className="player-name">Weah</span></div>
-                </div>
-                <div className="pitch-row">
-                  <div className="player-node"><div className="player-avatar">6</div><span className="player-name">Danilo</span></div>
-                  <div className="player-node"><div className="player-avatar">4</div><span className="player-name">Gatti</span></div>
-                  <div className="player-node"><div className="player-avatar">15</div><span className="player-name">Kalulu</span></div>
-                </div>
-                <div className="pitch-row">
-                  <div className="player-node"><div className="player-avatar">29</div><span className="player-name">Di Gregorio</span></div>
-                </div>
+                <p style={{ textAlign: 'center', color: '#fff', padding: '40px 0' }}>
+                  ⚽ Formasi Lapangan 4-3-3 & Rating Pemain Live
+                </p>
               </div>
             </div>
-          </section>
-        </div>
-
-        {/* RIGHT STACK */}
-        <div className="right-stack">
-          <div className="sub-widget-grid">
-            <section className="panel">
-              <div className="section-head"><h2>Wasit laga</h2></div>
-              <div style={{ padding: '15px', fontSize: '11px' }}>
-                <strong style={{ fontSize: '13px', display: 'block', marginBottom: '4px' }}>Davide Massa</strong>
-                <span>Wasit senior Serie A dari seksi Imperia.</span>
-              </div>
-            </section>
-            <section className="panel">
-              <div className="section-head"><h2>Cuaca kick-off</h2></div>
-              <div style={{ padding: '15px' }}>
-                <div className="weather-box">
-                  <div className="weather-icon">🌧️</div>
-                  <div><strong style={{ fontSize: '16px', display: 'block' }}>12°C · Hujan Ringan</strong></div>
-                </div>
-              </div>
-            </section>
           </div>
         </div>
-      </div>
-
-      {/* PANDUAN SIARAN */}
-      <section className="broadcast-card" style={{ marginTop: '20px' }}>
-        <div className="section-head" style={{ padding: '0 0 12px', borderBottom: '1px solid var(--line)', marginBottom: '15px' }}>
-          <h2 className="preview-title">Nonton di mana</h2>
-          <span style={{ fontSize: '10px', color: 'var(--muted)' }}>Hak siar resmi di Indonesia · Musim 2026/27</span>
-        </div>
-        <div className="broadcast-grid">
-          <div className="broadcast-col">
-            <h4>SERIE A & COPPA ITALIA</h4>
-            <h3>Vidio + BeIN Sports</h3>
-            <div className="price-list">
-              <div className="price-row"><span>Platinum / Diamond Mobile</span><b>Rp39.000 / bln</b></div>
-            </div>
-          </div>
-          <div className="broadcast-col">
-            <h4>UEFA CHAMPIONS LEAGUE</h4>
-            <h3>Vidio + SCTV / RCTI</h3>
-            <div className="price-list">
-              <div className="price-row"><span>SCTV / TV FTA</span><b>GRATIS (Laga Pilihan)</b></div>
-            </div>
-          </div>
-          <div className="broadcast-col">
-            <h4>AUDIO OFFICIAL</h4>
-            <h3>Juventus Radio</h3>
-            <div className="price-list">
-              <div className="price-row"><span>App Resmi</span><b>GRATIS</b></div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <div className="footer">
-        <span>BIANCONERI · Juventus Club Hub</span>
-        <span>Pembaruan otomatis real-time via Date JS.</span>
-      </div>
+      )}
     </div>
   );
 }
