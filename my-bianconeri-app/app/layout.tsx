@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
-import '@/app/globals.css';
-import Header from '@/components/Header';
+import './globals.css';
+import Header from '../components/Header';
 import { Barlow_Condensed, Source_Sans_3 } from 'next/font/google';
 
 const kpDisplay = Barlow_Condensed({
@@ -27,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id" className={`${kpDisplay.variable} ${kpBody.variable}`}>
+    <html lang="id">
       <body>
         <Header />
         <main className="wrap">
