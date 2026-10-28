@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 
 export default function KompetisiPage() {
-  const [activeTab, setActiveTab] = useState<'klasemen' | 'lagalain' | 'topskor'>('klasemen');
+  const [activeTab, setActiveTab] = useState<'klasemen' | 'lagalain' | 'topskor' | 'trofi' | 'juara' | 'gelar' | 'poin'>('klasemen');
   const [scheduleSubTab, setScheduleSubTab] = useState<'upcoming' | 'past'>('upcoming');
   
   const [standings, setStandings] = useState<any[]>([]);
@@ -117,12 +117,11 @@ export default function KompetisiPage() {
         >
           Laga lain
         </button>
-        <button
-          className={`tab-btn ${activeTab === 'topskor' ? 'active' : ''}`}
-          onClick={() => setActiveTab('topskor')}
-        >
-          Top skor
-        </button>
+        <button className={`tab-btn ${activeTab === 'topskor' ? 'active' : ''}`} onClick={() => setActiveTab('topskor')}>Top skor</button>
+        <button className={`tab-btn ${activeTab === 'trofi' ? 'active' : ''}`} onClick={() => setActiveTab('trofi')}>Jalan ke trofi</button>
+        <button className={`tab-btn ${activeTab === 'juara' ? 'active' : ''}`} onClick={() => setActiveTab('juara')}>Peluang juara</button>
+        <button className={`tab-btn ${activeTab === 'gelar' ? 'active' : ''}`} onClick={() => setActiveTab('gelar')}>Perebutan gelar</button>
+        <button className={`tab-btn ${activeTab === 'poin' ? 'active' : ''}`} onClick={() => setActiveTab('poin')}>Laju poin</button>
       </div>
 
       {/* Grid Utama 2 Kolom: Klasemen & Jadwal */}
@@ -272,7 +271,7 @@ export default function KompetisiPage() {
             </div>
 
             {/* TAB JADWAL MENDATANG */}
-            {scheduleSubTab === 'upcoming' && (
+            {(scheduleSubTab === 'upcoming' || scheduleSubTab === 'past') && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {juveSchedule.upcoming.length > 0 ? (
                   juveSchedule.upcoming.slice(0, 6).map((match) => (
@@ -308,7 +307,7 @@ export default function KompetisiPage() {
             )}
 
             {/* TAB HASIL MATCH LAMPAU */}
-            {scheduleSubTab === 'past' && (
+            {(scheduleSubTab === 'past' || scheduleSubTab === 'upcoming') && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {juveSchedule.past.length > 0 ? (
                   juveSchedule.past.slice(0, 6).map((match) => (
