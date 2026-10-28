@@ -11,7 +11,7 @@ export default function KompetisiPage() {
       <div className="comp-nav">
         <button className="comp-btn active">🇮🇹 Serie A</button>
         <button className="comp-btn">🇪🇺 Liga Champions</button>
-        <button class="comp-btn">🏆 Coppa Italia</button>
+        <button className="comp-btn">🏆 Coppa Italia</button>
         <button className="comp-btn disabled">🛡️ Supercoppa <span className="badge-off">Tidak Ikut</span></button>
       </div>
 
@@ -62,7 +62,7 @@ export default function KompetisiPage() {
               </thead>
               <tbody>
                 <tr><td>1</td><td><div className="club-cell"><span className="mini-logo">INT</span> Inter Milan</div></td><td>8</td><td>6</td><td>1</td><td>1</td><td>+12</td><td><strong>19</strong></td></tr>
-                <tr><td>2</td><td><div className="club-cell"><span class="mini-logo">NAP</span> Napoli</div></td><td>8</td><td>6</td><td>0</td><td>2</td><td>+8</td><td><strong>18</strong></td></tr>
+                <tr><td>2</td><td><div className="club-cell"><span className="mini-logo">NAP</span> Napoli</div></td><td>8</td><td>6</td><td>0</td><td>2</td><td>+8</td><td><strong>18</strong></td></tr>
                 <tr className="juve-row"><td>3</td><td><div className="club-cell"><span className="mini-logo" style={{ background: '#111', color: '#fff' }}>J</span> <strong>Juventus</strong></div></td><td>8</td><td>5</td><td>2</td><td>1</td><td>+7</td><td><strong>17</strong></td></tr>
                 <tr><td>4</td><td><div className="club-cell"><span className="mini-logo">MIL</span> AC Milan</div></td><td>8</td><td>4</td><td>2</td><td>2</td><td>+5</td><td><strong>14</strong></td></tr>
               </tbody>
