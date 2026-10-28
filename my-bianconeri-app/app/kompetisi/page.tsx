@@ -140,6 +140,7 @@ export default function KompetisiPage() {
   const [schedule, setSchedule] = useState<{ upcoming: Match[]; past: Match[] }>({ upcoming: [], past: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [scheduleError, setScheduleError] = useState(false);
 
   const [upPage, setUpPage] = useState(0);
   const [pastPage, setPastPage] = useState(0);
@@ -157,7 +158,8 @@ export default function KompetisiPage() {
         setWeek(dataStandings.week || 0);
         setUpdatedAt(dataStandings.updatedAt || null);
         setSchedule({ upcoming: dataJuve.upcoming || [], past: dataJuve.past || [] });
-        if (!dataStandings.standings && !dataJuve.upcoming) setError(true);
+        if (!dataStandings.standings) setError(true);
+        if (dataJuve.error || (!dataJuve.upcoming?.length && !dataJuve.past?.length)) setScheduleError(true);
       } catch (err) {
         console.error('Gagal mengambil data:', err);
         setError(true);
@@ -377,8 +379,10 @@ export default function KompetisiPage() {
             <div className="kp-group">Mendatang</div>
             {loading ? (
               <div className="kp-empty">Memuat jadwal…</div>
+            ) : scheduleError ? (
+              <div className="kp-empty">Jadwal belum bisa dimuat dari ESPN. Coba muat ulang halaman.</div>
             ) : upcomingShown.length === 0 ? (
-              <div className="kp-empty">Belum ada jadwal mendatang.</div>
+              <div className="kp-empty">Tidak ada pertandingan lagi sampai 31 Desember.</div>
             ) : (
               upcomingShown.map((m) => {
                 const note = noteFor(m);
@@ -408,11 +412,15 @@ export default function KompetisiPage() {
                 );
               })
             )}
-            <Pager page={upPage} pageSize={UPCOMING_PAGE_SIZE} total={schedule.upcoming.length} onChange={setUpPage} />
+            {schedule.upcoming.length > 0 && (
+              <Pager page={upPage} pageSize={UPCOMING_PAGE_SIZE} total={schedule.upcoming.length} onChange={setUpPage} />
+            )}
 
             <div className="kp-group">Hasil</div>
             {loading ? (
               <div className="kp-empty">Memuat hasil…</div>
+            ) : scheduleError ? (
+              <div className="kp-empty">Hasil belum bisa dimuat dari ESPN.</div>
             ) : pastShown.length === 0 ? (
               <div className="kp-empty">Belum ada hasil pertandingan.</div>
             ) : (
@@ -478,7 +486,9 @@ export default function KompetisiPage() {
                 </div>
               ))
             )}
-            <Pager page={pastPage} pageSize={PAST_PAGE_SIZE} total={schedule.past.length} onChange={setPastPage} />
+            {schedule.past.length > 0 && (
+              <Pager page={pastPage} pageSize={PAST_PAGE_SIZE} total={schedule.past.length} onChange={setPastPage} />
+            )}
           </section>
         </div>
       )}

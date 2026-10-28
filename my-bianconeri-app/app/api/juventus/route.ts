@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { ESPN_BASE, JUVE_ID, fetchSeasonEvents, isCompleted, toNum } from '@/lib/espn';
+import { ESPN_BASE, JUVE_ID, fetchSeasonEvents, isCompleted, seasonWindow, toNum } from '@/lib/espn';
 
 const TZ = 'Asia/Jakarta';
 
@@ -35,27 +35,47 @@ function scorersOf(event: any) {
     });
 }
 
+const isJuveEvent = (e: any) =>
+  (e?.competitions?.[0]?.competitors ?? []).some((c: any) => String(c.team?.id) === JUVE_ID);
+
+async function fetchTeamSchedule(): Promise<any[]> {
+  try {
+    const res = await fetch(`${ESPN_BASE}/site/v2/sports/soccer/ita.1/teams/${JUVE_ID}/schedule`, {
+      next: { revalidate: 1800 },
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data?.events ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function GET() {
   try {
-    const [res, seasonEvents] = await Promise.all([
-      fetch(`${ESPN_BASE}/site/v2/sports/soccer/ita.1/teams/${JUVE_ID}/schedule`, {
-        next: { revalidate: 1800 },
-      }),
-      fetchSeasonEvents(),
-    ]);
+    const seasonEvents = await fetchSeasonEvents();
 
-    if (!res.ok) {
-      return NextResponse.json({ error: 'Gagal mengambil jadwal Juventus' }, { status: res.status });
+    // Sumber utama: scoreboard musim ini. Cadangan: endpoint jadwal tim.
+    let source: 'scoreboard' | 'schedule' = 'scoreboard';
+    let events = seasonEvents.filter(isJuveEvent);
+    if (!events.length) {
+      source = 'schedule';
+      events = await fetchTeamSchedule();
     }
 
-    const data = await res.json();
-    const events: any[] = (data?.events || [])
-      .filter((e: any) => (e.league?.slug ?? 'ita.1') === 'ita.1')
-      .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    if (!events.length) {
+      return NextResponse.json(
+        { error: 'ESPN tidak mengembalikan jadwal Juventus', upcoming: [], past: [] },
+        { status: 502 }
+      );
+    }
+
+    events.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
     const scoreboardById: Record<string, any> = {};
     seasonEvents.forEach((e) => (scoreboardById[String(e.id)] = e));
 
+    const cutoff = seasonWindow().endDate.getTime();
     const upcoming: any[] = [];
     const past: any[] = [];
 
@@ -71,6 +91,9 @@ export async function GET() {
       const juveScore = toNum(juve?.score);
       const oppScore = toNum(opp?.score);
 
+      // Jadwal mendatang hanya sampai 31 Desember
+      if (!done && date.getTime() > cutoff) return;
+
       const match = {
         id: String(event.id),
         week: index + 1,
@@ -85,15 +108,15 @@ export async function GET() {
         juveScore,
         opponentScore: oppScore,
         result: done ? (juveScore > oppScore ? 'W' : juveScore === oppScore ? 'D' : 'L') : null,
-        scorers: done ? scorersOf(scoreboardById[String(event.id)]) : [],
+        scorers: done ? scorersOf(scoreboardById[String(event.id)] ?? event) : [],
       };
 
       (done ? past : upcoming).push(match);
     });
 
     past.reverse(); // hasil terbaru di atas
-    return NextResponse.json({ upcoming, past });
+    return NextResponse.json({ upcoming, past, source });
   } catch (error) {
-    return NextResponse.json({ error: 'Terjadi kesalahan server' }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan server', upcoming: [], past: [] }, { status: 500 });
   }
 }
