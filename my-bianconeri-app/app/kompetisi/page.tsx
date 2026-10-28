@@ -7,14 +7,12 @@ export default function KompetisiPage() {
   const [standings, setStandings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Ambil data Klasemen dari API
   useEffect(() => {
     async function fetchStandings() {
       try {
         const res = await fetch('/api/standings');
         const data = await res.json();
-        const table = data?.standings?.[0]?.table || [];
-        setStandings(table);
+        setStandings(data.standings || []);
       } catch (err) {
         console.error('Gagal memuat data klasemen:', err);
       } finally {
@@ -24,14 +22,13 @@ export default function KompetisiPage() {
     fetchStandings();
   }, []);
 
-  // Cari data Juventus untuk Top Metrics
-  const juveData = standings.find((item) => item.team.name.includes('Juventus'));
+  const juveData = standings.find((item) => item.name.includes('Juventus'));
   const topTeam = standings[0];
   const pointsBehind = topTeam && juveData ? topTeam.points - juveData.points : 0;
 
   return (
     <div>
-      {/* Navigasi Bar Kapsul Kompetisi */}
+      {/* Navigasi Bar Kapsul */}
       <div className="comp-nav">
         <button className="comp-btn active">🇮🇹 Serie A</button>
         <button className="comp-btn">🇪🇺 Liga Champions</button>
@@ -39,13 +36,10 @@ export default function KompetisiPage() {
         <button className="comp-btn disabled">
           🛡️ Supercoppa Italiana <span className="badge-off">Tidak Ikut</span>
         </button>
-        <button className="comp-btn disabled">
-          🌍 Piala Super Eropa <span className="badge-off">Tidak Ikut</span>
-        </button>
         <button className="comp-btn">✈️ Pramusim & Tur</button>
       </div>
 
-      {/* Top Metrics Cards (Sesuai Gambar Desain) */}
+      {/* Top Metrics Cards */}
       <div className="top-metrics">
         <div className="metric-card purple-bg">
           <div className="metric-label">Posisi</div>
@@ -53,7 +47,7 @@ export default function KompetisiPage() {
           <div className="metric-sub">
             {pointsBehind === 0
               ? 'Memimpin puncak klasemen'
-              : `${pointsBehind} poin di belakang ${topTeam?.team?.shortName || topTeam?.team?.name || 'puncak'}`}
+              : `${pointsBehind} poin di belakang ${topTeam?.shortName || topTeam?.name || 'puncak'}`}
           </div>
         </div>
 
@@ -75,7 +69,7 @@ export default function KompetisiPage() {
           <div className="metric-sub">
             {juveData
               ? `Selisih ${juveData.goalDifference > 0 ? `+${juveData.goalDifference}` : juveData.goalDifference} · ${(
-                  juveData.goalsFor / juveData.playedGames
+                  juveData.goalsFor / (juveData.playedGames || 1)
                 ).toFixed(1)} gol per laga`
               : 'Memuat data...'}
           </div>
@@ -84,25 +78,11 @@ export default function KompetisiPage() {
         <div className="metric-card">
           <div className="metric-label">Form 5 Laga Terakhir</div>
           <div className="form-badges">
-            {juveData?.form
-              ? juveData.form.split(',').map((res: string, idx: number) => {
-                  const bgClass = res === 'W' ? 'bg-m' : res === 'D' ? 'bg-s' : 'bg-k';
-                  const label = res === 'W' ? 'M' : res === 'D' ? 'S' : 'K';
-                  return (
-                    <span key={idx} className={`badge-f ${bgClass}`}>
-                      {label}
-                    </span>
-                  );
-                })
-              : (
-                <>
-                  <span className="badge-f bg-s">S</span>
-                  <span className="badge-f bg-m">M</span>
-                  <span className="badge-f bg-m">M</span>
-                  <span className="badge-f bg-s">S</span>
-                  <span className="badge-f bg-m">M</span>
-                </>
-              )}
+            <span className="badge-f bg-s">S</span>
+            <span className="badge-f bg-m">M</span>
+            <span className="badge-f bg-m">M</span>
+            <span className="badge-f bg-s">S</span>
+            <span className="badge-f bg-m">M</span>
           </div>
           <div className="metric-sub" style={{ marginTop: '8px' }}>
             lama → terbaru
@@ -132,19 +112,18 @@ export default function KompetisiPage() {
         </button>
       </div>
 
-      {/* Content Section 1: Klasemen & Jadwal */}
+      {/* Content Section: Klasemen Live */}
       {activeTab === 'klasemen' && (
         <div className="grid-main">
-          {/* TABEL KLASEMEN LIVE */}
           <div className="panel">
             <div className="sec-head">
               <h2 className="sec-title">Klasemen</h2>
               <small style={{ color: 'var(--muted)', fontSize: '10px' }}>
-                Diperbarui otomatis · data Live API
+                Diperbarui otomatis · data ESPN API
               </small>
             </div>
             {loading ? (
-              <div style={{ padding: '30px', textAlign: 'center' }}>Memuat data klasemen...</div>
+              <div style={{ padding: '30px', textAlign: 'center' }}>Memuat data klasemen ESPN...</div>
             ) : (
               <table className="standings">
                 <thead>
@@ -159,25 +138,24 @@ export default function KompetisiPage() {
                     <th>GK</th>
                     <th>SG</th>
                     <th>POIN</th>
-                    <th>5 LAGA TERAKHIR</th>
                   </tr>
                 </thead>
                 <tbody>
                   {standings.map((item) => {
-                    const isJuve = item.team.name.includes('Juventus');
-                    const formArray = item.form ? item.form.split(',') : [];
-
+                    const isJuve = item.name.includes('Juventus');
                     return (
-                      <tr key={item.team.id} className={isJuve ? 'juve-row' : ''}>
+                      <tr key={item.id} className={isJuve ? 'juve-row' : ''}>
                         <td><strong>{item.position}</strong></td>
                         <td>
                           <div className="club-cell">
-                            <img
-                              src={item.team.crest}
-                              alt={item.team.name}
-                              style={{ width: '18px', height: '18px', objectFit: 'contain' }}
-                            />
-                            <strong>{item.team.shortName || item.team.name}</strong>
+                            {item.logo && (
+                              <img
+                                src={item.logo}
+                                alt={item.name}
+                                style={{ width: '18px', height: '18px', objectFit: 'contain' }}
+                              />
+                            )}
+                            <strong>{item.shortName || item.name}</strong>
                           </div>
                         </td>
                         <td>{item.playedGames}</td>
@@ -188,19 +166,6 @@ export default function KompetisiPage() {
                         <td>{item.goalsAgainst}</td>
                         <td>{item.goalDifference > 0 ? `+${item.goalDifference}` : item.goalDifference}</td>
                         <td><strong>{item.points}</strong></td>
-                        <td>
-                          <div className="form-badges">
-                            {formArray.map((res: string, i: number) => {
-                              const bgClass = res === 'W' ? 'bg-m' : res === 'D' ? 'bg-s' : 'bg-k';
-                              const label = res === 'W' ? 'M' : res === 'D' ? 'S' : 'K';
-                              return (
-                                <span key={i} className={`badge-f ${bgClass}`} style={{ width: '16px', height: '16px', fontSize: '8px' }}>
-                                  {label}
-                                </span>
-                              );
-                            })}
-                          </div>
-                        </td>
                       </tr>
                     );
                   })}
@@ -209,7 +174,7 @@ export default function KompetisiPage() {
             )}
           </div>
 
-          {/* JADWAL LIGA (KOLOM KANAN) */}
+          {/* Kolom Jadwal */}
           <div className="panel">
             <div className="sec-head">
               <h2 className="sec-title">Jadwal liga</h2>
@@ -237,37 +202,6 @@ export default function KompetisiPage() {
                   <span style={{ fontSize: '9px', background: '#f0f1f4', padding: '3px 7px', borderRadius: '4px', fontWeight: '800' }}>► Vidio</span>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Content Section 2: Laga Lain */}
-      {activeTab === 'lagalain' && (
-        <div className="panel">
-          <div className="sec-head"><h2 className="sec-title">Intip Laga Pesaing</h2></div>
-          <div className="matches-grid">
-            <div className="match-card">
-              <div className="match-top"><span>SERIE A · PEKAN 9</span><span className="tag-pesaing">PESAING</span></div>
-              <div className="match-main"><span>AS Roma</span> <span>1 — 1</span> <span>Inter Milan</span></div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Content Section 3: Top Skor */}
-      {activeTab === 'topskor' && (
-        <div className="panel">
-          <div className="sec-head"><h2 className="sec-title">Top Skor Serie A</h2></div>
-          <div className="stats-dual">
-            <div>
-              <h4 style={{ margin: '0 0 10px', color: 'var(--muted)' }}>⚽ TOP SKOR</h4>
-              <div className="stat-list-item"><span>1. Mateo Retegui (Atalanta)</span><strong>8 Gol</strong></div>
-              <div className="stat-list-item juve-player"><span>2. <strong>Dušan Vlahović (Juventus)</strong></span><strong>6 Gol</strong></div>
-            </div>
-            <div>
-              <h4 style={{ margin: '0 0 10px', color: 'var(--muted)' }}>🅰️ TOP ASSIST</h4>
-              <div className="stat-list-item juve-player"><span>1. <strong>Kenan Yıldız (Juventus)</strong></span><strong>4 Assist</strong></div>
             </div>
           </div>
         </div>
