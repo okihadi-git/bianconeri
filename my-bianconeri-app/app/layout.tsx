@@ -1,6 +1,20 @@
 import type { Metadata } from 'next';
 import '@/app/globals.css';
 import Header from '@/components/Header';
+import { Barlow_Condensed, Source_Sans_3 } from 'next/font/google';
+
+const kpDisplay = Barlow_Condensed({
+  subsets: ['latin'],
+  weight: ['600', '700', '800'],
+  variable: '--font-kp-display',
+  display: 'swap',
+});
+const kpBody = Source_Sans_3({
+  subsets: ['latin'],
+  weight: ['400', '600', '700', '800'],
+  variable: '--font-kp-body',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'BIANCONERI — Juventus Club Hub',
@@ -13,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="id">
+    <html lang="id" className={`${kpDisplay.variable} ${kpBody.variable}`}>
       <body>
         <Header />
         <main className="wrap">
