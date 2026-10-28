@@ -2,7 +2,7 @@
 async function getStandings() {
   const res = await fetch('https://api.football-data.org/v4/competitions/SA/standings', {
     headers: {
-      'X-Auth-Token': process.env.FOOTBALL_DATA_API_KEY || '',
+      'X-Auth-Token': process.env.FOOTBALL_DATA_API_KEY || '7a3c9383187f412589f1a57a27a3e04f',
     },
     // Revalidate/Refresh data otomatis setiap 3600 detik (1 jam)
     next: { revalidate: 3600 } 
