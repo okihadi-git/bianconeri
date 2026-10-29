@@ -163,7 +163,7 @@ export default function KompetisiPage() {
               <div className="kp-metric">
                 <div className="kp-metric-label">Form 5 laga</div>
                 <div className="kp-metric-hint">lama → terbaru</div>
-                <FormBadges form={juve?.form ?? formOf(past)} />
+                <FormBadges form={juve?.form?.length ? juve.form : formOf(past)} />
                 <div className="kp-metric-sub">{lastSentence}</div>
               </div>
             </div>
