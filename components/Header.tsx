@@ -39,8 +39,8 @@ export default function Header() {
           <nav>
             <Link href="/" className={pathname === '/' ? 'active' : ''}>Beranda</Link>
             <Link href="/kompetisi" className={pathname === '/kompetisi' ? 'active' : ''}>Kompetisi</Link>
-            <Link href="/skuad?tab=skuad" className={pathname === '/skuad' ? 'active' : ''}>Skuad</Link>
-            <Link href="/skuad?tab=statistik" className={pathname === '/skuad' ? 'active' : ''}>Statistik</Link>
+            <Link href="/skuad" className={pathname === '/skuad' ? 'active' : ''}>Skuad</Link>
+            <Link href="/statistik" className={pathname === '/statistik' ? 'active' : ''}>Statistik</Link>
             <Link href="/#berita">Berita</Link>
             <Link href="/#sejarah">Klub</Link>
           </nav>

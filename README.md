@@ -1,16 +1,27 @@
 # Bianconeri Matchday Hub
 
-Aplikasi Next.js untuk dashboard Juventus: skor dan detail pertandingan, ringkasan kompetisi, klasemen, jadwal gabungan, skuad, dan statistik.
+## Struktur halaman
 
-## Menjalankan lokal
+- `app/page.tsx` — Beranda: live score/hasil terbaru, ringkasan kompetisi, pertandingan berikutnya, dan jadwal gabungan.
+- `app/kompetisi/page.tsx` — Halaman kompetisi.
+- `app/skuad/page.tsx` — Halaman skuad Juventus.
+- `app/statistik/page.tsx` — Halaman statistik Juventus.
+- `components/Header.tsx` — Navigasi utama.
+- `components/kp.tsx` — Komponen bersama (klasemen, pencetak gol, form, dan utilitas data).
+- `lib/espn.ts` — Integrasi sumber data ESPN.
+- `lib/types.ts` — Tipe data.
+- `app/api/` — Endpoint API internal aplikasi.
 
-```bash
-npm install
-npm run dev
-```
+## Yang berubah
 
-Buka http://localhost:3000.
+- Menu/halaman Juventus tersendiri dihapus dari navigasi.
+- Ringkasan Juventus berada di Beranda.
+- Skuad berada di `/skuad`.
+- Statistik berada di `/statistik`.
+- API Juventus dipertahankan karena masih digunakan oleh Beranda dan Statistik.
 
-## Sumber data
+## Catatan saat memperbarui GitHub
 
-Data sepak bola diambil dari endpoint publik ESPN yang tidak resmi dan tidak memerlukan API key. Endpoint ini tidak memiliki SLA; sebagian statistik, susunan pemain, atau data Coppa Italia dapat kosong jika ESPN tidak menyediakan data untuk event/kompetisi tersebut. Seluruh waktu di UI ditampilkan dalam WIB.
+Jika repository GitHub masih memiliki file lama `app/juventus/page.tsx`, hapus file tersebut setelah menyalin perubahan ini. Pastikan folder `app/juventus/` tidak lagi berisi `page.tsx`. Jangan hapus `app/api/juventus/` atau `app/api/juventus/stats/` karena itu endpoint API, bukan halaman.
+
+Root Directory Vercel harus menunjuk ke folder yang berisi `package.json`.
