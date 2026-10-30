@@ -1,3 +1,5 @@
+
+
 :root {
   --ink: #101114;
   --muted: #737782;
@@ -536,3 +538,7 @@ body:has(.kp) { background: #eff1f6; }
 .home-venue-tag { border-radius:5px; background:#f0edfa; color:#593b91; padding:5px 7px; font-size:9px; font-weight:800; }
 @media(max-width:800px) { .home-bottom-grid { grid-template-columns:1fr; } .home-competition-grid { grid-template-columns:1fr; } .home-comp-card { padding:14px; } }
 @media(max-width:560px) { .home-section-head { align-items:flex-start; padding:14px; } .home-section-head small { text-align:right; } .home-match-score { grid-template-columns:1fr 1fr; padding:18px 12px; } .home-score { grid-column:1 / -1; grid-row:1; } .home-team { justify-content:center; flex-direction:column; gap:5px; text-align:center; font-size:16px; } .home-team:last-child { justify-content:center; text-align:center; } .home-team img { width:38px; height:38px; } .home-detail-grid,.home-lineup-grid { grid-template-columns:1fr; } .home-detail-action { align-items:flex-start; flex-direction:column; } .home-calendar-row { grid-template-columns:55px 25px minmax(0,1fr); } .home-venue-tag { display:none; } }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
