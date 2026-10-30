@@ -9,10 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest"
-  },
+    "next": "15.x.x",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "cheerio": "^1.0.0-rc.12"
+  }
   "devDependencies": {
     "@types/node": "latest",
     "@types/react": "latest",
