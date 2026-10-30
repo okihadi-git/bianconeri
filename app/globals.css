@@ -773,3 +773,8 @@ body:has(.kp) { background: #eff1f6; }
   .hm-cal-head small, .hm-next-head span { text-align: left; }
   .hm-cal-row { grid-template-columns: 74px minmax(0, 1fr); }
 }
+.kp-card-title {
+  font-family: inherit;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
