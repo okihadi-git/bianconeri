@@ -36,7 +36,6 @@ const COMPS: Comp[] = [
   { key: 'tour', slug: null, icon: '✈️', label: 'Pramusim & Tur', table: false, zones: [] },
 ];
 
-// 1. Pemisahan Tab Standar dan Tab Khusus Serie A (Cara 2)
 const BASE_SUB_TABS = [
   { key: 'klasemen', label: 'Klasemen & jadwal' },
   { key: 'lagalain', label: 'Laga lain' },
@@ -52,8 +51,131 @@ const SERIE_A_EXTRA_TABS = [
 
 type SubKey = (typeof BASE_SUB_TABS)[number]['key'] | (typeof SERIE_A_EXTRA_TABS)[number]['key'];
 
+interface TrophyStepDef {
+  roundCode: string;
+  roundName: string;
+}
+
+// Urutan babak standar Coppa Italia
+const COPPA_ROUNDS: TrophyStepDef[] = [
+  { roundCode: 'R16', roundName: 'ROUND OF 16' },
+  { roundCode: 'QF', roundName: 'PEREMPAT FINAL' },
+  { roundCode: 'SF', roundName: 'SEMIFINAL (2 LEG)' },
+  { roundCode: 'F', roundName: 'FINAL' },
+];
+
+interface JalurKeRomaProps {
+  pastMatches: Match[];
+  upcomingMatches: Match[];
+  loading: boolean;
+}
+
+// Komponen Otomatis Jalur Ke Roma untuk Coppa Italia
+function JalurKeRomaCard({ pastMatches, upcomingMatches, loading }: JalurKeRomaProps) {
+  const sortedPast = useMemo(() => [...pastMatches].reverse(), [pastMatches]);
+
+  const isEliminated = useMemo(() => {
+    return sortedPast.some((m) => m.result === 'L');
+  }, [sortedPast]);
+
+  const allJuveCoppaMatches = useMemo(() => {
+    return [...sortedPast, ...upcomingMatches];
+  }, [sortedPast, upcomingMatches]);
+
+  if (loading) {
+    return <div className="kp-card kp-empty">Memuat data Jalur ke Roma…</div>;
+  }
+
+  return (
+    <div className="kp-card p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
+      <div className="flex justify-between items-center mb-6 border-b pb-4">
+        <h2 className="text-xl font-extrabold flex items-center gap-2">
+          <span className="w-1.5 h-6 bg-red-600 rounded-full inline-block"></span>
+          Jalur ke Roma
+        </h2>
+        <span className="text-sm text-gray-400 font-medium">Sistem gugur · data ESPN</span>
+      </div>
+
+      <div className="relative pl-6 space-y-8 before:content-[''] before:absolute before:left-5 before:top-3 before:bottom-3 before:w-0.5 before:bg-gray-200">
+        {COPPA_ROUNDS.map((roundDef, idx) => {
+          const matchData = allJuveCoppaMatches[idx];
+          const isPast = matchData && sortedPast.includes(matchData);
+          const isNext = !isPast && matchData && !isEliminated && idx === sortedPast.length;
+
+          let status: 'done' | 'next' | 'upcoming' | 'eliminated' = 'upcoming';
+          if (isPast) {
+            status = matchData.result === 'W' ? 'done' : 'eliminated';
+          } else if (isNext) {
+            status = 'next';
+          } else if (isEliminated && idx >= sortedPast.length) {
+            status = 'eliminated';
+          }
+
+          const opponentText = matchData
+            ? ` · ${matchData.opponent.toUpperCase()} (${matchData.isHome ? 'K' : 'T'})`
+            : '';
+          const titleText = `${roundDef.roundName}${opponentText}`;
+
+          return (
+            <div key={roundDef.roundCode} className="relative flex items-start gap-4">
+              <div
+                className={`absolute -left-6 z-10 w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 transition-colors ${
+                  status === 'done'
+                    ? 'bg-emerald-600 border-emerald-600 text-white'
+                    : status === 'next'
+                    ? 'bg-white border-amber-400 text-amber-500 font-extrabold shadow-sm'
+                    : 'bg-white border-gray-300 text-gray-400 opacity-60'
+                }`}
+              >
+                {status === 'done' ? '✓' : roundDef.roundCode}
+              </div>
+
+              <div className="pl-6 flex-1">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <h3
+                      className={`font-extrabold text-base tracking-wide ${
+                        status === 'upcoming' || status === 'eliminated' ? 'text-gray-400' : 'text-gray-900'
+                      }`}
+                    >
+                      {titleText}
+                    </h3>
+                    <p className="text-sm text-gray-500 font-medium">
+                      {matchData ? `${matchData.dateLabel} · ${matchData.dayTime}` : 'Belum dijadwalkan'}
+                    </p>
+                  </div>
+
+                  {isPast && matchData && (
+                    <div className="flex items-center gap-2">
+                      <span className="font-extrabold text-lg">
+                        {matchData.juveScore}–{matchData.opponentScore}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 text-white font-bold rounded text-xs ${
+                          matchData.result === 'W' ? 'bg-emerald-600' : 'bg-red-600'
+                        }`}
+                      >
+                        {RESULT_WORD[matchData.result as Letter] || matchData.result}
+                      </span>
+                    </div>
+                  )}
+
+                  {status === 'next' && (
+                    <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 font-extrabold rounded text-xs tracking-wider">
+                      BERIKUTNYA
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function formOf(matches: Match[]): Letter[] {
-  // `past` urut terbaru → lama; form ditampilkan lama → baru
   return matches
     .slice(0, 5)
     .map((m) => m.result as Letter)
@@ -61,25 +183,22 @@ function formOf(matches: Match[]): Letter[] {
 }
 
 function KompetisiInner() {
-  // Tautan dari beranda: /kompetisi?comp=seriea | europa | coppa
   const compParam = useSearchParams().get('comp');
   const [compKey, setCompKey] = useState(COMPS.some((c) => c.key === compParam) ? (compParam as string) : 'seriea');
   const [tab, setTab] = useState<SubKey>('klasemen');
   const comp = COMPS.find((c) => c.key === compKey)!;
 
-  // 2. Tentukan daftar tab yang tersedia berdasarkan kompetisi yang aktif
   const availableTabs = useMemo(() => {
     return compKey === 'seriea' ? [...BASE_SUB_TABS, ...SERIE_A_EXTRA_TABS] : BASE_SUB_TABS;
   }, [compKey]);
 
-  // 3. Penanganan Fallback State: Jika pindah dari Serie A saat berada di tab ekstra, kembalikan ke 'klasemen'
+  // Fallback state jika berpindah dari Serie A saat di tab ekstra
   useEffect(() => {
     if (compKey !== 'seriea' && SERIE_A_EXTRA_TABS.some((t) => t.key === tab)) {
       setTab('klasemen');
     }
   }, [compKey, tab]);
 
-  // Semua pertandingan Juventus: satu kali ambil, disaring per kompetisi di sisi klien
   const juveRes = useFetch<{ upcoming: Match[]; past: Match[] }>('/api/juventus');
   const upcoming = useMemo(
     () => (juveRes.data?.upcoming ?? []).filter((m) => m.league === comp.slug),
@@ -124,8 +243,13 @@ function KompetisiInner() {
     ? `Terakhir: ${RESULT_WORD[last.result as Letter]} ${last.juveScore}–${last.opponentScore} vs ${last.opponent}`
     : 'Belum ada laga yang dimainkan';
 
-  const tabLabel = (k: SubKey, fallback: string) =>
-    k === 'klasemen' && !comp.table ? 'Pertandingan & jadwal' : fallback;
+  const tabLabel = (k: SubKey, fallback: string) => {
+    if (k === 'klasemen') {
+      if (compKey === 'coppa') return 'Jalur ke Roma';
+      if (!comp.table) return 'Pertandingan & jadwal';
+    }
+    return fallback;
+  };
 
   const hasData = Boolean(comp.slug);
 
@@ -214,7 +338,7 @@ function KompetisiInner() {
             </div>
           )}
 
-          {/* Sub tab dinamis */}
+          {/* Sub tab */}
           <div className="kp-tabs" role="tablist">
             {availableTabs.map((t) => (
               <button
@@ -230,8 +354,10 @@ function KompetisiInner() {
           </div>
 
           {tab === 'klasemen' && (
-            <div className="kp-grid">
-              {comp.table ? (
+            compKey === 'coppa' ? (
+              <JalurKeRomaCard pastMatches={past} upcomingMatches={upcoming} loading={juveRes.loading} />
+            ) : comp.table ? (
+              <div className="kp-grid">
                 <StandingsCard
                   subtitle={`${
                     standingsRes.data?.week ? `Setelah ${comp.key === 'europa' ? 'matchday' : 'pekan'} ${standingsRes.data.week}` : ''
@@ -241,7 +367,17 @@ function KompetisiInner() {
                   error={standingsRes.error}
                   zones={comp.zones}
                 />
-              ) : (
+                <ScheduleCard
+                  subtitle={`${comp.label} · 10 laga ke depan`}
+                  upcoming={upcoming}
+                  past={past}
+                  loading={juveRes.loading}
+                  error={juveRes.error}
+                  standings={standings}
+                />
+              </div>
+            ) : (
+              <div className="kp-grid">
                 <MatchesCard
                   title={`Pertandingan ${comp.label}`}
                   subtitle="Sistem gugur · data ESPN"
@@ -250,16 +386,16 @@ function KompetisiInner() {
                   error={competitionRes.error}
                   variant="all"
                 />
-              )}
-              <ScheduleCard
-                subtitle={`${comp.label} · 10 laga ke depan`}
-                upcoming={upcoming}
-                past={past}
-                loading={juveRes.loading}
-                error={juveRes.error}
-                standings={standings}
-              />
-            </div>
+                <ScheduleCard
+                  subtitle={`${comp.label} · 10 laga ke depan`}
+                  upcoming={upcoming}
+                  past={past}
+                  loading={juveRes.loading}
+                  error={juveRes.error}
+                  standings={standings}
+                />
+              </div>
+            )
           )}
 
           {tab === 'lagalain' && (
