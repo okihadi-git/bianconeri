@@ -50,12 +50,6 @@ export function shortRound(round: string) {
   return round.split(/\s[-–]\s/).pop()?.trim() ?? '';
 }
 
-export function monthOf(iso: string) {
-  return new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(
-    new Date(iso)
-  );
-}
-
 /** Ambil JSON dari URL; `url = null` berarti belum perlu mengambil. */
 export function useFetch<T>(url: string | null) {
   const [state, setState] = useState<{ data: T | null; loading: boolean; error: boolean }>({

@@ -17,6 +17,7 @@ import {
   useFetch,
   type ZoneDef,
 } from '@/components/kp';
+import { COPPA_FINAL, COPPA_TITLES, STAGE_LABEL, coppaStatus, seasonOf } from '@/lib/coppa';
 import type { Letter, Match, PlayerStat, SimpleMatch, Team } from '@/lib/types';
 
 interface Comp {
@@ -75,9 +76,10 @@ interface JalurKeRomaProps {
 function JalurKeRomaCard({ pastMatches, upcomingMatches, loading }: JalurKeRomaProps) {
   const sortedPast = useMemo(() => [...pastMatches].reverse(), [pastMatches]);
 
-  const isEliminated = useMemo(() => {
-    return sortedPast.some((m) => m.result === 'L');
-  }, [sortedPast]);
+  const isEliminated = useMemo(
+    () => coppaStatus(pastMatches, upcomingMatches).eliminated,
+    [pastMatches, upcomingMatches]
+  );
 
   const allJuveCoppaMatches = useMemo(() => {
     return [...sortedPast, ...upcomingMatches];
@@ -152,6 +154,72 @@ function JalurKeRomaCard({ pastMatches, upcomingMatches, loading }: JalurKeRomaP
   );
 }
 
+function CoppaMetrics({ status, loading }: { status: ReturnType<typeof coppaStatus>; loading: boolean }) {
+  const { stage, eliminated, champion, last, next, aggregate } = status;
+
+  const statusVal = champion ? 'Juara' : stage ? STAGE_LABEL[stage] : '–';
+  const statusSub = champion
+    ? 'Juara Coppa Italia'
+    : eliminated
+    ? `Tersingkir di ${stage ? STAGE_LABEL[stage] : 'babak gugur'}`
+    : stage
+    ? 'Masih bertahan'
+    : loading
+    ? 'Memuat data…'
+    : 'Belum ada laga';
+
+  const venueWord = (m: Match) => (m.isHome ? 'vs' : '@');
+  const finished = eliminated || champion;
+
+  let matchLabel = 'Laga berikutnya';
+  let matchVal = '–';
+  let matchSub = loading ? 'Memuat data…' : 'Belum dijadwalkan';
+  if (finished && last) {
+    // Berhenti memperbarui: tampilkan hasil laga penentu
+    matchLabel = eliminated ? 'Kalah' : 'Menang final';
+    matchVal = `${last.juveScore}–${last.opponentScore}`;
+    matchSub = [
+      `${venueWord(last)} ${last.opponent}`,
+      last.shootout ? `adu penalti ${last.shootout.juve}–${last.shootout.opp}` : '',
+      aggregate ? `agregat ${aggregate.juve}–${aggregate.opp}` : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
+  } else if (next) {
+    matchVal = next.dateLabel;
+    matchSub = `${venueWord(next)} ${next.opponent} · ${next.dayTime}`;
+  }
+
+  const champThisSeason = champion && last ? seasonOf(last.iso) : null;
+  const titles = COPPA_TITLES.count + (champThisSeason ? 1 : 0);
+  const lastTitle = champThisSeason ?? COPPA_TITLES.lastSeason;
+
+  return (
+    <div className="kp-metrics">
+      <div className="kp-metric kp-metric-purple">
+        <div className="kp-metric-label">Status musim ini</div>
+        <div className="kp-metric-val kp-metric-val-text">{statusVal}</div>
+        <div className="kp-metric-sub">{statusSub}</div>
+      </div>
+      <div className="kp-metric">
+        <div className="kp-metric-label">{matchLabel}</div>
+        <div className="kp-metric-val">{matchVal}</div>
+        <div className="kp-metric-sub">{matchSub}</div>
+      </div>
+      <div className="kp-metric">
+        <div className="kp-metric-label">Gelar Coppa Italia Juventus</div>
+        <div className="kp-metric-val">{titles}</div>
+        <div className="kp-metric-sub">Terakhir juara {lastTitle}</div>
+      </div>
+      <div className="kp-metric">
+        <div className="kp-metric-label">Tanggal final</div>
+        <div className="kp-metric-val">{COPPA_FINAL.dateLabel}</div>
+        <div className="kp-metric-sub">{COPPA_FINAL.venue}</div>
+      </div>
+    </div>
+  );
+}
+
 function formOf(matches: Match[]): Letter[] {
   return matches
     .slice(0, 5)
@@ -199,7 +267,7 @@ function KompetisiInner() {
   const juve = standings.find((t) => t.name.includes('Juventus'));
   const leader = standings[0];
   const last = past[0];
-  const next = upcoming[0];
+  const coppa = useMemo(() => coppaStatus(past, upcoming), [past, upcoming]);
 
   const updatedLabel = standingsRes.data?.updatedAt
     ? new Date(standingsRes.data.updatedAt).toLocaleDateString('id-ID', {
@@ -210,12 +278,6 @@ function KompetisiInner() {
       })
     : null;
 
-  const played = past.length;
-  const won = past.filter((m) => m.result === 'W').length;
-  const drawn = past.filter((m) => m.result === 'D').length;
-  const lost = past.filter((m) => m.result === 'L').length;
-  const gf = past.reduce((n, m) => n + m.juveScore, 0);
-  const ga = past.reduce((n, m) => n + m.opponentScore, 0);
   const lastSentence = last
     ? `Terakhir: ${RESULT_WORD[last.result as Letter]} ${last.juveScore}–${last.opponentScore} vs ${last.opponent}`
     : 'Belum ada laga yang dimainkan';
@@ -286,33 +348,7 @@ function KompetisiInner() {
               </div>
             </div>
           ) : (
-            <div className="kp-metrics">
-              <div className="kp-metric kp-metric-purple">
-                <div className="kp-metric-label">Laga dimainkan</div>
-                <div className="kp-metric-val">{played}</div>
-                <div className="kp-metric-sub">{played ? `${won}M · ${drawn}S · ${lost}K` : 'Belum ada laga'}</div>
-              </div>
-              <div className="kp-metric">
-                <div className="kp-metric-label">Gol</div>
-                <div className="kp-metric-val">{played ? `${gf}-${ga}` : '–'}</div>
-                <div className="kp-metric-sub">
-                  {played ? `Selisih ${fmtSigned(gf - ga)} · ${fmtDecimal(gf / played)} gol per laga` : 'Belum ada gol'}
-                </div>
-              </div>
-              <div className="kp-metric">
-                <div className="kp-metric-label">Laga berikutnya</div>
-                <div className="kp-metric-val">{next ? next.dateLabel : '–'}</div>
-                <div className="kp-metric-sub">
-                  {next ? `${next.isHome ? 'vs' : '@'} ${next.opponent} · ${next.dayTime}` : juveRes.loading ? 'Memuat data…' : 'Belum dijadwalkan'}
-                </div>
-              </div>
-              <div className="kp-metric">
-                <div className="kp-metric-label">Form {comp.label}</div>
-                <div className="kp-metric-hint">lama → terbaru</div>
-                <FormBadges form={formOf(past)} />
-                <div className="kp-metric-sub">{lastSentence}</div>
-              </div>
-            </div>
+            <CoppaMetrics status={coppa} loading={juveRes.loading} />
           )}
 
           {/* Sub tab */}
