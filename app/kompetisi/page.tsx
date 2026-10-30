@@ -87,12 +87,14 @@ function JalurKeRomaCard({ pastMatches, upcomingMatches, loading }: JalurKeRomaP
   }
 
   return (
-    <div className="kp-card" style={{ padding: '24px' }}>
-      {/* Header Card */}
-      <div className="kp-card-header" style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #e5e7eb' }}>
-        <h2 className="kp-card-title">Jalur ke Roma</h2>
-        <span className="kp-card-sub">Sistem gugur · data ESPN</span>
-      </div>
+
+    
+    <div className="kp-card">
+  {/* Header kartu yang sudah disamakan fontnya dengan gambar 2 */}
+  <div className="kp-card-header">
+    <h2 className="kp-card-title">Jalur ke Roma</h2>
+    <span className="kp-card-sub">Sistem gugur · data ESPN</span>
+  </div>
 
       {/* Timeline Container */}
       <div className="kp-timeline">
