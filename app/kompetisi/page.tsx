@@ -87,16 +87,15 @@ function JalurKeRomaCard({ pastMatches, upcomingMatches, loading }: JalurKeRomaP
   }
 
   return (
-    <div className="kp-card p-6 bg-white rounded-2xl shadow-sm border border-gray-100">
-      <div className="flex justify-between items-center mb-6 border-b pb-4">
-        <h2 className="text-xl font-extrabold flex items-center gap-2">
-          <span className="w-1.5 h-6 bg-red-600 rounded-full inline-block"></span>
-          Jalur ke Roma
-        </h2>
-        <span className="text-sm text-gray-400 font-medium">Sistem gugur · data ESPN</span>
+    <div className="kp-card" style={{ padding: '24px' }}>
+      {/* Header Card */}
+      <div className="kp-card-header" style={{ marginBottom: '24px', paddingBottom: '16px', borderBottom: '1px solid #e5e7eb' }}>
+        <h2 className="kp-card-title">Jalur ke Roma</h2>
+        <span className="kp-card-sub">Sistem gugur · data ESPN</span>
       </div>
 
-      <div className="relative pl-6 space-y-8 before:content-[''] before:absolute before:left-5 before:top-3 before:bottom-3 before:w-0.5 before:bg-gray-200">
+      {/* Timeline Container */}
+      <div className="kp-timeline">
         {COPPA_ROUNDS.map((roundDef, idx) => {
           const matchData = allJuveCoppaMatches[idx];
           const isPast = matchData && sortedPast.includes(matchData);
@@ -117,51 +116,39 @@ function JalurKeRomaCard({ pastMatches, upcomingMatches, loading }: JalurKeRomaP
           const titleText = `${roundDef.roundName}${opponentText}`;
 
           return (
-            <div key={roundDef.roundCode} className="relative flex items-start gap-4">
-              <div
-                className={`absolute -left-6 z-10 w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 transition-colors ${
-                  status === 'done'
-                    ? 'bg-emerald-600 border-emerald-600 text-white'
-                    : status === 'next'
-                    ? 'bg-white border-amber-400 text-amber-500 font-extrabold shadow-sm'
-                    : 'bg-white border-gray-300 text-gray-400 opacity-60'
-                }`}
-              >
+            <div key={roundDef.roundCode} className="kp-timeline-item">
+              {/* Node Bulatan */}
+              <div className={`kp-timeline-node ${status}`}>
                 {status === 'done' ? '✓' : roundDef.roundCode}
               </div>
 
-              <div className="pl-6 flex-1">
-                <div className="flex justify-between items-start">
+              {/* Detail Konten */}
+              <div className="kp-timeline-content">
+                <div className="kp-timeline-header">
                   <div>
-                    <h3
-                      className={`font-extrabold text-base tracking-wide ${
-                        status === 'upcoming' || status === 'eliminated' ? 'text-gray-400' : 'text-gray-900'
-                      }`}
-                    >
+                    <h3 className={`kp-timeline-title ${status === 'upcoming' || status === 'eliminated' ? 'disabled' : ''}`}>
                       {titleText}
                     </h3>
-                    <p className="text-sm text-gray-500 font-medium">
+                    <p className="kp-timeline-date">
                       {matchData ? `${matchData.dateLabel} · ${matchData.dayTime}` : 'Belum dijadwalkan'}
                     </p>
                   </div>
 
+                  {/* Skor Jika Sudah Dimainkan */}
                   {isPast && matchData && (
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-lg">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '18px', fontWeight: 800 }}>
                         {matchData.juveScore}–{matchData.opponentScore}
                       </span>
-                      <span
-                        className={`px-2 py-0.5 text-white font-bold rounded text-xs ${
-                          matchData.result === 'W' ? 'bg-emerald-600' : 'bg-red-600'
-                        }`}
-                      >
+                      <span className={`kp-badge ${matchData.result === 'W' ? 'w' : 'l'}`}>
                         {RESULT_WORD[matchData.result as Letter] || matchData.result}
                       </span>
                     </div>
                   )}
 
+                  {/* Label BERIKUTNYA */}
                   {status === 'next' && (
-                    <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 font-extrabold rounded text-xs tracking-wider">
+                    <span className="kp-badge-next">
                       BERIKUTNYA
                     </span>
                   )}
