@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { JUVE_LOGO, RESULT_WORD, calendarUrl, fmtClock, fmtSigned, fmtWhen, shortRound } from '@/components/kp';
+import { STAGE_LABEL, coppaStatus } from '@/lib/coppa';
 import type { Letter, Match, Team } from '@/lib/types';
 
 const COMP_PILL: Record<string, { label: string; cls: string }> = {
@@ -28,48 +29,31 @@ const scoreLine = (m: Match) => {
 
 /* ---------- ringkasan peringkat 3 kompetisi ---------- */
 
-function stageName(m: Match | undefined): string {
-  const r = (m?.round ?? '').toLowerCase();
-  if (!r) return '';
-  if (/semi/.test(r)) return 'Semifinal';
-  if (/quarter/.test(r)) return 'Perempat final';
-  if (/final/.test(r)) return 'Final';
-  if (/round of 16|last 16/.test(r)) return '16 besar';
-  if (/round of 32/.test(r)) return '32 besar';
-  if (/round of 64/.test(r)) return '64 besar';
-  return shortRound(m?.round ?? '');
-}
-
 function coppaSummary(past: Match[], upcoming: Match[]) {
-  const last = past[0];
-  const next = upcoming[0];
+  const { stage, eliminated, champion, last, lastStage, next, aggregate } = coppaStatus(past, upcoming);
   if (!last && !next) {
     return { big: 'Belum main', tag: '', text: 'Belum ada laga Coppa Italia musim ini.' };
   }
-  const stage = stageName(next ?? last) || 'Babak gugur';
+  const label = stage ? STAGE_LABEL[stage] : 'Babak gugur';
+  const lastLabel = lastStage ? STAGE_LABEL[lastStage].toLowerCase() : 'babak ini';
+  const when = (m: Match) => fmtWhen(m.iso).split(',').slice(0, 2).join(',');
   const lastText = last
-    ? `${scoreLine(last)}${last.shootout ? ` (adu penalti ${last.shootout.juve}–${last.shootout.opp})` : ''} · ${fmtWhen(last.iso).split(',').slice(0, 2).join(',')}`
+    ? `${scoreLine(last)}${last.shootout ? ` (adu penalti ${last.shootout.juve}–${last.shootout.opp})` : ''}${
+        aggregate ? ` · agregat ${aggregate.juve}–${aggregate.opp}` : ''
+      } · ${when(last)}`
     : '';
 
+  // Keterangan hanya muncul kalau perjalanan berakhir; selama masih lanjut, cukup nama babaknya.
+  if (champion) return { big: 'Juara', tag: '', text: `Juara Coppa Italia: ${lastText}` };
+  if (eliminated) return { big: label, tag: 'tidak lolos', text: `Tidak lolos dari ${lastLabel}: ${lastText}` };
   if (next) {
     return {
-      big: stage,
-      tag: 'masih bertahan',
-      text: `${last ? `Terakhir: ${lastText}. ` : ''}Berikutnya: ${next.isHome ? 'vs' : 'di'} ${next.opponent} · ${fmtWhen(next.iso).split(',').slice(0, 2).join(',')}`,
+      big: label,
+      tag: '',
+      text: `${last ? `Terakhir: ${lastText}. ` : ''}Berikutnya: ${next.isHome ? 'vs' : 'di'} ${next.opponent} · ${when(next)}`,
     };
   }
-  const isFinal = stageName(last) === 'Final';
-  if (last.winner === false) {
-    return { big: stage, tag: 'tersingkir', text: `Tersingkir di ${stage.toLowerCase()}: ${lastText}` };
-  }
-  if (last.winner === true) {
-    return {
-      big: stage,
-      tag: isFinal ? 'juara' : 'lolos',
-      text: isFinal ? `Juara Coppa Italia: ${lastText}` : `Lolos dari ${stage.toLowerCase()}: ${lastText}. Lawan berikutnya belum ditentukan.`,
-    };
-  }
-  return { big: stage, tag: '', text: `Terakhir: ${lastText}` };
+  return { big: label, tag: '', text: `Lolos dari ${lastLabel}: ${lastText}. Lawan berikutnya belum ditentukan.` };
 }
 
 export function LeagueCards({
