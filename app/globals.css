@@ -672,3 +672,36 @@ body:has(.kp) { background: #eff1f6; }
   .kp-path { padding: 4px 14px 14px; }
   .kp-path-body { flex-direction: column; align-items: flex-start; }
 }
+
+/* --- Halaman statistik pemain --- */
+.st-pills { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+.st-pills-inner { padding: 14px 20px; margin: 0; }
+.st-pill { display: inline-flex; align-items: center; gap: 7px; padding: 8px 18px; border-radius: 999px; background: #fff; border: 1px solid var(--kp-line); font-size: 14px; font-weight: 700; color: #2b3245; white-space: nowrap; }
+.st-pill small { font-size: 11px; font-weight: 600; color: var(--kp-muted); }
+.st-pill:hover { border-color: #c7cbd8; }
+.st-pill.active { background: var(--kp-red); border-color: var(--kp-red); color: #fff; }
+.st-pill.active small { color: #ffd7da; }
+.st-pill-sm { padding: 6px 14px; font-size: 13px; }
+.st-note { font-size: 13px; margin-left: 6px; }
+.st-table { min-width: 1020px; }
+.st-table th:first-child, .st-table td:first-child { position: sticky; left: 0; z-index: 1; }
+.st-table td:first-child { background: #fff; }
+.st-table th:first-child { background: #f1f3f8; }
+.st-table td.c-club { padding-left: 20px; }
+.st-name { display: flex; flex-direction: column; gap: 1px; text-align: left; }
+.st-name b { font-size: 15px; font-weight: 800; }
+.st-name span { font-size: 12px; }
+.st-th { background: none; border: 0; padding: 3px 8px; border-radius: 6px; font: inherit; color: inherit; letter-spacing: inherit; text-transform: inherit; cursor: pointer; white-space: nowrap; }
+.st-th:hover { color: var(--kp-ink); }
+.st-th.active { background: #0f172a; color: #fff; }
+.st-strong { font-weight: 800; }
+.st-bar { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.st-bar i { position: relative; display: block; width: 38px; height: 5px; border-radius: 3px; background: #e3e6ee; overflow: hidden; }
+.st-bar i b { position: absolute; inset: 0 auto 0 0; background: var(--kp-red); border-radius: 3px; }
+.st-ontarget { display: flex; flex-direction: column; align-items: center; line-height: 1.15; }
+.st-ontarget small { font-size: 11px; color: var(--kp-muted); }
+.st-cards { display: inline-flex; gap: 4px; }
+.st-card { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 4px; border-radius: 4px; font-size: 11px; font-weight: 800; }
+.st-card-y { background: #f5c518; color: #3b2f00; }
+.st-card-r { background: var(--kp-red); color: #fff; }
+.st-foot { margin: 0; padding: 14px 20px 18px; font-size: 12px; }

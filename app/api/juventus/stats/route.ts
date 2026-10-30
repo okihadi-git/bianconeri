@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
-import { COMPETITIONS, JUVE_ID, aggregatePlayers } from '@/lib/espn';
 import { loadJuve } from '@/lib/juve';
+import { buildPlayerStats } from '@/lib/playerstats';
 
-/** Statistik pemain Juventus (gol, penalti, kartu) dihitung dari kejadian tiap pertandingan. */
-export async function GET(req: Request) {
+export const maxDuration = 30;
+
+/** Statistik pemain Juventus untuk semua kompetisi; penyaringan per kompetisi dilakukan di sisi klien. */
+export async function GET() {
   try {
-    const requested = new URL(req.url).searchParams.get('league');
-    const league = COMPETITIONS.some((c) => c.slug === requested) ? requested : null;
     const { juveEvents } = await loadJuve();
-    const events = league ? juveEvents.filter((e) => e._league === league) : juveEvents;
-    return NextResponse.json({ players: aggregatePlayers(events, JUVE_ID) });
+    const body = await buildPlayerStats(juveEvents);
+    return NextResponse.json(body, { headers: { 'Cache-Control': 's-maxage=1800, stale-while-revalidate=3600' } });
   } catch {
-    return NextResponse.json({ error: 'Terjadi kesalahan server', players: [] }, { status: 500 });
+    return NextResponse.json({ error: 'Terjadi kesalahan server', players: [], matches: {} }, { status: 500 });
   }
 }
