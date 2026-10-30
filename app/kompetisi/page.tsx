@@ -36,17 +36,21 @@ const COMPS: Comp[] = [
   { key: 'tour', slug: null, icon: '✈️', label: 'Pramusim & Tur', table: false, zones: [] },
 ];
 
-const SUB_TABS = [
+// 1. Pemisahan Tab Standar dan Tab Khusus Serie A (Cara 2)
+const BASE_SUB_TABS = [
   { key: 'klasemen', label: 'Klasemen & jadwal' },
   { key: 'lagalain', label: 'Laga lain' },
   { key: 'topskor', label: 'Top skor' },
+] as const;
+
+const SERIE_A_EXTRA_TABS = [
   { key: 'trofi', label: 'Jalan ke trofi' },
   { key: 'peluang', label: 'Peluang juara' },
   { key: 'gelar', label: 'Perebutan gelar' },
   { key: 'laju', label: 'Laju poin' },
 ] as const;
 
-type SubKey = (typeof SUB_TABS)[number]['key'];
+type SubKey = (typeof BASE_SUB_TABS)[number]['key'] | (typeof SERIE_A_EXTRA_TABS)[number]['key'];
 
 function formOf(matches: Match[]): Letter[] {
   // `past` urut terbaru → lama; form ditampilkan lama → baru
@@ -63,7 +67,17 @@ function KompetisiInner() {
   const [tab, setTab] = useState<SubKey>('klasemen');
   const comp = COMPS.find((c) => c.key === compKey)!;
 
-  useEffect(() => setTab('klasemen'), [compKey]);
+  // 2. Tentukan daftar tab yang tersedia berdasarkan kompetisi yang aktif
+  const availableTabs = useMemo(() => {
+    return compKey === 'seriea' ? [...BASE_SUB_TABS, ...SERIE_A_EXTRA_TABS] : BASE_SUB_TABS;
+  }, [compKey]);
+
+  // 3. Penanganan Fallback State: Jika pindah dari Serie A saat berada di tab ekstra, kembalikan ke 'klasemen'
+  useEffect(() => {
+    if (compKey !== 'seriea' && SERIE_A_EXTRA_TABS.some((t) => t.key === tab)) {
+      setTab('klasemen');
+    }
+  }, [compKey, tab]);
 
   // Semua pertandingan Juventus: satu kali ambil, disaring per kompetisi di sisi klien
   const juveRes = useFetch<{ upcoming: Match[]; past: Match[] }>('/api/juventus');
@@ -200,9 +214,9 @@ function KompetisiInner() {
             </div>
           )}
 
-          {/* Sub tab */}
+          {/* Sub tab dinamis */}
           <div className="kp-tabs" role="tablist">
-            {SUB_TABS.map((t) => (
+            {availableTabs.map((t) => (
               <button
                 key={t.key}
                 role="tab"
