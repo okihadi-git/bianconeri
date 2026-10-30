@@ -183,3 +183,51 @@ export async function fetchFotmob(): Promise<{ players: SquadPlayer[]; coach: st
   if (!parsed.players.length) throw new Error('skuad FotMob kosong');
   return parsed;
 }
+
+/* ---------- Foto: FotMob untuk data Transfermarkt ---------- */
+
+const normName = (n: string) =>
+  n
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/ı/g, 'i')
+    .replace(/ø/g, 'o')
+    .replace(/ł/g, 'l')
+    .replace(/đ/g, 'd')
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-z\s'-]/g, ' ')
+    .replace(/['-]/g, '')
+    .split(/\s+/)
+    .filter(Boolean);
+
+/**
+ * Ganti foto pemain Transfermarkt dengan foto FotMob. Id kedua sumber berbeda, jadi dicocokkan lewat nama:
+ * nama persis sama, lalu nama pendek yang seluruh katanya ada di nama panjang ("Bremer" ↔ "Gleison Bremer"),
+ * lalu nama belakang. Pencocokan lemah hanya dipakai kalau kandidatnya tepat satu; kalau ragu, foto
+ * Transfermarkt dipertahankan (tidak pernah menebak foto orang lain).
+ */
+export function withFotmobPhotos(players: SquadPlayer[], fotmob: SquadPlayer[]): SquadPlayer[] {
+  const pool = fotmob.filter((f) => f.photo).map((f) => ({ photo: f.photo, tokens: normName(f.name) }));
+  if (!pool.length) return players;
+
+  const unique = <T,>(list: T[]) => (list.length === 1 ? list[0] : null);
+
+  return players.map((p) => {
+    const t = normName(p.name);
+    if (!t.length) return p;
+    const key = t.join(' ');
+
+    const hit =
+      pool.find((f) => f.tokens.join(' ') === key) ??
+      unique(
+        pool.filter((f) => {
+          const [short, long] = t.length <= f.tokens.length ? [t, f.tokens] : [f.tokens, t];
+          return short.length > 0 && short.every((w) => long.includes(w));
+        })
+      ) ??
+      unique(pool.filter((f) => f.tokens.length > 1 && t.length > 1 && f.tokens.at(-1) === t.at(-1)));
+
+    return hit ? { ...p, photo: hit.photo } : p;
+  });
+}
