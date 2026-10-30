@@ -673,108 +673,27 @@ body:has(.kp) { background: #eff1f6; }
 .hm-cal-when strong { white-space: nowrap; }
 @media(max-width:620px){
   .hm-cal-head, .hm-next-head { flex-direction: column; align-items: flex-start; gap: 2px; }
-
-/* --- Timeline Jalur ke Roma (Coppa Italia) --- */
-.kp-timeline {
-  position: relative;
-  padding-left: 20px;
-}
-
-.kp-timeline::before {
-  content: '';
-  position: absolute;
-  left: 15px;
-  top: 16px;
-  bottom: 16px;
-  width: 2px;
-  background-color: #e5e7eb;
-}
-
-.kp-timeline-item {
-  position: relative;
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 28px;
-}
-
-.kp-timeline-item:last-child {
-  margin-bottom: 0;
-}
-
-.kp-timeline-node {
-  position: absolute;
-  left: -20px;
-  z-index: 2;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-  border: 2px solid #d1d5db;
-  background-color: #ffffff;
-  color: #9ca3af;
-}
-
-.kp-timeline-node.done {
-  background-color: #059669;
-  border-color: #059669;
-  color: #ffffff;
-}
-
-.kp-timeline-node.next {
-  background-color: #ffffff;
-  border-color: #f59e0b;
-  color: #d97706;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.kp-timeline-content {
-  padding-left: 24px;
-  flex: 1;
-}
-
-.kp-timeline-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-.kp-timeline-title {
-  font-size: 16px;
-  font-weight: 800;
-  margin: 0;
-  color: #111827;
-  letter-spacing: 0.02em;
-}
-
-.kp-timeline-title.disabled {
-  color: #9ca3af;
-}
-
-.kp-timeline-date {
-  font-size: 14px;
-  color: #6b7280;
-  margin: 4px 0 0 0;
-  font-weight: 500;
-}
-
-.kp-badge-next {
-  padding: 4px 10px;
-  background-color: #d1fae5;
-  color: #047857;
-  font-weight: 800;
-  border-radius: 6px;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-}
   .hm-cal-head small, .hm-next-head span { text-align: left; }
   .hm-cal-row { grid-template-columns: 74px minmax(0, 1fr); }
 }
-.kp-card-title {
-  font-family: inherit;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+
+/* --- Jalur ke Roma (Coppa Italia): memakai font & warna yang sama dengan kartu lain --- */
+.kp-path { position: relative; padding: 8px 20px 18px 20px; }
+.kp-path-item { position: relative; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; padding: 14px 0; border-bottom: 1px solid #eceef4; }
+.kp-path-item:last-child { border-bottom: 0; }
+.kp-path-item:not(:last-child)::before { content: ""; position: absolute; left: 16px; top: 52px; bottom: -14px; width: 2px; background: var(--kp-line); }
+.kp-path-node { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 800; border: 2px solid var(--kp-line); background: #fff; color: var(--kp-muted); z-index: 1; }
+.kp-path-node.done { background: var(--kp-green); border-color: var(--kp-green); color: #fff; }
+.kp-path-node.next { border-color: var(--kp-red); color: var(--kp-red); }
+.kp-path-node.eliminated { background: #f1f3f8; border-color: var(--kp-line); color: var(--kp-muted); }
+.kp-path-body { display: flex; justify-content: space-between; align-items: center; gap: 12px; min-width: 0; }
+.kp-path-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.kp-path-round { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; color: var(--kp-muted); }
+.kp-path-info .kp-opp-name { font-size: 20px; }
+.kp-path-info .kp-opp-name.dim { color: var(--kp-muted); }
+.kp-path-side { display: flex; align-items: center; gap: 10px; flex: none; }
+.kp-path-next { padding: 4px 10px; border-radius: 6px; background: #fdecee; color: var(--kp-red); font-size: 11px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; }
+@media(max-width:620px){
+  .kp-path { padding: 4px 14px 14px; }
+  .kp-path-body { flex-direction: column; align-items: flex-start; }
 }

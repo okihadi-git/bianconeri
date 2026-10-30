@@ -4,6 +4,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import {
   EUROPA_ZONES,
+  FORM_LABEL,
   FormBadges,
   MatchesCard,
   RESULT_WORD,
@@ -87,21 +88,17 @@ function JalurKeRomaCard({ pastMatches, upcomingMatches, loading }: JalurKeRomaP
   }
 
   return (
+    <section className="kp-card">
+      <header className="kp-card-head">
+        <h2 className="kp-title">Jalur ke Roma</h2>
+        <small className="kp-muted">Sistem gugur · data ESPN</small>
+      </header>
 
-    
-    <div className="kp-card">
-  {/* Header kartu yang sudah disamakan fontnya dengan gambar 2 */}
-  <div className="kp-card-header">
-    <h2 className="kp-card-title">Jalur ke Roma</h2>
-    <span className="kp-card-sub">Sistem gugur · data ESPN</span>
-  </div>
-
-      {/* Timeline Container */}
-      <div className="kp-timeline">
+      <div className="kp-path">
         {COPPA_ROUNDS.map((roundDef, idx) => {
           const matchData = allJuveCoppaMatches[idx];
-          const isPast = matchData && sortedPast.includes(matchData);
-          const isNext = !isPast && matchData && !isEliminated && idx === sortedPast.length;
+          const isPast = Boolean(matchData) && sortedPast.includes(matchData);
+          const isNext = !isPast && Boolean(matchData) && !isEliminated && idx === sortedPast.length;
 
           let status: 'done' | 'next' | 'upcoming' | 'eliminated' = 'upcoming';
           if (isPast) {
@@ -112,55 +109,46 @@ function JalurKeRomaCard({ pastMatches, upcomingMatches, loading }: JalurKeRomaP
             status = 'eliminated';
           }
 
-          const opponentText = matchData
-            ? ` · ${matchData.opponent.toUpperCase()} (${matchData.isHome ? 'K' : 'T'})`
-            : '';
-          const titleText = `${roundDef.roundName}${opponentText}`;
+          const dim = status === 'upcoming' || status === 'eliminated';
 
           return (
-            <div key={roundDef.roundCode} className="kp-timeline-item">
-              {/* Node Bulatan */}
-              <div className={`kp-timeline-node ${status}`}>
-                {status === 'done' ? '✓' : roundDef.roundCode}
-              </div>
+            <div key={roundDef.roundCode} className="kp-path-item">
+              <div className={`kp-path-node ${status}`}>{status === 'done' ? '✓' : roundDef.roundCode}</div>
 
-              {/* Detail Konten */}
-              <div className="kp-timeline-content">
-                <div className="kp-timeline-header">
-                  <div>
-                    <h3 className={`kp-timeline-title ${status === 'upcoming' || status === 'eliminated' ? 'disabled' : ''}`}>
-                      {titleText}
-                    </h3>
-                    <p className="kp-timeline-date">
-                      {matchData ? `${matchData.dateLabel} · ${matchData.dayTime}` : 'Belum dijadwalkan'}
-                    </p>
+              <div className="kp-path-body">
+                <div className="kp-path-info">
+                  <span className="kp-path-round">{roundDef.roundName}</span>
+                  <div className={`kp-opp-name${dim ? ' dim' : ''}`}>
+                    {matchData ? (
+                      <>
+                        {matchData.opponentLogo && <img src={matchData.opponentLogo} alt="" className="kp-logo" />}
+                        {matchData.opponent}
+                        <span className={`kp-venue ${matchData.isHome ? 'home' : 'away'}`}>{matchData.venueText}</span>
+                      </>
+                    ) : (
+                      'Menunggu lawan'
+                    )}
                   </div>
+                  <span className="kp-note">
+                    {matchData ? `${matchData.dateLabel} · ${matchData.dayTime}` : 'Belum dijadwalkan'}
+                  </span>
+                </div>
 
-                  {/* Skor Jika Sudah Dimainkan */}
+                <div className="kp-path-side">
                   {isPast && matchData && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '18px', fontWeight: 800 }}>
-                        {matchData.juveScore}–{matchData.opponentScore}
-                      </span>
-                      <span className={`kp-badge ${matchData.result === 'W' ? 'w' : 'l'}`}>
-                        {RESULT_WORD[matchData.result as Letter] || matchData.result}
-                      </span>
+                    <div className="kp-score">
+                      {matchData.juveScore}-{matchData.opponentScore}
+                      <span className={`kp-fb kp-fb-${matchData.result}`}>{FORM_LABEL[matchData.result as Letter]}</span>
                     </div>
                   )}
-
-                  {/* Label BERIKUTNYA */}
-                  {status === 'next' && (
-                    <span className="kp-badge-next">
-                      BERIKUTNYA
-                    </span>
-                  )}
+                  {status === 'next' && <span className="kp-path-next">Berikutnya</span>}
                 </div>
               </div>
             </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
 
