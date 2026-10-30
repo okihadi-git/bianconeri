@@ -5,6 +5,7 @@ import {
   addDays,
   buildRecords,
   competitionName,
+  eventState,
   fetchLeagueEvents,
   isCompleted,
   seasonStart,
@@ -53,6 +54,25 @@ function matchEvents(event: any): MatchEvent[] {
     });
   }
   return out;
+}
+
+function shootoutOf(juve: any, opp: any): { juve: number; opp: number } | null {
+  const a = juve?.shootoutScore;
+  const b = opp?.shootoutScore;
+  if (a === undefined || a === null || b === undefined || b === null) return null;
+  return { juve: toNum(a), opp: toNum(b) };
+}
+
+/**
+ * Juventus menang? Skor beda → jelas. Skor sama → lihat adu penalti, lalu flag `winner` ESPN
+ * (hanya dipercaya kalau kedua tim berbeda). Laga liga yang seri tetap null.
+ */
+function winnerOf(juve: any, opp: any, juveScore: number, oppScore: number): boolean | null {
+  if (juveScore !== oppScore) return juveScore > oppScore;
+  const so = shootoutOf(juve, opp);
+  if (so && so.juve !== so.opp) return so.juve > so.opp;
+  if (typeof juve?.winner === 'boolean' && typeof opp?.winner === 'boolean' && juve.winner !== opp.winner) return juve.winner;
+  return null;
 }
 
 export const isJuveEvent = (e: any) =>
@@ -147,6 +167,10 @@ export async function loadJuve() {
       result: done ? (juveScore > oppScore ? 'W' : juveScore === oppScore ? 'D' : 'L') : null,
       events: done ? matchEvents(event) : [],
       records: rec ? { juve: rec[JUVE_ID], opp: rec[String(opp?.team?.id)] } : null,
+      round: String(competition.notes?.[0]?.headline ?? ''),
+      status: eventState(event),
+      winner: done ? winnerOf(juve, opp, juveScore, oppScore) : null,
+      shootout: shootoutOf(juve, opp),
     };
     (done ? past : upcoming).push(match);
   }

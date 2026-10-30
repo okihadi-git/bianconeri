@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
   EUROPA_ZONES,
   FormBadges,
@@ -55,8 +56,10 @@ function formOf(matches: Match[]): Letter[] {
     .reverse();
 }
 
-export default function KompetisiPage() {
-  const [compKey, setCompKey] = useState('seriea');
+function KompetisiInner() {
+  // Tautan dari beranda: /kompetisi?comp=seriea | europa | coppa
+  const compParam = useSearchParams().get('comp');
+  const [compKey, setCompKey] = useState(COMPS.some((c) => c.key === compParam) ? (compParam as string) : 'seriea');
   const [tab, setTab] = useState<SubKey>('klasemen');
   const comp = COMPS.find((c) => c.key === compKey)!;
 
@@ -272,5 +275,13 @@ export default function KompetisiPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function KompetisiPage() {
+  return (
+    <Suspense fallback={<div className="kp kp-empty">Memuat…</div>}>
+      <KompetisiInner />
+    </Suspense>
   );
 }

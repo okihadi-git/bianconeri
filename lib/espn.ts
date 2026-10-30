@@ -18,7 +18,7 @@ export const COMPETITIONS = [
 export const competitionName = (slug: string) =>
   COMPETITIONS.find((competition) => competition.slug === slug)?.name ?? slug;
 
-const ymd = (date: Date) =>
+export const ymd = (date: Date) =>
   `${date.getUTCFullYear()}${String(date.getUTCMonth() + 1).padStart(2, '0')}${String(date.getUTCDate()).padStart(2, '0')}`;
 
 /** Awal musim sepak bola Eropa: 1 Agustus musim berjalan. */
@@ -39,9 +39,10 @@ export const addDays = (date: Date, days: number) =>
  * Mengambil daftar pertandingan dari scoreboard ESPN.
  * Parameter range bisa berupa YYYYMM atau rentang YYYYMMDD-YYYYMMDD.
  */
-async function getScoreboard(
+export async function getScoreboard(
   slug: string,
-  range: string
+  range: string,
+  revalidate = 1800
 ): Promise<any[]> {
   const url =
     `${ESPN_BASE}/site/v2/sports/soccer/${slug}/scoreboard` +
@@ -49,7 +50,7 @@ async function getScoreboard(
 
   try {
     const response = await fetch(url, {
-      next: { revalidate: 1800 },
+      next: { revalidate },
     });
 
     if (!response.ok) {
@@ -177,6 +178,15 @@ export function isCompleted(event: any): boolean {
     Boolean(status?.type?.completed) ||
     status?.type?.state === 'post'
   );
+}
+
+export type EventState = 'pre' | 'live' | 'post';
+
+/** Status pertandingan: belum mulai, sedang berlangsung, atau selesai. */
+export function eventState(event: any): EventState {
+  if (isCompleted(event)) return 'post';
+  const st = event?.competitions?.[0]?.status ?? event?.status;
+  return st?.type?.state === 'in' ? 'live' : 'pre';
 }
 
 /** Skor ESPN bisa berupa angka, string, atau objek {value, displayValue}. */

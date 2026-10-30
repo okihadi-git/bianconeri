@@ -28,6 +28,28 @@ export function calendarUrl(m: Match) {
   );
 }
 
+const TZ = 'Asia/Jakarta';
+
+/** "Min, 1 Nov, 23.30 WIB" */
+export function fmtWhen(iso: string) {
+  const d = new Date(iso);
+  const wd = new Intl.DateTimeFormat('id-ID', { weekday: 'short', timeZone: TZ }).format(d);
+  const dm = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', timeZone: TZ }).format(d);
+  return `${wd.replace('.', '')}, ${dm.replace('.', '')}, ${fmtClock(d)} WIB`;
+}
+
+/** Jam WIB, mis. "14.25" */
+export function fmtClock(d: Date) {
+  return new Intl.DateTimeFormat('id-ID', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: TZ })
+    .format(d)
+    .replace(':', '.');
+}
+
+/** "League Phase - Matchday 4" → "Matchday 4" */
+export function shortRound(round: string) {
+  return round.split(/\s[-–]\s/).pop()?.trim() ?? '';
+}
+
 export function monthOf(iso: string) {
   return new Intl.DateTimeFormat('id-ID', { month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(
     new Date(iso)
@@ -195,8 +217,8 @@ export function StandingsCard({
                 <th>M</th>
                 <th>S</th>
                 <th>K</th>
-                <th>GM</th>
-                <th>GK</th>
+                <th className="c-gf">GM</th>
+                <th className="c-ga">GK</th>
                 <th>SG</th>
                 <th>Poin</th>
                 <th className="c-form">5 laga terakhir</th>
@@ -210,16 +232,18 @@ export function StandingsCard({
                   <tr key={t.id} className={`${zone ? `zone-${zone}` : ''}${isJuve ? ' me' : ''}`}>
                     <td className="c-pos">{t.position}</td>
                     <td className="c-club">
-                      <span className="kp-abbr">{t.shortName}</span>
-                      {t.logo && <img src={t.logo} alt="" className="kp-logo" />}
-                      <span className="kp-club-name">{t.name}</span>
+                      <div className="kp-club">
+                        <span className="kp-abbr">{t.shortName}</span>
+                        {t.logo && <img src={t.logo} alt="" className="kp-logo" />}
+                        <span className="kp-club-name">{t.name}</span>
+                      </div>
                     </td>
                     <td>{t.playedGames}</td>
                     <td>{t.won}</td>
                     <td>{t.draw}</td>
                     <td>{t.lost}</td>
-                    <td>{t.goalsFor}</td>
-                    <td>{t.goalsAgainst}</td>
+                    <td className="c-gf">{t.goalsFor}</td>
+                    <td className="c-ga">{t.goalsAgainst}</td>
                     <td className={t.goalDifference > 0 ? 'pos' : t.goalDifference < 0 ? 'neg' : ''}>
                       {fmtSigned(t.goalDifference)}
                     </td>

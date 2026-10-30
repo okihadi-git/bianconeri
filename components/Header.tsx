@@ -11,7 +11,7 @@ export default function Header() {
       {/* BANNER HEADER UTAMA */}
       <header className="hero-header">
         <div className="header-top-info">
-          <span>MUSIM 2026/27 · SERIE A · LIGA CHAMPIONS · COPPA ITALIA</span>
+          <span>MUSIM 2026/27 · SERIE A · LIGA EUROPA · COPPA ITALIA</span>
           <span>Data per 28 Okt 2026 · 09:33 WIB · klasemen & jadwal otomatis (WIB)</span>
         </div>
 

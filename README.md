@@ -1,27 +1,45 @@
 # Bianconeri Matchday Hub
 
-## Struktur halaman
+Dashboard Juventus: skor live, klasemen, jadwal, skuad, dan statistik. UI berbahasa Indonesia, waktu dalam WIB.
 
-- `app/page.tsx` — Beranda: live score/hasil terbaru, ringkasan kompetisi, pertandingan berikutnya, dan jadwal gabungan.
-- `app/kompetisi/page.tsx` — Halaman kompetisi.
-- `app/skuad/page.tsx` — Halaman skuad Juventus.
-- `app/statistik/page.tsx` — Halaman statistik Juventus.
-- `components/Header.tsx` — Navigasi utama.
-- `components/kp.tsx` — Komponen bersama (klasemen, pencetak gol, form, dan utilitas data).
-- `lib/espn.ts` — Integrasi sumber data ESPN.
-- `lib/types.ts` — Tipe data.
-- `app/api/` — Endpoint API internal aplikasi.
+## Menjalankan
 
-## Yang berubah
+```bash
+npm install
+npm run dev     # http://localhost:3000
+npm run build
+```
 
-- Menu/halaman Juventus tersendiri dihapus dari navigasi.
-- Ringkasan Juventus berada di Beranda.
-- Skuad berada di `/skuad`.
-- Statistik berada di `/statistik`.
-- API Juventus dipertahankan karena masih digunakan oleh Beranda dan Statistik.
+Root Directory di Vercel harus menunjuk ke folder yang berisi `package.json`.
 
-## Catatan saat memperbarui GitHub
+## Struktur
 
-Jika repository GitHub masih memiliki file lama `app/juventus/page.tsx`, hapus file tersebut setelah menyalin perubahan ini. Pastikan folder `app/juventus/` tidak lagi berisi `page.tsx`. Jangan hapus `app/api/juventus/` atau `app/api/juventus/stats/` karena itu endpoint API, bukan halaman.
+```
+app/
+  page.tsx            Beranda: skor live, ringkasan 3 kompetisi, laga berikutnya, kalender gabungan
+  kompetisi/page.tsx  Klasemen, jadwal, hasil, top skor (bisa dibuka dengan ?comp=seriea|europa|coppa)
+  skuad/page.tsx      Skuad Juventus
+  statistik/page.tsx  Gol & kartu pemain
+  api/
+    live/             Laga yang sedang berjalan / baru selesai (timeline, susunan pemain, statistik)
+    juventus/         Semua laga Juventus (+ /stats untuk statistik pemain)
+    standings/        Klasemen + form 5 laga
+    competition/      Semua laga satu kompetisi + top skor
+    match/[id]/       Detail satu pertandingan
+    squad/            Skuad (Transfermarkt, cadangan FotMob)
+components/           Header, kp.tsx (komponen bersama), LiveScore.tsx, HomeWidgets.tsx
+lib/                  espn.ts, juve.ts, live.ts, squad.ts, types.ts
+```
 
-Root Directory Vercel harus menunjuk ke folder yang berisi `package.json`.
+## Sumber data
+
+- **ESPN** (endpoint publik tidak resmi): jadwal, skor, klasemen, timeline, susunan pemain, statistik.
+- **Transfermarkt JSON API** (tidak resmi): skuad, nilai pasar, kontrak, usia. Cadangan: **FotMob**.
+
+Semua sumber tidak resmi; format dan aksesnya bisa berubah atau diblokir sewaktu-waktu. Bila sumber tidak punya suatu nilai, tampilannya `–`, tidak diisi angka karangan.
+
+## Catatan
+
+- Halaman `/juventus` sudah dihapus; tautan lama diarahkan oleh `next.config.mjs`.
+- Hasil laga tetap tampil di Skor live selama 72 jam sejak kick-off (`RECENT_HOURS` di `lib/live.ts`).
+- Jangan commit `.env.local`; salin `.env.example` bila diperlukan.
