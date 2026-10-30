@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import '@/app/globals.css';
+import './globals.css';
 import Header from '@/components/Header';
 import { Barlow_Condensed, Source_Sans_3 } from 'next/font/google';
 
@@ -9,6 +9,7 @@ const kpDisplay = Barlow_Condensed({
   variable: '--font-kp-display',
   display: 'swap',
 });
+
 const kpBody = Source_Sans_3({
   subsets: ['latin'],
   weight: ['400', '600', '700', '800'],
