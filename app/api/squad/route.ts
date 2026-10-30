@@ -10,30 +10,44 @@ const normalizeName = (name: string) => {
     .replace(/[^a-z0-9]/g, '');
 };
 
-// Helper menentukan season secara dinamis berdasarkan tahun berjalan
+// Helper menentukan season secara dinamis (Menggunakan Hyphen '-' biasa)
 const getDynamicSeasonSlug = () => {
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth() + 1; // January = 1
   
-  // Musim sepak bola Eropa biasanya berganti sekitar bulan Juli/Agustus
+  // Musim sepak bola Eropa berganti sekitar bulan Juli/Agustus
   const startYear = month >= 7 ? year : year - 1;
   const endYear = (startYear + 1).toString().slice(-2);
   
-  return `${startYear}–${endYear}_Juventus_F.C._season`;
+  // Menggunakan strip biasa (-) bukan en-dash (–) agar URL Wikipedia valid
+  return `${startYear}-${endYear}_Juventus_F.C._season`;
 };
 
 export async function GET() {
   try {
     const seasonSlug = getDynamicSeasonSlug();
     
-    // 1. Fetch HTML dari Wikipedia REST API
-    const wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/html/${encodeURIComponent(seasonSlug)}`, {
-      next: { revalidate: 86400 } // Cache data selama 24 jam (otomatis re-fetch harian)
+    // 1. Fetch HTML dari Wikipedia REST API (Ditambahkan Header User-Agent & Fallback)
+    let wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/html/${encodeURIComponent(seasonSlug)}`, {
+      headers: {
+        'User-Agent': 'MyBianconeriApp/1.0 (https://bianconeri.vercel.app)',
+      },
+      next: { revalidate: 86400 } // Cache 24 jam
     });
 
+    // Fallback jika halaman musim spesifik belum ada/404, ambil dari halaman utama Juventus F.C.
     if (!wikiRes.ok) {
-      throw new Error(`Gagal mengambil data Wikipedia: ${wikiRes.statusText}`);
+      wikiRes = await fetch(`https://en.wikipedia.org/api/rest_v1/page/html/Juventus_F.C.`, {
+        headers: {
+          'User-Agent': 'MyBianconeriApp/1.0 (https://bianconeri.vercel.app)',
+        },
+        next: { revalidate: 86400 }
+      });
+    }
+
+    if (!wikiRes.ok) {
+      throw new Error(`Gagal mengambil data Wikipedia (${wikiRes.status}: ${wikiRes.statusText})`);
     }
 
     const html = await wikiRes.text();
@@ -42,7 +56,8 @@ export async function GET() {
     // 2. Parse Tabel Skuad Utama Wikipedia
     const wikiPlayers: Array<{ number: number; name: string; position: string }> = [];
 
-    $('table.wikitable').first().find('tr').each((_, el) => {
+    // Mencari tabel wikitable yang berisi skuad pemain
+    $('table.wikitable, table.vcard').find('tr').each((_, el) => {
       const cols = $(el).find('td, th');
       if (cols.length >= 3) {
         const numText = $(cols[0]).text().trim();
@@ -82,53 +97,4 @@ export async function GET() {
         });
       }
     } catch (e) {
-      console.warn('FotMob fetch warning:', e);
-    }
-
-    // 4. Combine Wikipedia Data + FotMob Photos
-    const finalSquad = wikiPlayers.map((player) => {
-      const cleanName = normalizeName(player.name);
-      const match = fotmobMap.get(cleanName);
-
-      // Map Kategori Posisi Sederhana
-      let posCategory: 'Kiper' | 'Bek' | 'Gelandang' | 'Penyerang' = 'Gelandang';
-      const posUpper = player.position.toUpperCase();
-      if (posUpper.includes('GK')) posCategory = 'Kiper';
-      else if (posUpper.includes('DF') || posUpper.includes('CB') || posUpper.includes('LB') || posUpper.includes('RB')) posCategory = 'Bek';
-      else if (posUpper.includes('MF')) posCategory = 'Gelandang';
-      else if (posUpper.includes('FW') || posUpper.includes('ST') || posUpper.includes('RW') || posUpper.includes('LW')) posCategory = 'Penyerang';
-
-      return {
-        id: `player-${player.number}`,
-        number: player.number,
-        name: player.name,
-        photoUrl: match
-          ? `https://images.fotmob.com/image_resources/playerimages/${match.id}.png`
-          : 'https://www.fotmob.com/images/player_fallback.png',
-        countryFlag: match?.cCode ? '' : '🏳️',
-        countryCode: match?.cCode || 'N/A',
-        positionCategory: posCategory,
-        positionDetail: player.position || posCategory,
-        age: match?.age || 25,
-        salaryWeeklyNum: 50, // Fallback default
-        salaryDisplay: '€50 rb/pekan',
-        marketValueNum: 20.0, // Fallback default
-        marketValueDisplay: '€20 jt',
-        status: null,
-      };
-    });
-
-    return NextResponse.json({
-      success: true,
-      season: seasonSlug,
-      total: finalSquad.length,
-      data: finalSquad
-    });
-
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error.message || 'Gagal memproses skuad' },
-      { status: 500 }
-    );
-  }
-}
+      console
