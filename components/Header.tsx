@@ -42,7 +42,7 @@ export default function Header() {
             <Link href="/skuad" className={pathname === '/skuad' ? 'active' : ''}>Skuad</Link>
             <Link href="/statistik" className={pathname === '/statistik' ? 'active' : ''}>Statistik</Link>
             <Link href="/#berita">Berita</Link>
-            <Link href="/#sejarah">Klub</Link>
+            <Link href="/klub" className={pathname === '/klub' ? 'active' : ''}>Klub</Link>
           </nav>
           <div className="header-right">
             <span className="live-dot" id="headerLiveDot"></span>

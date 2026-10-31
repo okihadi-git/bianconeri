@@ -225,3 +225,42 @@ export interface SquadResponse {
   source: 'transfermarkt' | 'fotmob';
   updatedAt: string;
 }
+
+/* ---------- Halaman Klub (Wikipedia + Wikidata) ---------- */
+
+export interface KlubCard {
+  label: string;
+  value: string | null;
+  sub: string | null;
+}
+
+export interface KlubEra {
+  title: string;
+  /** mis. "1897–1923", diambil dari judul seksi bila ada */
+  span: string | null;
+  paragraphs: string[];
+}
+
+export interface KlubPhoto {
+  url: string;
+  width: number | null;
+  height: number | null;
+  caption: string;
+  credit: string | null;
+  license: string | null;
+  pageUrl: string | null;
+}
+
+export interface KlubResponse {
+  club: string;
+  name: string;
+  cards: KlubCard[];
+  eras: KlubEra[];
+  photo: KlubPhoto | null;
+  timeline: { year: string; text: string }[];
+  /** artikel Wikipedia yang dipakai untuk narasi; null bila semuanya gagal */
+  source: { lang: 'id' | 'en'; url: string; title: string } | null;
+  updatedAt: string;
+  /** alasan tiap sumber yang gagal, untuk pelacakan di log */
+  errors: Record<string, string>;
+}
