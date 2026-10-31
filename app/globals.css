@@ -744,3 +744,42 @@ body:has(.kp) { background: #eff1f6; }
 }
 
 .hm-next .hm-title:before { background: var(--juve-black); }
+
+/* ============ Sub-menu Tim: Skuad · Kontrak · Pelatih · Cedera · Timnas · Akademi · Women ============ */
+.tim-bar { background: #fff; border-bottom: 1px solid var(--line); }
+.tim-bar-inner { max-width: 1440px; margin: 0 auto; padding: 14px 28px; display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.tim-bar-inner::-webkit-scrollbar { display: none; }
+.tim-tab { flex: none; display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: #2b3245; font-family: var(--font-kp-body), 'Source Sans 3', system-ui, sans-serif; font-size: 14px; font-weight: 700; white-space: nowrap; }
+.tim-tab:hover { border-color: var(--juve-pink); background: var(--soft-red); }
+.tim-tab.active { background: var(--juve-black); border-color: var(--juve-black); color: var(--juve-white); }
+.tim-tab:focus-visible { outline: 2px solid var(--juve-pink-deep); outline-offset: 2px; }
+.tim-badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-grid; place-items: center; background: var(--juve-pink-deep); color: #fff; font-size: 11px; font-weight: 800; line-height: 1; }
+@media (max-width: 720px) { .tim-bar-inner { padding: 12px 16px; } }
+
+/* Kontrak */
+.ct-table td { height: 54px; }
+.ct-table th, .ct-table td { white-space: nowrap; }
+.ct-year td { height: auto; padding: 10px 20px; background: #f1f3f8; color: var(--kp-muted); font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; text-align: left; }
+.ct-player { display: flex; align-items: center; gap: 12px; padding-left: 12px; }
+.ct-player .sq-photo, .ct-player .kp-jersey { width: 38px; height: 38px; }
+.ct-left { display: inline-block; min-width: 64px; padding: 3px 10px; border-radius: 999px; background: #eceef4; color: #2b3245; font-size: 12px; font-weight: 700; }
+.ct-left.soon { background: var(--juve-pink); color: var(--juve-black); }
+
+/* Pelatih */
+.pl-body { display: grid; gap: 22px; padding: 4px 20px 22px; }
+.pl-body.has-photo { grid-template-columns: 240px minmax(0, 1fr); align-items: start; }
+.pl-photo { width: 100%; border-radius: 12px; border: 1px solid var(--kp-line); background: #f4f5f9; object-fit: cover; }
+.pl-name { margin: 0 0 2px; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 34px; font-weight: 800; line-height: 1.1; }
+.pl-desc { margin-bottom: 12px; font-size: 14px; }
+.pl-text p { margin: 0 0 12px; font-size: 15px; line-height: 1.65; color: #2b3245; }
+.pl-link, .pl-link-inline { color: var(--kp-red-text); font-weight: 700; }
+.pl-link { display: inline-block; margin-top: 4px; }
+.pl-link:hover, .pl-link-inline:hover { text-decoration: underline; }
+@media (max-width: 720px) { .pl-body.has-photo { grid-template-columns: 1fr; } .pl-photo { max-width: 240px; } }
+
+/* Cedera */
+.cd-players-card { margin-bottom: 22px; }
+.cd-players { display: flex; flex-wrap: wrap; gap: 10px; padding: 0 20px 20px; }
+.cd-player { display: inline-flex; align-items: center; gap: 10px; padding: 6px 14px 6px 6px; border-radius: 999px; border: 1px solid var(--kp-line); background: #fff; font-size: 14px; }
+.cd-player .bn-av { width: 32px; height: 32px; border-width: 1px; }
+.cd-player small { color: var(--kp-muted); font-size: 12px; }
