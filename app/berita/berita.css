@@ -2,7 +2,7 @@
 .bn-filters { display: flex; justify-content: space-between; align-items: center; gap: 12px 24px; flex-wrap: wrap; padding: 14px 20px; border-top: 1px solid var(--kp-line); }
 .bn-rel small { margin-left: 4px; font-size: 11px; opacity: .7; }
 .bn-rel-resmi:not(.active):before { content: "●"; color: var(--kp-green); font-size: 8px; margin-right: 5px; vertical-align: 2px; }
-.bn-rel-kuat.active { background: var(--kp-red); border-color: var(--kp-red); }
+.bn-rel-kuat.active { background: var(--kp-red); border-color: var(--kp-red); color: var(--juve-black); }
 
 .bn-grid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--kp-line); }
 .bn-item { display: flex; gap: 14px; align-items: flex-start; padding: 16px 20px; border-bottom: 1px solid var(--kp-line); min-width: 0; }
@@ -16,18 +16,18 @@
 .bn-stack.two .bn-av + .bn-av { margin-left: -16px; margin-top: 12px; }
 .bn-stack.two .bn-av:first-child { margin-top: -8px; }
 .bn-icon { flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: #eef0f6; color: #5b6275; font-size: 20px; font-weight: 700; }
-.bn-icon-cedera { background: #fde7ea; color: var(--kp-red); }
+.bn-icon-cedera { background: #fde6ef; color: var(--kp-red-text); }
 
 .bn-body { min-width: 0; }
 .bn-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; font-size: 12px; }
 .bn-tag { padding: 2px 7px; border-radius: 4px; background: #e8eaf1; color: #4b5266; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; }
-.bn-tag-cedera { background: #fde7ea; color: var(--kp-red); }
+.bn-tag-cedera { background: #fde6ef; color: var(--kp-red-text); }
 .bn-badge { padding: 1px 7px; border-radius: 4px; border: 1px solid; font-size: 11px; font-weight: 600; }
 .bn-badge-resmi { color: var(--kp-green); border-color: var(--kp-green); }
 .bn-badge-kuat { color: #b45309; border-color: #d98a2b; }
 .bn-badge-rumor { color: var(--kp-muted); border-color: #b8bdcb; border-style: dashed; }
 .bn-title { display: block; font-size: 17px; font-weight: 800; line-height: 1.3; color: var(--kp-ink); text-decoration: none; overflow-wrap: anywhere; }
-.bn-title:hover { color: var(--kp-red); }
+.bn-title:hover { color: var(--kp-red-text); }
 .bn-source { margin-top: 4px; font-size: 12px; }
 .bn-foot { margin: 0; padding: 16px 20px; border-top: 1px solid var(--kp-line); line-height: 1.55; }
 
