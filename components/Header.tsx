@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import TimTabs, { isTimPath } from '@/components/TimTabs';
 
 export default function Header() {
   const pathname = usePathname();
@@ -39,7 +40,7 @@ export default function Header() {
           <nav>
             <Link href="/" className={pathname === '/' ? 'active' : ''}>Beranda</Link>
             <Link href="/kompetisi" className={pathname === '/kompetisi' ? 'active' : ''}>Kompetisi</Link>
-            <Link href="/skuad" className={pathname === '/skuad' ? 'active' : ''}>Skuad</Link>
+            <Link href="/skuad" className={isTimPath(pathname) ? 'active' : ''}>Tim</Link>
             <Link href="/statistik" className={pathname === '/statistik' ? 'active' : ''}>Statistik</Link>
             <Link href="/berita" className={pathname === '/berita' ? 'active' : ''}>Berita</Link>
             <Link href="/klub" className={pathname === '/klub' ? 'active' : ''}>Klub</Link>
@@ -50,6 +51,9 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      {/* SUB-MENU TIM: Skuad, Kontrak, Pelatih, Cedera, Timnas, Akademi, Women */}
+      {isTimPath(pathname) && <TimTabs />}
     </>
   );
 }
