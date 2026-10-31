@@ -1,0 +1,37 @@
+/* Halaman Berita. Variabel --kp-* berasal dari wrapper .kp (globals.css). */
+.bn-filters { display: flex; justify-content: space-between; align-items: center; gap: 12px 24px; flex-wrap: wrap; padding: 14px 20px; border-top: 1px solid var(--kp-line); }
+.bn-rel small { margin-left: 4px; font-size: 11px; opacity: .7; }
+.bn-rel-resmi:not(.active):before { content: "●"; color: var(--kp-green); font-size: 8px; margin-right: 5px; vertical-align: 2px; }
+.bn-rel-kuat.active { background: var(--kp-red); border-color: var(--kp-red); }
+
+.bn-grid { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--kp-line); }
+.bn-item { display: flex; gap: 14px; align-items: flex-start; padding: 16px 20px; border-bottom: 1px solid var(--kp-line); min-width: 0; }
+.bn-item:nth-child(odd) { border-right: 1px solid var(--kp-line); }
+
+.bn-stack { flex: none; display: flex; align-items: center; width: 48px; height: 48px; position: relative; }
+.bn-stack.two { width: 58px; }
+.bn-av { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #fff; background: #eef0f6; object-fit: cover; object-position: top; flex: none; }
+.bn-av-club { object-fit: contain; padding: 4px; background: #fff; border-color: var(--kp-line); }
+.bn-av-initials { display: grid; place-items: center; background: #0f172a; color: #fff; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 800; }
+.bn-stack.two .bn-av + .bn-av { margin-left: -16px; margin-top: 12px; }
+.bn-stack.two .bn-av:first-child { margin-top: -8px; }
+.bn-icon { flex: none; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: #eef0f6; color: #5b6275; font-size: 20px; font-weight: 700; }
+.bn-icon-cedera { background: #fde7ea; color: var(--kp-red); }
+
+.bn-body { min-width: 0; }
+.bn-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 5px; font-size: 12px; }
+.bn-tag { padding: 2px 7px; border-radius: 4px; background: #e8eaf1; color: #4b5266; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; }
+.bn-tag-cedera { background: #fde7ea; color: var(--kp-red); }
+.bn-badge { padding: 1px 7px; border-radius: 4px; border: 1px solid; font-size: 11px; font-weight: 600; }
+.bn-badge-resmi { color: var(--kp-green); border-color: var(--kp-green); }
+.bn-badge-kuat { color: #b45309; border-color: #d98a2b; }
+.bn-badge-rumor { color: var(--kp-muted); border-color: #b8bdcb; border-style: dashed; }
+.bn-title { display: block; font-size: 17px; font-weight: 800; line-height: 1.3; color: var(--kp-ink); text-decoration: none; overflow-wrap: anywhere; }
+.bn-title:hover { color: var(--kp-red); }
+.bn-source { margin-top: 4px; font-size: 12px; }
+.bn-foot { margin: 0; padding: 16px 20px; border-top: 1px solid var(--kp-line); line-height: 1.55; }
+
+@media(max-width:900px){
+  .bn-grid { grid-template-columns: 1fr; }
+  .bn-item:nth-child(odd) { border-right: 0; }
+}
