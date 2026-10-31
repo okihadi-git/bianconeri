@@ -58,4 +58,44 @@ export const CLUBS: Record<string, ClubConfig> = {
       { year: '2011', text: 'Pindah ke **Juventus Stadium** (kini Allianz Stadium) dan memulai **sembilan Scudetto beruntun** hingga 2020.' },
     ],
   },
+  'juventus-next-gen': {
+    slug: 'juventus-next-gen',
+    name: 'Juventus Next Gen',
+    wikiMain: 'Juventus Next Gen',
+    history: {
+      id: ['Juventus Next Gen', 'Juventus U-23'],
+      en: ['Juventus Next Gen'],
+    },
+    foundedNote: 'Sebagai Juventus U23, tim cadangan Juventus',
+    ownerNote: 'Bagian dari Juventus FC',
+    tier: {
+      label: 'Berlaga di',
+      value: 'Serie C',
+      sub: 'Girone A 2026/27; tim U23 yang bermain di liga profesional',
+    },
+    timeline: [
+      { year: '2018', text: 'Juventus membentuk tim **Juventus U23** dan mendaftarkannya ke **Serie C**.' },
+      { year: '2022', text: 'Tim berganti nama menjadi **Juventus Next Gen**.' },
+    ],
+  },
+  'juventus-women': {
+    slug: 'juventus-women',
+    name: 'Juventus Women',
+    wikiMain: 'Juventus F.C. Women',
+    history: {
+      id: ['Juventus F.C. Women', 'Juventus Women'],
+      en: ['Juventus F.C. Women'],
+    },
+    foundedNote: 'Tim putri Juventus',
+    ownerNote: 'Bagian dari Juventus FC',
+    tier: {
+      label: 'Di kasta tertinggi',
+      value: 'Serie A Femminile',
+      sub: 'Liga sepak bola putri teratas Italia',
+    },
+    timeline: [
+      { year: '2017', text: 'Juventus membentuk tim putri, **Juventus Women**.' },
+      { year: '2018', text: 'Meraih **Scudetto** putri pertama di musim 2017/18, musim perdana tim.' },
+    ],
+  },
 };

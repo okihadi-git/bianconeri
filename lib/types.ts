@@ -264,3 +264,19 @@ export interface KlubResponse {
   /** alasan tiap sumber yang gagal, untuk pelacakan di log */
   errors: Record<string, string>;
 }
+
+/* ---------- Halaman Pelatih (Wikipedia) ---------- */
+
+export interface CoachResponse {
+  name: string;
+  /** judul artikel Wikipedia yang dipakai */
+  title: string;
+  /** deskripsi singkat Wikipedia, mis. "Italian football manager" */
+  description: string | null;
+  /** paragraf pembuka artikel (dipangkas) */
+  paragraphs: string[];
+  photo: string | null;
+  url: string;
+  lang: 'id' | 'en';
+  updatedAt: string;
+}
