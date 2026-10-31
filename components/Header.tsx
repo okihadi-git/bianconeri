@@ -41,7 +41,7 @@ export default function Header() {
             <Link href="/kompetisi" className={pathname === '/kompetisi' ? 'active' : ''}>Kompetisi</Link>
             <Link href="/skuad" className={pathname === '/skuad' ? 'active' : ''}>Skuad</Link>
             <Link href="/statistik" className={pathname === '/statistik' ? 'active' : ''}>Statistik</Link>
-            <Link href="/#berita">Berita</Link>
+            <Link href="/berita" className={pathname === '/berita' ? 'active' : ''}>Berita</Link>
             <Link href="/klub" className={pathname === '/klub' ? 'active' : ''}>Klub</Link>
           </nav>
           <div className="header-right">
