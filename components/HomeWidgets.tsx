@@ -246,10 +246,10 @@ export function NextMatchCard({ next, loading }: { next: Match | null; loading: 
 function CalendarIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <rect x="3" y="5" width="18" height="16" rx="3" fill="#fff" stroke="#6b7691" strokeWidth="1.6" />
-      <path d="M3 10h18" stroke="#3b82f6" strokeWidth="4" />
-      <path d="M8 3v4M16 3v4" stroke="#6b7691" strokeWidth="1.6" strokeLinecap="round" />
-      <path d="M8 14h2M11 14h2M14 14h2M8 17.5h2M11 17.5h2" stroke="#9aa5bd" strokeWidth="1.6" strokeLinecap="round" />
+      <rect x="3" y="5" width="18" height="16" rx="3" fill="#fff" stroke="#6f6f6f" strokeWidth="1.6" />
+      <path d="M3 10h18" stroke="#1b3a8a" strokeWidth="4" />
+      <path d="M8 3v4M16 3v4" stroke="#6f6f6f" strokeWidth="1.6" strokeLinecap="round" />
+      <path d="M8 14h2M11 14h2M14 14h2M8 17.5h2M11 17.5h2" stroke="#a3a3a3" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }

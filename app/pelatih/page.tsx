@@ -1,96 +1,236 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState } from 'react';
 import { useFetch } from '@/components/kp';
 import type { CoachResponse, SquadResponse } from '@/lib/types';
+import type { CoachNation, CoachesResponse, ManagerRow } from '@/lib/coaches-types';
+import './pelatih.css';
+
+const norm = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const initials = (name: string) => {
+  const t = name.trim().split(/\s+/).filter(Boolean);
+  return (t.length < 2 ? (t[0] ?? '?').slice(0, 2) : t[0][0] + t[t.length - 1][0]).toUpperCase();
+};
+
+function Avatar({ src, name, size = 40, ring = false }: { src: string | null; name: string; size?: number; ring?: boolean }) {
+  const [broken, setBroken] = useState(false);
+  const style = { width: size, height: size };
+  const cls = `pc-av${ring ? ' pc-av-ring' : ''}`;
+  if (src && !broken) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img className={cls} style={style} src={src} alt="" loading="lazy" onError={() => setBroken(true)} />;
+  }
+  return (
+    <span className={`${cls} pc-av-ini`} style={{ ...style, fontSize: Math.round(size * 0.36) }} aria-hidden="true">
+      {initials(name)}
+    </span>
+  );
+}
+
+function Flag({ n }: { n: CoachNation }) {
+  const [broken, setBroken] = useState(false);
+  if (!n.flag || broken) return null;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img className="pc-flag" src={n.flag} alt="" width={20} height={14} loading="lazy" onError={() => setBroken(true)} />;
+}
+
+function Nations({ nations }: { nations: CoachNation[] }) {
+  return (
+    <>
+      {nations.slice(0, 2).map((n, i) => (
+        <span key={n.code} className="pc-nation">
+          {i > 0 && <span className="pc-sep">/</span>}
+          <Flag n={n} />
+          {n.name}
+        </span>
+      ))}
+    </>
+  );
+}
+
+function Honours({ m }: { m: ManagerRow }) {
+  if (!m.honours.length) return <span className="kp-muted">–</span>;
+  return (
+    <span className="pc-honours">
+      {m.honours.map((h, i) => (
+        <span key={h.label}>
+          {i > 0 && ' · '}
+          <b>{h.count > 1 ? `${h.count}× ` : ''}{h.label}</b>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+const pct = (n: number) => `${n.toFixed(1).replace('.', ',')}%`;
 
 export default function PelatihPage() {
   const squad = useFetch<SquadResponse>('/api/squad');
-  const coachName = squad.data?.coach?.trim() || null;
+  const hist = useFetch<CoachesResponse>('/api/pelatih/riwayat?club=juventus');
+  const d = hist.data;
+
+  // Nama pelatih saat ini: dari data skuad (lebih cepat berubah), cadangan: baris "sekarang" di daftar Wikipedia
+  const listed = d?.managers.find((m) => m.current) ?? null;
+  const coachName = squad.data?.coach?.trim() || listed?.name || null;
   const bio = useFetch<CoachResponse>(coachName ? `/api/pelatih?name=${encodeURIComponent(coachName)}` : null);
 
-  const stats = useMemo(() => {
-    const players = squad.data?.players ?? [];
-    const ages = players.filter((p) => p.age != null);
-    return {
-      count: players.length,
-      avgAge: ages.length ? ages.reduce((n, p) => n + (p.age ?? 0), 0) / ages.length : null,
-      nations: new Set(players.map((p) => p.nation[0]).filter(Boolean)).size,
-    };
-  }, [squad.data]);
-
-  const src = squad.data?.source === 'fotmob' ? 'FotMob' : 'Transfermarkt';
-  const d = bio.data;
+  const row =
+    coachName && d
+      ? d.managers.find((m) => m.current && norm(m.name).split(' ').at(-1) === norm(coachName).split(' ').at(-1)) ?? null
+      : listed;
+  const mismatch = Boolean(d && coachName && listed && !row);
+  const photo = bio.data?.photo ?? row?.photo ?? null;
+  const nation = row?.nations[0] ?? null;
+  const rows = d ? [...d.managers].reverse() : [];
+  const trophies = row ? row.honours.reduce((n, h) => n + h.count, 0) : null;
 
   return (
     <div className="kp" id="pelatih">
-      <div className="kp-metrics">
-        <div className="kp-metric kp-metric-red">
-          <div className="kp-metric-label">Pelatih kepala</div>
-          <div className="kp-metric-val sq-coach">{coachName ?? '–'}</div>
-          <div className="kp-metric-sub">{squad.data ? `Data: ${src}` : squad.loading ? 'Memuat data…' : ' '}</div>
-        </div>
-        <div className="kp-metric">
-          <div className="kp-metric-label">Pemain yang dilatih</div>
-          <div className="kp-metric-val">{stats.count || '–'}</div>
-          <div className="kp-metric-sub">Tim utama</div>
-        </div>
-        <div className="kp-metric">
-          <div className="kp-metric-label">Rata-rata usia skuad</div>
-          <div className="kp-metric-val">{stats.avgAge != null ? stats.avgAge.toFixed(1).replace('.', ',') : '–'}</div>
-          <div className="kp-metric-sub">Tahun</div>
-        </div>
-        <div className="kp-metric">
-          <div className="kp-metric-label">Negara asal pemain</div>
-          <div className="kp-metric-val">{stats.nations || '–'}</div>
-          <div className="kp-metric-sub">Berdasarkan kebangsaan utama</div>
-        </div>
-      </div>
-
       <section className="kp-card">
         <header className="kp-card-head">
-          <h2 className="kp-title">Profil pelatih</h2>
-          {d && <small className="kp-muted">Wikipedia bahasa {d.lang === 'id' ? 'Indonesia' : 'Inggris'}</small>}
+          <h2 className="kp-title">Staf pelatih</h2>
+          <small className="kp-muted">{d ? `Musim ${d.season}` : ''}</small>
         </header>
 
-        {squad.loading || (coachName && bio.loading) ? (
-          <div className="kp-empty">Memuat profil pelatih…</div>
-        ) : squad.error || !coachName ? (
-          <div className="kp-empty">
-            Nama pelatih belum bisa dimuat dari Transfermarkt maupun FotMob. Coba muat ulang beberapa saat lagi.
-          </div>
-        ) : !d ? (
-          <div className="kp-empty">
-            Profil <b>{coachName}</b> belum ditemukan di Wikipedia, jadi hanya namanya yang ditampilkan.
-          </div>
+        {(squad.loading && !coachName) || (hist.loading && !coachName) ? (
+          <div className="kp-empty">Memuat staf pelatih…</div>
+        ) : !coachName ? (
+          <div className="kp-empty">Nama pelatih belum bisa dimuat. Coba muat ulang beberapa saat lagi.</div>
         ) : (
-          <div className={`pl-body${d.photo ? ' has-photo' : ''}`}>
-            {d.photo && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img className="pl-photo" src={d.photo} alt={`Foto ${d.title}`} loading="lazy" />
-            )}
-            <div className="pl-text">
-              <h3 className="pl-name">{coachName}</h3>
-              {d.description && <div className="pl-desc kp-muted">{d.description}</div>}
-              {d.paragraphs.map((p, i) => (
-                <p key={i}>{p}</p>
-              ))}
-              <a className="pl-link" href={d.url} target="_blank" rel="noopener noreferrer">
-                Baca selengkapnya di Wikipedia →
-              </a>
+          <div className="pc-hero">
+            <Avatar src={photo} name={coachName} size={84} ring />
+            <div className="pc-hero-body">
+              <div className="pc-role">Pelatih kepala</div>
+              <h3 className="pc-name">{coachName}</h3>
+              <div className="pc-sub kp-muted">
+                {nation && <Nations nations={row!.nations} />}
+                {row?.fromYear ? <> · menangani Juventus sejak {row.fromYear}</> : null}
+              </div>
+              {row && (
+                <div className="pc-stats">
+                  {row.matches != null && (
+                    <div>
+                      <b>{row.matches}</b>
+                      <span>laga bersama Juventus</span>
+                    </div>
+                  )}
+                  {row.winPct != null && (
+                    <div>
+                      <b>{pct(row.winPct)}</b>
+                      <span>persentase menang</span>
+                    </div>
+                  )}
+                  {trophies != null && (
+                    <div>
+                      <b>{trophies}</b>
+                      <span>trofi bersama Juventus</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              {bio.data?.url && (
+                <a className="pc-wiki" href={bio.data.url} target="_blank" rel="noopener noreferrer">
+                  Profil di Wikipedia →
+                </a>
+              )}
             </div>
+          </div>
+        )}
+
+        {d && d.staff.length > 0 && (
+          <div className="pc-staff">
+            {d.staff.map((s) => (
+              <div key={s.name} className="pc-staff-item">
+                <Avatar src={s.photo} name={s.name} size={44} />
+                <div>
+                  <div className="pc-staff-name">{s.name}</div>
+                  <div className="pc-staff-role kp-muted">
+                    {s.role} · <Flag n={s.nation} />
+                    <span className="pc-code">{s.nation.code}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         <footer className="kp-legend">
           <span className="kp-legend-note">
-            Nama pelatih dari {squad.data ? src : 'Transfermarkt/FotMob'} (tidak resmi). Ringkasan profil dari Wikipedia, lisensi{' '}
-            <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.id" target="_blank" rel="noopener noreferrer" className="pl-link-inline">
-              CC BY-SA 4.0
-            </a>
-            , dipangkas per paragraf. Statistik karier, formasi, dan rekor kemenangan tidak tersedia dari sumber yang dipakai, jadi tidak ditampilkan.
+            Daftar staf ditulis manual dari pengumuman klub dan pemberitaan media per {d?.staffAsOf ?? '–'}; perubahan sesudahnya tidak otomatis. Pelatih kiper,
+            tim medis, dan analis tidak ditampilkan karena tidak ada sumber gratis yang andal. Foto dari Wikipedia/Wikimedia Commons, hak cipta foto milik
+            pemiliknya; tanpa foto ditampilkan inisial.
+            {mismatch && ' Artikel Wikipedia belum memuat pelatih saat ini, jadi statistik laganya belum tersedia.'}
           </span>
         </footer>
+      </section>
+
+      <section className="kp-card pc-hist">
+        <header className="kp-card-head">
+          <h2 className="kp-title">Pelatih kepala sebelumnya</h2>
+          <small className="kp-muted">{d?.managers[0]?.fromYear ? `Pelatih tetap sejak ${d.managers[0].fromYear}` : ''}</small>
+        </header>
+
+        {hist.loading && <div className="kp-empty">Memuat riwayat pelatih…</div>}
+        {hist.error && <div className="kp-empty">Riwayat pelatih belum bisa dimuat. Coba muat ulang halaman sebentar lagi.</div>}
+        {d && !d.managers.length && <div className="kp-empty">Daftar pelatih dari Wikipedia belum bisa dibaca saat ini.</div>}
+
+        {d && d.managers.length > 0 && (
+          <div className="pc-table-wrap">
+            <table className="pc-table">
+              <thead>
+                <tr>
+                  <th className="pc-c-n">#</th>
+                  <th>Nama</th>
+                  <th>Negara</th>
+                  <th className="pc-c-per">Periode</th>
+                  <th>Trofi utama</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((m) => (
+                  <tr key={m.n} className={m.current ? 'pc-row-current' : undefined}>
+                    <td className="pc-c-n kp-muted">{m.n}</td>
+                    <td>
+                      <div className="pc-person">
+                        <Avatar src={m.photo} name={m.name} size={38} />
+                        <b>{m.name}</b>
+                      </div>
+                    </td>
+                    <td>
+                      <Nations nations={m.nations} />
+                    </td>
+                    <td className="pc-c-per">{m.period}</td>
+                    <td>
+                      <Honours m={m} />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {d && d.managers.length > 0 && (
+          <p className="kp-note pc-foot">
+            Hanya pelatih kepala tetap.
+            {d.interim.length > 0 && (
+              <> Pelatih sementara (caretaker) tidak dihitung, misalnya {d.interim.slice(-5).map((i) => `${i.name} (${i.year})`).join(', ')}.</>
+            )}{' '}
+            Trofi utama dihitung per jumlah gelar (tanpa tahun): Scudetto, Coppa Italia, Supercoppa, dan trofi Eropa. Sumber:{' '}
+            {d.source ? (
+              <a href={d.source.url} target="_blank" rel="noopener noreferrer">
+                Wikipedia, “{d.source.title}”
+              </a>
+            ) : (
+              'Wikipedia'
+            )}
+            , lisensi{' '}
+            <a href="https://creativecommons.org/licenses/by-sa/4.0/deed.id" target="_blank" rel="noopener noreferrer">
+              CC BY-SA 4.0
+            </a>
+            {d.statsAsOf ? `; statistik laga per ${d.statsAsOf}` : ''}. Foto dimuat dari artikel Wikipedia masing-masing; hak cipta foto milik pemiliknya.
+          </p>
+        )}
       </section>
     </div>
   );
