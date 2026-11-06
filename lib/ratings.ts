@@ -1,5 +1,6 @@
 // Rating pemain (estimasi) untuk satu laga: dihitung dari ringkasan (summary) ESPN.
 // ESPN tidak punya rating resmi, jadi angka ini perkiraan otomatis dengan skala 6,0 = rata-rata.
+import { layoutRows } from './pitch';
 import { findPlayer, type FmMatch, type FmPlayer } from './fotmob';
 import type { LineupPlayer, LiveMatch } from './types';
 
@@ -208,7 +209,7 @@ function buildTeam(summary: any, m: LiveMatch, side: 'home' | 'away', fx: FmCtx)
   subs.sort((a, b) => Number(b.rating !== null) - Number(a.rating !== null) || (Number(a.jersey) || 99) - (Number(b.jersey) || 99));
 
   const formation = lineup?.formation ?? '';
-  const rows = layoutRows(starters, formation, t.isJuve);
+  const rows = layoutPitch(starters, formation, t.isJuve);
 
   const rated = [...starters, ...subs].filter((p) => p.rating !== null) as (RatedPlayer & { rating: number })[];
   const avg = rated.length ? round1(rated.reduce((a, p) => a + p.rating, 0) / rated.length) : null;
@@ -226,31 +227,9 @@ function buildTeam(summary: any, m: LiveMatch, side: 'home' | 'away', fx: FmCtx)
   };
 }
 
-/** Susun 11 pemain menjadi baris-baris: kiper, lalu tiap lini sesuai formasi (mis. 4-2-3-1). */
-function layoutRows(starters: RatedPlayer[], formation: string, topTeam: boolean): RatedPlayer[][] {
-  const lines = formation.split('-').map(Number);
-  const valid = lines.length >= 2 && lines.every((n) => n > 0) && lines.reduce((a, b) => a + b, 0) === starters.length - 1;
-  let rows: RatedPlayer[][];
-
-  if (valid) {
-    // starters sudah urut formationPlace: indeks 0 = kiper
-    rows = [[starters[0]]];
-    let i = 1;
-    for (const n of lines) {
-      rows.push(starters.slice(i, i + n));
-      i += n;
-    }
-  } else {
-    const by = (g: PosGroup) => starters.filter((p) => groupOf(p.position) === g);
-    rows = [by('GK'), by('DEF'), by('MID'), by('FWD')].filter((r) => r.length);
-  }
-
-  // Urutan kiri-kanan di layar. Tim yang menyerang ke bawah (di atas) menghadap viewer: kanan tim ada di kiri layar.
-  return rows.map((row) => {
-    const keys = row.map((p) => lateral(p.position));
-    if (new Set(keys).size < 2) return row;
-    return [...row].sort((a, b) => (topTeam ? lateral(b.position) - lateral(a.position) : lateral(a.position) - lateral(b.position)));
-  });
+/** Susun 11 pemain menjadi baris-baris (kiper dulu, lalu tiap lini) dengan aturan yang sama seperti panel live. */
+function layoutPitch(starters: RatedPlayer[], formation: string, topTeam: boolean): RatedPlayer[][] {
+  return layoutRows(starters, formation, topTeam ? 'down' : 'up');
 }
 
 export function buildRatings(summary: any, m: LiveMatch, fm: FmMatch | null, squad: FmPlayer[]): RatingResponse {
