@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { Detail, Letter, Match, PlayerStat, SimpleMatch, Team } from '@/lib/types';
+import RatingModal from '@/components/RatingModal';
 
 /* ---------- helper ---------- */
 
@@ -359,6 +360,7 @@ export function ScheduleCard({
   const [openId, setOpenId] = useState<string | null>(null);
   const [details, setDetails] = useState<Record<string, Detail>>({});
   const [sharedId, setSharedId] = useState<string | null>(null);
+  const [ratingFor, setRatingFor] = useState<Match | null>(null);
 
   const ok = (m: Match) => filter === 'all' || m.league === filter;
   const upShown = upcoming.filter(ok).slice(0, upcomingLimit);
@@ -513,7 +515,7 @@ export function ScheduleCard({
                 <a className="kp-mini kp-mini-red" href="https://www.vidio.com" target="_blank" rel="noreferrer" aria-label="Tonton cuplikan">
                   ▶
                 </a>
-                <button className="kp-mini kp-mini-gold" disabled title="Segera hadir">
+                <button className="kp-mini kp-mini-gold" onClick={() => setRatingFor(m)}>
                   ★ Rating
                 </button>
                 <button className="kp-mini kp-mini-share" onClick={() => share(m)}>
@@ -532,6 +534,7 @@ export function ScheduleCard({
       {pastAll.length > pastPageSize && (
         <Pager page={pastPage} pageSize={pastPageSize} total={pastAll.length} onChange={setPastPage} />
       )}
+      {ratingFor && <RatingModal match={ratingFor} onClose={() => setRatingFor(null)} />}
     </section>
   );
 }

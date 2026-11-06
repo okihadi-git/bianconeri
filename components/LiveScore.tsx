@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Face from '@/components/Face';
 import { fmtClock, fmtWhen, shortRound } from '@/components/kp';
 import type { Lineup, LineupPlayer, LiveMatch, LiveResponse, LiveSide, Match, ScorerLine, TimelineItem } from '@/lib/types';
 
@@ -193,8 +194,15 @@ function Pitch({ lineup, juve }: { lineup: Lineup; juve: boolean }) {
         <div className="lv-pitch-row" key={i}>
           {row.map((p) => (
             <div className="lv-node" key={p.id}>
-              <div className={`lv-shirt ${juve ? 'juve' : 'opp'}`}>
-                {p.jersey || '–'}
+              <div className={`lv-shirt ${juve ? 'juve' : 'opp'}${p.photo ? ' has-photo' : ''}`}>
+                {p.photo ? (
+                  <>
+                    <Face src={p.photo} name={p.name} size={42} fallback={p.jersey || '–'} />
+                    <span className="lv-num">{p.jersey || '–'}</span>
+                  </>
+                ) : (
+                  p.jersey || '–'
+                )}
                 {p.goals > 0 && <span className="lv-badge lv-b-goal">⚽{p.goals > 1 ? p.goals : ''}</span>}
                 {p.red > 0 ? (
                   <span className="lv-badge lv-b-card"><i className="kp-red-card" /></span>
@@ -253,6 +261,7 @@ function Lineups({ m }: { m: LiveMatch }) {
                 {lineup.subs.map((p) => (
                   <li key={p.id} className={p.subOn ? 'used' : ''}>
                     <span className="lv-sub-num">{p.jersey || '–'}</span>
+                    <Face src={p.photo} name={p.name} size={30} />
                     <span className="lv-sub-name">{p.name}</span>
                     {p.goals > 0 && <span>⚽</span>}
                     {p.red > 0 ? <i className="kp-red-card" /> : p.yellow > 0 ? <i className="lv-yc" /> : null}
