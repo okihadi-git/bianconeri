@@ -145,6 +145,8 @@ export interface LineupPlayer {
   goals: number;
   yellow: number;
   red: number;
+  /** foto dari FotMob bila ketemu; kosong = tampilkan inisial */
+  photo?: string;
 }
 
 export interface Lineup {

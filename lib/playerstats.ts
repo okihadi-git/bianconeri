@@ -25,6 +25,8 @@ export interface PlayerRow {
   group: PosGroup;
   /** singkatan posisi ESPN, mis. "LM", "AM-R" */
   pos: string;
+  /** foto FotMob; kosong = inisial */
+  photo?: string;
   /** slug kompetisi -> angka */
   by: Record<string, StatLine>;
 }
