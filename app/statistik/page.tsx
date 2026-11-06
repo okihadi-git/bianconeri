@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Face from '@/components/Face';
 import { JUVE_LOGO, useFetch } from '@/components/kp';
 import type { PlayerRow, PlayerStatsResponse, PosGroup } from '@/lib/playerstats';
 
@@ -34,6 +35,7 @@ const COLUMNS: { key: SortKey; label: string }[] = [
 interface Row {
   id: string;
   name: string;
+  photo: string;
   group: PosGroup;
   pos: string;
   played: number;
@@ -71,6 +73,7 @@ function rowFor(p: PlayerRow, leagues: string[]): Row | null {
   return {
     id: p.id,
     name: p.name,
+    photo: p.photo ?? '',
     group: p.group,
     pos: p.pos,
     played,
@@ -195,12 +198,15 @@ export default function StatisticsPage() {
                 {rows.map((r) => (
                   <tr key={r.id}>
                     <td className="c-club">
-                      <div className="st-name">
-                        <b>{r.name}</b>
-                        <span className="kp-muted">
-                          {r.group}
-                          {r.pos ? ` · ${r.pos}` : ''}
-                        </span>
+                      <div className="st-who">
+                        <Face src={r.photo} name={r.name} />
+                        <div className="st-name">
+                          <b>{r.name}</b>
+                          <span className="kp-muted">
+                            {r.group}
+                            {r.pos ? ` · ${r.pos}` : ''}
+                          </span>
+                        </div>
                       </div>
                     </td>
                     <td>{r.played}</td>
