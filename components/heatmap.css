@@ -1,0 +1,7 @@
+/* Heatmap pemain di popup profil */
+.hm-wrap { position: relative; width: 100%; aspect-ratio: 105 / 68; border-radius: 8px; overflow: hidden; background: #2f9e57; }
+.hm-pitch, .hm-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hm-grass { fill: #2f9e57; }
+.hm-lines { fill: none; stroke: rgba(255, 255, 255, 0.75); stroke-width: 0.35; }
+.hm-lines circle[r="0.4"] { fill: rgba(255, 255, 255, 0.75); }
+.hm-note { margin: 8px 0 0; font-size: 11.5px; color: var(--muted); line-height: 1.5; }

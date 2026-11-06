@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import Heatmap from '@/components/Heatmap';
 import { useFetch } from '@/components/kp';
 import { fmtEuro, fmtMonthYear } from '@/components/team';
 import { countryId, flagUrl, shortCode } from '@/lib/countries';
@@ -346,6 +347,8 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
               <FormChart form={detail.form} />
             </Section>
           )}
+
+          {detail && detail.form.length > 0 && <Heatmap name={player.name} />}
 
           <Section title="Profil statistik" note={profile ? `persentil di antara ${profile.peers} ${profile.group.toLowerCase()} Juventus (min. 180 menit)` : undefined}>
             {stats.loading ? (
