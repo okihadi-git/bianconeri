@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Face from '@/components/Face';
+import { layoutRows } from '@/lib/pitch';
 import { fmtClock, fmtWhen, shortRound } from '@/components/kp';
 import type { Lineup, LineupPlayer, LiveMatch, LiveResponse, LiveSide, Match, ScorerLine, TimelineItem } from '@/lib/types';
 
@@ -153,36 +154,8 @@ function Timeline({ items }: { items: TimelineItem[] }) {
 
 /* ---------- susunan pemain ---------- */
 
-/** Cadangan bila formasi tidak bisa dibaca: kelompokkan dari kode posisi. */
-function groupOf(pos: string): 0 | 1 | 2 | 3 {
-  const p = pos.toUpperCase();
-  if (p.startsWith('G')) return 0;
-  if (/WB|CD|CB|^D|LB|RB|SW/.test(p)) return 1;
-  if (/^(F|CF|ST|SS|LF|RF|LW|RW|W)/.test(p)) return 3;
-  return 2;
-}
-
-function pitchRows(lineup: Lineup): LineupPlayer[][] {
-  const st = lineup.starters;
-  if (!st.length) return [];
-  const gkIdx = Math.max(0, st.findIndex((p) => p.position.toUpperCase().startsWith('G')));
-  const gk = st[gkIdx];
-  const rest = st.filter((_, i) => i !== gkIdx);
-
-  const digits = /^\d(?:-\d)+$/.test(lineup.formation) ? lineup.formation.split('-').map(Number) : [];
-  if (digits.length && digits.reduce((a, b) => a + b, 0) === rest.length) {
-    const rows: LineupPlayer[][] = [[gk]];
-    let at = 0;
-    for (const n of digits) {
-      rows.push(rest.slice(at, at + n));
-      at += n;
-    }
-    return rows;
-  }
-  const rows: LineupPlayer[][] = [[gk], [], [], []];
-  rest.forEach((p) => rows[Math.max(1, groupOf(p.position))].push(p));
-  return rows.filter((r) => r.length);
-}
+/** Baris pemain dihitung dari data ESPN (lib/pitch.ts); tim menyerang ke atas layar. */
+const pitchRows = (lineup: Lineup) => layoutRows(lineup.starters, lineup.formation, 'up');
 
 function Pitch({ lineup, juve }: { lineup: Lineup; juve: boolean }) {
   const rows = pitchRows(lineup);
