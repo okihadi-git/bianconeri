@@ -1,7 +1,9 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useFetch } from '@/components/kp';
+import PlayerModal from '@/components/PlayerModal';
+import type { PlayerStatsResponse } from '@/lib/playerstats';
 import type { SquadGroup, SquadPlayer, SquadResponse } from '@/lib/types';
 
 const GROUPS: SquadGroup[] = ['Kiper', 'Bek', 'Gelandang', 'Penyerang', 'Lainnya'];
@@ -31,11 +33,11 @@ function fmtContract(iso: string | null) {
 
 const jerseyNum = (p: SquadPlayer) => (p.jersey ? Number(p.jersey) : 999);
 
-function PlayerCard({ p }: { p: SquadPlayer }) {
+function PlayerCard({ p, onOpen }: { p: SquadPlayer; onOpen: (p: SquadPlayer) => void }) {
   const [broken, setBroken] = useState(false);
   const showPhoto = Boolean(p.photo) && !broken;
   return (
-    <div className="sq-player">
+    <button type="button" className="sq-player sq-player-btn" onClick={() => onOpen(p)} aria-haspopup="dialog" aria-label={`Lihat profil ${p.name}`}>
       {showPhoto ? (
         <img src={p.photo} alt="" className="sq-photo" loading="lazy" onError={() => setBroken(true)} />
       ) : (
@@ -61,7 +63,7 @@ function PlayerCard({ p }: { p: SquadPlayer }) {
           )}
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -69,6 +71,15 @@ export default function SkuadPage() {
   const res = useFetch<SquadResponse>('/api/squad');
   const [filter, setFilter] = useState<Filter>('Semua');
   const [sort, setSort] = useState<SortKey>('pos');
+  const [selected, setSelected] = useState<SquadPlayer | null>(null);
+  // Statistik pemain (ESPN) baru dimuat saat popup pertama kali dibuka, supaya halaman skuad tetap ringan.
+  const [wantStats, setWantStats] = useState(false);
+  const stats = useFetch<PlayerStatsResponse>(wantStats ? '/api/juventus/stats' : null);
+  const openPlayer = (p: SquadPlayer) => {
+    setWantStats(true);
+    setSelected(p);
+  };
+  const closePlayer = useCallback(() => setSelected(null), []);
 
   const players = res.data?.players ?? [];
 
@@ -188,16 +199,18 @@ export default function SkuadPage() {
               </div>
               <div className="sq-grid">
                 {s.items.map((p) => (
-                  <PlayerCard key={p.id} p={p} />
+                  <PlayerCard key={p.id} p={p} onOpen={openPlayer} />
                 ))}
               </div>
             </div>
           ))
         )}
 
+        {selected && <PlayerModal player={selected} stats={stats} source={src} onClose={closePlayer} />}
+
         <footer className="kp-legend">
           <span className="kp-legend-note">
-            Nilai pasar dan tanggal kontrak adalah estimasi Transfermarkt, bukan angka resmi klub. Gaji pemain tidak ditampilkan karena tidak disediakan sumber data.
+            Nilai pasar dan tanggal kontrak adalah estimasi Transfermarkt, bukan angka resmi klub. Klik pemain untuk melihat profilnya. Gaji hanya tampil bila diisi manual di lib/salaries.ts, karena tidak disediakan sumber data.
           </span>
         </footer>
       </section>

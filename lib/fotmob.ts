@@ -2,7 +2,11 @@
 // Endpoint FotMob tidak resmi dan bisa berubah/memblokir kapan saja, jadi SEMUA fungsi di sini
 // tidak pernah melempar error: kalau gagal, hasilnya kosong dan pemanggil memakai cadangan (ESPN / inisial).
 import { fetchFotmob, FOTMOB_TEAM_ID, fotmobPhoto } from './squad';
+import { findPlayer } from './names';
 import type { LiveMatch } from './types';
+
+// Pencocokan nama dipindah ke ./names (aman dipakai di sisi klien); diekspor ulang supaya impor lama tetap jalan.
+export { findPlayer, normName } from './names';
 
 export interface FmPlayer {
   id: string;
@@ -32,47 +36,6 @@ async function getJson(url: string, revalidate: number): Promise<any | null> {
   } catch {
     return null;
   }
-}
-
-/* ---------- pencocokan nama ---------- */
-
-export const normName = (n: string) =>
-  String(n ?? '')
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/ı/g, 'i')
-    .replace(/ø/g, 'o')
-    .replace(/ł/g, 'l')
-    .replace(/đ/g, 'd')
-    .replace(/ß/g, 'ss')
-    .replace(/[^a-z\s'-]/g, ' ')
-    .replace(/['-]/g, '')
-    .split(/\s+/)
-    .filter(Boolean);
-
-/**
- * Cari pemain di daftar FotMob: nama persis sama, lalu nama pendek yang semua katanya ada di nama panjang
- * ("Bremer" ↔ "Gleison Bremer"), lalu nama belakang. Pencocokan lemah hanya dipakai bila kandidatnya tepat satu;
- * kalau ragu, hasilnya null (tidak pernah menebak foto orang lain).
- */
-export function findPlayer<T extends { name: string }>(name: string, pool: T[]): T | null {
-  const t = normName(name);
-  if (!t.length || !pool.length) return null;
-  const key = t.join(' ');
-  const toks = pool.map((p) => ({ p, tokens: normName(p.name) }));
-  const unique = <U,>(list: U[]) => (list.length === 1 ? list[0] : null);
-
-  const hit =
-    toks.find((f) => f.tokens.join(' ') === key) ??
-    unique(
-      toks.filter((f) => {
-        const [short, long] = t.length <= f.tokens.length ? [t, f.tokens] : [f.tokens, t];
-        return short.length > 0 && short.every((w) => long.includes(w));
-      })
-    ) ??
-    unique(toks.filter((f) => f.tokens.length > 1 && t.length > 1 && f.tokens.at(-1) === t.at(-1)));
-  return hit?.p ?? null;
 }
 
 /* ---------- skuad Juventus (foto) ---------- */

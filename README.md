@@ -18,7 +18,7 @@ Root Directory di Vercel harus menunjuk ke folder yang berisi `package.json`.
 app/
   page.tsx            Beranda: skor live, ringkasan 3 kompetisi, laga berikutnya, kalender gabungan
   kompetisi/page.tsx  Klasemen, jadwal, hasil, top skor (bisa dibuka dengan ?comp=seriea|europa|coppa)
-  skuad/page.tsx      Skuad Juventus
+  skuad/page.tsx      Skuad Juventus; klik pemain membuka popup profil
   statistik/page.tsx  Gol & kartu pemain
   klub/page.tsx       Sejarah klub: kartu ringkas, narasi per era, kronologi
   api/
@@ -28,6 +28,7 @@ app/
     competition/      Semua laga satu kompetisi + top skor
     match/[id]/       Detail satu pertandingan
     squad/            Skuad (Transfermarkt, cadangan FotMob)
+    player/           Detail satu pemain untuk popup (?name=Bremer): FotMob + Wikidata
     klub/             Sejarah klub (Wikipedia + Wikidata, ?club=juventus)
 components/           Header, kp.tsx (komponen bersama), LiveScore.tsx, HomeWidgets.tsx
 lib/                  espn.ts, juve.ts, live.ts, squad.ts, wiki.ts, clubs.ts, types.ts
@@ -38,9 +39,16 @@ lib/                  espn.ts, juve.ts, live.ts, squad.ts, wiki.ts, clubs.ts, ty
 - **ESPN** (endpoint publik tidak resmi): jadwal, skor, klasemen, timeline, susunan pemain, statistik.
 - **Transfermarkt JSON API** (tidak resmi): skuad, nilai pasar, kontrak, usia. Cadangan: **FotMob**.
 
+- **FotMob playerData** (tidak resmi): tanggal lahir, riwayat klub, caps timnas, rating 10 laga terakhir, status cedera (popup pemain).
 - **Wikipedia, Wikidata, Wikimedia Commons** (API resmi, gratis, tanpa kunci): halaman Klub. Teks CC BY-SA 4.0, wajib atribusi. Opsional: isi env `WIKI_CONTACT` dengan URL repo atau email supaya User-Agent sesuai kebijakan Wikimedia. Klub baru = tambah satu entri di `lib/clubs.ts`.
 
 Semua sumber lain tidak resmi; format dan aksesnya bisa berubah atau diblokir sewaktu-waktu. Bila sumber tidak punya suatu nilai, tampilannya `–`, tidak diisi angka karangan.
+
+## Popup profil pemain
+
+Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil persentil) dihitung dari data ESPN yang sama dengan halaman Statistik; persentil membandingkan dengan pemain Juventus seposisi yang sudah main minimal 180 menit. Tempat lahir dari Wikidata hanya dipakai bila tanggal lahirnya cocok persis dengan FotMob.
+
+**Gaji** tidak punya sumber gratis yang stabil, jadi diisi manual di `lib/salaries.ts` (kosong secara bawaan, tampil "–"). **Heatmap** belum ada karena tidak ada sumber gratis yang bisa dipakai.
 
 ## Catatan
 
