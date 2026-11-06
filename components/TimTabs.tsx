@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useFetch } from '@/components/kp';
+import type { InjuriesResponse } from '@/lib/injuries';
 import type { NewsResponse } from '@/lib/news-types';
 
 /** Sub-menu di bawah menu utama "Tim". Urutan = urutan tampil. */
@@ -20,13 +21,16 @@ export const isTimPath = (path: string | null) =>
   Boolean(path) && TIM_TABS.some((t) => path === t.href || path!.startsWith(`${t.href}/`));
 
 /**
- * Lencana di tab Cedera = jumlah pemain berbeda yang disebut di judul berita berkategori cedera
- * (7 hari terakhir). Ini hitungan otomatis dari berita, bukan data medis resmi klub.
+ * Lencana di tab Cedera = jumlah pemain skuad yang cedera menurut data detail pemain FotMob.
+ * Kalau FotMob tidak bisa dihubungi, dipakai cadangan: jumlah pemain berbeda yang disebut di judul berita
+ * cedera 7 hari terakhir (hitungan otomatis dari berita, bukan data medis resmi klub).
  */
 function useInjuredCount() {
-  const res = useFetch<NewsResponse>('/api/berita');
+  const inj = useFetch<InjuriesResponse>('/api/cedera');
+  const news = useFetch<NewsResponse>(inj.loading || inj.data ? null : '/api/berita');
+  if (inj.data) return inj.data.players.length;
   const names = new Set<string>();
-  for (const item of res.data?.items ?? []) {
+  for (const item of news.data?.items ?? []) {
     if (item.category !== 'cedera') continue;
     for (const e of item.entities) if (e.kind === 'player') names.add(e.name);
   }
@@ -46,7 +50,7 @@ export default function TimTabs() {
             <Link key={t.href} href={t.href} className={`tim-tab${active ? ' active' : ''}`} aria-current={active ? 'page' : undefined}>
               {t.label}
               {t.href === '/cedera' && injured > 0 && (
-                <span className="tim-badge" title="Pemain yang disebut di kabar cedera 7 hari terakhir">
+                <span className="tim-badge" title="Pemain skuad yang cedera saat ini">
                   {injured}
                 </span>
               )}
