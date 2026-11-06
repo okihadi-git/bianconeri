@@ -1,9 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Face from '@/components/Face';
 import { fmtClock, useFetch } from '@/components/kp';
+import { findPlayer } from '@/lib/names';
+import type { InjuredPlayer, InjuriesResponse, InjuryStatus } from '@/lib/injuries';
 import type { NewsEntity, NewsItem, NewsResponse } from '@/lib/news-types';
 import '../berita/berita.css';
+import './cedera.css';
+
+const STATUS_LABEL: Record<InjuryStatus, string> = { lama: 'Absen lama', diragukan: 'Diragukan', segera: 'Segera kembali', absen: 'Absen' };
 
 const REL_LABEL = { resmi: 'Resmi', kuat: 'Laporan kuat', rumor: 'Rumor' } as const;
 
@@ -48,6 +54,7 @@ function Avatar({ item }: { item: NewsItem }) {
 
 export default function CederaPage() {
   const res = useFetch<NewsResponse>('/api/berita');
+  const inj = useFetch<InjuriesResponse>('/api/cedera');
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => setNow(Date.now()), [res.data]);
 
@@ -68,8 +75,31 @@ export default function CederaPage() {
 
   const strong = items.filter((i) => i.reliability === 'resmi' || i.reliability === 'kuat').length;
 
+  const injured = inj.data?.players ?? [];
+  const first = (st: InjuryStatus) => injured.find((p) => p.status === st);
+  const count = (st: InjuryStatus) => injured.filter((p) => p.status === st).length;
+  /** berita terbaru yang menyebut pemain ini di judul (pelengkap, bukan sumber status) */
+  const newsFor = (p: InjuredPlayer) =>
+    items.find((i) => i.entities.some((e) => e.kind === 'player' && findPlayer(e.name, [{ name: p.name }]))) ?? null;
+
   return (
     <div className="kp" id="cedera">
+      {inj.data ? (
+        <div className="kp-metrics">
+          <div className="kp-metric kp-metric-red">
+            <div className="kp-metric-label">Pemain absen</div>
+            <div className="kp-metric-val">{injured.length}</div>
+            <div className="kp-metric-sub">Dari {inj.data.checked} pemain skuad</div>
+          </div>
+          {(['lama', 'diragukan', 'segera'] as const).map((st) => (
+            <div className="kp-metric" key={st}>
+              <div className="kp-metric-label">{STATUS_LABEL[st]}</div>
+              <div className="kp-metric-val">{count(st)}</div>
+              <div className="kp-metric-sub">{first(st)?.name ?? '–'}</div>
+            </div>
+          ))}
+        </div>
+      ) : (
       <div className="kp-metrics">
         <div className="kp-metric kp-metric-red">
           <div className="kp-metric-label">Pemain disebut</div>
@@ -92,6 +122,72 @@ export default function CederaPage() {
           <div className="kp-metric-sub">Otomatis tiap ±20 menit</div>
         </div>
       </div>
+      )}
+
+      {inj.data && (
+        <section className="kp-card ci-card">
+          <header className="kp-card-head">
+            <div>
+              <h2 className="kp-title">Pemain cedera</h2>
+              <p className="ci-sub">
+                Dari data detail pemain FotMob · diperbarui {fmtClock(new Date(inj.data.updatedAt))} WIB. Status dihitung dari perkiraan kembali: lebih dari ±4 minggu = absen lama,
+                kurang dari 2 minggu = segera kembali.
+              </p>
+            </div>
+          </header>
+          {injured.length === 0 ? (
+            <div className="ci-empty">✅ Tidak ada pemain skuad yang dilaporkan cedera saat ini.</div>
+          ) : (
+            <div className="ci-grid">
+              {injured.map((p) => {
+                const n = newsFor(p);
+                return (
+                  <article className="ci-item" key={p.id}>
+                    <span className={`ci-badge ${p.status}`}>{STATUS_LABEL[p.status]}</span>
+                    <span className="ci-ava">
+                      <Face src={p.photo} name={p.name} size={64} />
+                    </span>
+                    <h3 className="ci-name">{p.name}</h3>
+                    <p className="ci-pos">{p.position || '–'}</p>
+                    <dl className="ci-row">
+                      <dt>Cedera</dt>
+                      <dd title={p.injuryEn}>{p.injury}</dd>
+                    </dl>
+                    <dl className="ci-row">
+                      <dt>Kembali</dt>
+                      <dd>{p.returns ?? 'Belum ada perkiraan dari sumber data'}</dd>
+                    </dl>
+                    {n && (
+                      <dl className="ci-row">
+                        <dt>Kabar</dt>
+                        <dd>
+                          <a href={n.url} target="_blank" rel="noopener noreferrer">
+                            {n.title}
+                          </a>
+                          <small>
+                            {n.source}
+                            {n.reliability ? ` · ${REL_LABEL[n.reliability]}` : ''}
+                          </small>
+                        </dd>
+                      </dl>
+                    )}
+                  </article>
+                );
+              })}
+            </div>
+          )}
+          {inj.data.failed > 0 && (
+            <p className="ci-warn">
+              Status {inj.data.failed} pemain skuad gagal dimuat dari FotMob, jadi tidak ikut terhitung di atas. Muat ulang beberapa saat lagi untuk mencoba kembali.
+            </p>
+          )}
+        </section>
+      )}
+      {inj.error && !inj.loading && (
+        <section className="kp-card ci-card">
+          <div className="ci-empty">Data cedera per pemain belum bisa dimuat dari FotMob. Kabar cedera dari berita tetap tampil di bawah.</div>
+        </section>
+      )}
 
       {players.length > 0 && (
         <section className="kp-card cd-players-card">
