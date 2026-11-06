@@ -18,6 +18,17 @@ export function circlesIn(text: string): Point[] {
   return out;
 }
 
+/** Kunci seperti "857269", "player_857269", "857269.svg" → "857269". */
+const idFromKey = (k: string): string | null => /(\d{5,})/.exec(k)?.[1] ?? null;
+
+/** ID pemain dari kolom milik objek itu sendiri (playerId, player_id, pid, id, …); kolom teamId diabaikan. */
+function idOfObject(o: Record<string, unknown>): string | undefined {
+  const isId = (v: unknown) => NUMERIC.test(String(v ?? ''));
+  for (const k of ['playerId', 'player_id', 'pid', 'id']) if (isId(o[k])) return String(o[k]);
+  for (const [k, v] of Object.entries(o)) if (/id$/i.test(k) && !/^(team|match|league)/i.test(k) && isId(v)) return String(v);
+  return undefined;
+}
+
 /** playerId → titik. "_" = ada titik tetapi tidak bisa dikaitkan ke pemain. */
 export function collectByPlayer(root: unknown): Map<string, Point[]> {
   const found = new Map<string, Point[]>();
@@ -32,13 +43,18 @@ export function collectByPlayer(root: unknown): Map<string, Point[]> {
       return;
     }
     if (Array.isArray(node)) {
+      // pasangan [idPemain, "<circle…/>"]
+      if (node.length === 2 && NUMERIC.test(String(node[0] ?? '')) && typeof node[1] === 'string') {
+        walk(node[1], String(node[0]), depth + 1);
+        return;
+      }
       for (const x of node) walk(x, ctx, depth + 1);
       return;
     }
     if (typeof node === 'object') {
       const o = node as Record<string, unknown>;
-      const own = [o.playerId, o.player_id, o.id].map((v) => String(v ?? '')).find((v) => NUMERIC.test(v));
-      for (const [k, v] of Object.entries(o)) walk(v, NUMERIC.test(k) ? k : own ?? ctx, depth + 1);
+      const own = idOfObject(o);
+      for (const [k, v] of Object.entries(o)) walk(v, idFromKey(k) ?? own ?? ctx, depth + 1);
     }
   };
 
