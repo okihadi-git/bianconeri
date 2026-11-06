@@ -27,8 +27,26 @@ export const STAT_LABELS: [string, string][] = [
 /** Laga Juventus dari beberapa hari lalu sampai besok, cache pendek supaya skor live tetap segar. */
 export async function fetchRecentJuveEvents(): Promise<any[]> {
   const now = new Date();
-  const range = `${ymd(addDays(now, -4))}-${ymd(addDays(now, 1))}`;
-  const lists = await Promise.all(COMPETITIONS.map((c) => getScoreboard(c.slug, range, 30)));
+  const from = addDays(now, -4);
+  const fromMs = from.getTime();
+  const toMs = addDays(now, 2).getTime();
+  const range = `${ymd(from)}-${ymd(addDays(now, 1))}`;
+  const monthKey = (d: Date) => `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+  const months = Array.from(new Set([monthKey(from), monthKey(now)]));
+
+  const lists = await Promise.all(
+    COMPETITIONS.map(async (c) => {
+      // Format rentang tanggal kadang kosong di ESPN; fetchLeagueEvents (halaman lain) memakai YYYYMM dulu.
+      // Jadi kalau rentang kosong, coba format bulanan lalu saring ke jendela waktu yang sama.
+      const byRange = await getScoreboard(c.slug, range, 30);
+      if (byRange.length) return byRange;
+      const monthly = (await Promise.all(months.map((m) => getScoreboard(c.slug, m, 30)))).flat();
+      return monthly.filter((e) => {
+        const t = new Date(e?.date).getTime();
+        return t >= fromMs && t <= toMs;
+      });
+    })
+  );
   const seen = new Set<string>();
   return lists
     .flat()
