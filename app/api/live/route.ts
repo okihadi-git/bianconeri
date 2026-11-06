@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { eventState } from '@/lib/espn';
+import { attachPhotos } from '@/lib/fotmob';
 import { buildLiveMatch, fetchRecentJuveEvents, fetchSummary, pickLiveEvent } from '@/lib/live';
 import type { LiveResponse } from '@/lib/types';
 
@@ -19,7 +20,8 @@ export async function GET() {
     if (!event) return NextResponse.json({ match: null, updatedAt } satisfies LiveResponse);
 
     const summary = await fetchSummary(String(event._league ?? 'all'), String(event.id), eventState(event) === 'live');
-    return NextResponse.json({ match: buildLiveMatch(event, summary), updatedAt } satisfies LiveResponse);
+    const match = await attachPhotos(buildLiveMatch(event, summary));
+    return NextResponse.json({ match, updatedAt } satisfies LiveResponse);
   } catch {
     return NextResponse.json({ error: 'Terjadi kesalahan server', match: null }, { status: 500 });
   }
