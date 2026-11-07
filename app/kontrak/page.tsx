@@ -31,7 +31,7 @@ const PRIORITY_VALUE = 40_000_000;
  *  Mulai dibicarakan       → sisa ≤ 2 musim lainnya
  *  Aman                    → sisa ≥ 3 musim
  */
-export function statusOf(p: SquadPlayer, s: Salary | null, left: number): Status | null {
+function statusOf(p: SquadPlayer, s: Salary | null, left: number): Status | null {
   if (s?.status === 'LOAN') return { tone: 'gray', label: 'Pinjaman' };
   if (left <= 0) return null; // tanggal kontrak tidak diketahui
   if (left === 1) return { tone: 'red', label: 'Harus diputuskan' };
