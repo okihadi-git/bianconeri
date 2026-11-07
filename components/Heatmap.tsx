@@ -97,9 +97,6 @@ export default function Heatmap({ name }: { name: string }) {
     if (res.data && ref.current) paint(ref.current, res.data.points);
   }, [res.data]);
 
-  // Tidak ada data (FotMob menolak / laga tanpa heatmap): bagian ini disembunyikan, bukan diisi gambar kosong.
-  if (res.error || (!res.loading && !res.data)) return null;
-
   return (
     <section className="pm-sec">
       <h4 className="pm-h">
@@ -112,6 +109,11 @@ export default function Heatmap({ name }: { name: string }) {
       </h4>
       {res.loading ? (
         <p className="pm-muted">Memuat heatmap…</p>
+      ) : !res.data ? (
+        <p className="pm-muted">
+          Heatmap belum tersedia untuk pemain ini. FotMob hanya menyediakannya untuk pemain yang cukup lama bermain di laga tersebut, atau data FotMob sedang tidak
+          bisa diambil.
+        </p>
       ) : (
         <>
           <div className="hm-wrap">
@@ -119,7 +121,7 @@ export default function Heatmap({ name }: { name: string }) {
             <canvas ref={ref} width={W} height={H} className="hm-canvas" role="img" aria-label={`Heatmap ${name}`} />
           </div>
           <p className="hm-note">
-            Dari sentuhan bola di {res.data?.matches} dari {res.data?.tried} laga terakhir yang dimainkan (semua kompetisi, termasuk timnas), bukan seluruh musim. Sumber: FotMob.
+            Dari sentuhan bola di {res.data.matches} dari {res.data.tried} laga terakhir yang dimainkan (semua kompetisi, termasuk timnas), bukan seluruh musim. Sumber: FotMob.
           </p>
         </>
       )}
