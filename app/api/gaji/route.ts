@@ -1,14 +1,17 @@
 import { NextResponse } from 'next/server';
-import { fetchSalaries, REVALIDATE } from '@/lib/salaries-server';
+import { fetchSalariesDetailed, REVALIDATE } from '@/lib/salaries-server';
 
-// Halaman ini dibangun ulang paling cepat setiap 6 jam; selebihnya dilayani dari cache.
-export const revalidate = 21600;
+// Dinamis supaya hasil kosong/gagal tidak ikut dibekukan; cache CDN diatur lewat header di bawah.
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const salaries = await fetchSalaries();
-  if (!salaries) return NextResponse.json({ salaries: [], updatedAt: new Date().toISOString() }, { headers: { 'Cache-Control': 's-maxage=300, stale-while-revalidate=600' } });
-  return NextResponse.json(
-    { salaries, updatedAt: new Date().toISOString() },
-    { headers: { 'Cache-Control': `s-maxage=${REVALIDATE}, stale-while-revalidate=${REVALIDATE * 4}` } }
-  );
+  const { salaries, reason } = await fetchSalariesDetailed();
+  const updatedAt = new Date().toISOString();
+
+  if (!salaries.length) {
+    // Gagal/kosong: cache pendek supaya begitu env/tabel diperbaiki, hasilnya cepat muncul. `reason` aman (tanpa kunci).
+    return NextResponse.json({ salaries: [], updatedAt, reason }, { headers: { 'Cache-Control': 'no-store' } });
+  }
+  // Ada data: CDN menyimpan 6 jam, lalu menyajikan salinan lama sambil memperbarui di latar belakang.
+  return NextResponse.json({ salaries, updatedAt }, { headers: { 'Cache-Control': `public, s-maxage=${REVALIDATE}, stale-while-revalidate=${REVALIDATE * 4}` } });
 }
