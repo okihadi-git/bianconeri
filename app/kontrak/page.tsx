@@ -47,7 +47,7 @@ export default function KontrakPage() {
 
   const rows: Row[] = useMemo(() => {
     const all = players.map((p) => {
-      const s = salaryFrom(salaries, { name: p.name, ids: [p.id] });
+      const s = salaryFrom(salaries, { name: p.name, ids: squad.data?.source === 'fotmob' ? { fotmob: p.id } : { tm: p.id } });
       return { p, s, yearly: s ? yearlyOf(s) : null, weekly: s ? weeklyOf(s) : null, until: p.contractUntil ?? s?.expiration ?? null };
     });
     const by = (a: Row, b: Row) => {

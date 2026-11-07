@@ -2,13 +2,6 @@
 // Datanya diambil server dari tabel Supabase `player_salaries` (lib/salaries-server.ts) dan disajikan /api/gaji.
 import { normName } from './names';
 
-/** Nama sama persis, atau semua kata nama yang lebih pendek ada di nama yang lebih panjang (tanpa tebakan nama belakang). */
-const sameNameStrict = (a: string, b: string) => {
-  const [x, y] = [normName(a), normName(b)];
-  const [short, long] = x.length <= y.length ? [x, y] : [y, x];
-  return short.length > 0 && short.every((w) => long.includes(w));
-};
-
 export interface Salary {
   name: string;
   tmId: string | null;
@@ -36,19 +29,34 @@ export interface SalaryResponse {
 export const yearlyOf = (s: Salary): number | null => s.totalPerYear ?? s.fixedPerYear ?? (s.fixedPerWeek != null ? s.fixedPerWeek * 52 : null);
 export const weeklyOf = (s: Salary): number | null => s.fixedPerWeek ?? (s.fixedPerYear != null ? s.fixedPerYear / 52 : null);
 
+/** Kata nama dianggap sama bila persis sama, atau salah satunya awalan yang lain (min. 3 huruf): "Nico" ↔ "Nicolás". */
+const sameWord = (a: string, b: string) => a === b || (Math.min(a.length, b.length) >= 3 && (a.startsWith(b) || b.startsWith(a)));
+
+/** Semua kata nama yang lebih pendek ada di nama yang lebih panjang ("Bremer" ↔ "Gleison Bremer"). Tanpa tebakan nama belakang saja. */
+const sameNameStrict = (a: string, b: string) => {
+  const [x, y] = [normName(a), normName(b)];
+  const [short, long] = x.length <= y.length ? [x, y] : [y, x];
+  return short.length > 0 && short.every((w) => long.some((l) => sameWord(w, l)));
+};
+
+/** ID pemain menurut jenisnya. ID Transfermarkt dan FotMob dibandingkan HANYA dengan kolomnya sendiri (tm_id / fotmob_id). */
+export interface SalaryIds {
+  tm?: string | null;
+  fotmob?: string | null;
+}
+
 /**
- * Cari gaji satu pemain. ID (Transfermarkt/FotMob) hanya dipakai bila namanya juga cocok — rentang ID kedua sumber
- * bisa bertabrakan; tanpa ID, nama harus cocok ketat ("Bremer" ↔ "Gleison Bremer", bukan sekadar nama belakang sama).
+ * Cari gaji satu pemain.
+ *  1. ID: tm_id atau fotmob_id sama persis → langsung dipakai (ID satu sumber tidak bisa bertabrakan dengan dirinya sendiri,
+ *     jadi nama yang ditulis berbeda, mis. "Nico" vs "Nicolás", tidak jadi masalah).
+ *  2. Tanpa ID: nama harus cocok ketat dan hanya satu kandidat. Lebih baik kosong daripada gaji orang lain.
  */
-export function salaryFrom(list: Salary[] | null | undefined, who: { name: string; ids?: (string | null | undefined)[] }): Salary | null {
+export function salaryFrom(list: Salary[] | null | undefined, who: { name: string; ids?: SalaryIds }): Salary | null {
   if (!list?.length) return null;
-  const ids = (who.ids ?? []).filter(Boolean).map(String);
-  if (ids.length) {
-    const byId = list.filter((s) => ids.includes(String(s.tmId)) || ids.includes(String(s.fotmobId)));
-    const hit = byId.find((s) => sameNameStrict(s.name, who.name));
-    if (hit) return hit;
-  }
-  // Tanpa ID: nama harus cocok ketat dan hanya satu kandidat. Lebih baik kosong daripada gaji orang lain.
+  const tm = who.ids?.tm ? String(who.ids.tm) : '';
+  const fm = who.ids?.fotmob ? String(who.ids.fotmob) : '';
+  const byId = list.find((s) => (tm && s.tmId === tm) || (fm && s.fotmobId === fm));
+  if (byId) return byId;
   const named = list.filter((s) => sameNameStrict(s.name, who.name));
   return named.length === 1 ? named[0] : null;
 }

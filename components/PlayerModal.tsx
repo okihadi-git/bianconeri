@@ -197,7 +197,7 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
   const heightCm = player.heightCm ?? detail?.heightCm ?? null;
   const age = ageAt(detail?.birth.iso ?? null, now) ?? player.age;
   const value = player.marketValue ?? detail?.marketValue ?? null;
-  const salary = salaryFrom(salaryRes.data?.salaries, { name: player.name, ids: [player.id, detail?.id] });
+  const salary = salaryFrom(salaryRes.data?.salaries, { name: player.name, ids: { tm: source === 'Transfermarkt' ? player.id : null, fotmob: source === 'FotMob' ? player.id : detail?.id } });
   const yearly = salary ? yearlyOf(salary) : null;
   const weekly = salary ? weeklyOf(salary) : null;
   const k = (n: number) => Math.round(n / 1000) * 1000;
