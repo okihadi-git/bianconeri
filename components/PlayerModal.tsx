@@ -2,14 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import Heatmap from '@/components/Heatmap';
 import { useFetch } from '@/components/kp';
 import { fmtEuro, fmtMonthYear } from '@/components/team';
 import { countryId, flagUrl, shortCode } from '@/lib/countries';
 import type { PlayerDetail, FormEntry } from '@/lib/player';
 import { ageAt, buildProfile, fmtDateId, positionId, seasonsLeft, summarize, trend, type Axis } from '@/lib/playerprofile';
 import type { PlayerStatsResponse } from '@/lib/playerstats';
-import { salaryOf } from '@/lib/salaries';
+import { salaryFrom, type SalaryResponse } from '@/lib/salaries';
 import type { SquadPlayer } from '@/lib/types';
 import './player-modal.css';
 
@@ -172,6 +171,7 @@ function Radar({ axes }: { axes: Axis[] }) {
 export default function PlayerModal({ player, stats, source, onClose }: { player: SquadPlayer; stats: StatsState; source: string; onClose: () => void }) {
   const detailRes = useFetch<PlayerDetail>(`/api/player?name=${encodeURIComponent(player.name)}`);
   const detail = detailRes.data;
+  const salaryRes = useFetch<SalaryResponse>('/api/gaji');
   const closeRef = useRef<HTMLButtonElement>(null);
   const now = useMemo(() => new Date(), []);
 
@@ -197,7 +197,7 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
   const heightCm = player.heightCm ?? detail?.heightCm ?? null;
   const age = ageAt(detail?.birth.iso ?? null, now) ?? player.age;
   const value = player.marketValue ?? detail?.marketValue ?? null;
-  const salary = salaryOf(player.name);
+  const salary = salaryFrom(salaryRes.data?.salaries, player.name);
   const left = seasonsLeft(player.contractUntil, now);
   const segments = Math.max(5, left);
 
@@ -270,7 +270,7 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
                   <b>{fmtEuro(salary.eurPerYear)}/tahun</b> <span className="pm-muted">(±{fmtEuro(Math.round(salary.eurPerYear / 52 / 1000) * 1000)}/pekan)</span>
                 </>
               ) : (
-                <span className="pm-muted">Tidak tersedia</span>
+                <span className="pm-muted">{salaryRes.loading ? '…' : 'Tidak tersedia'}</span>
               )}
             </Row>
             <Row label="Kontrak">{player.contractUntil ? <b>hingga {fmtMonthYear(player.contractUntil)}</b> : '–'}</Row>
@@ -347,8 +347,6 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
               <FormChart form={detail.form} />
             </Section>
           )}
-
-          {detail && detail.form.length > 0 && <Heatmap name={player.name} />}
 
           <Section title="Profil statistik" note={profile ? `persentil di antara ${profile.peers} ${profile.group.toLowerCase()} Juventus (min. 180 menit)` : undefined}>
             {stats.loading ? (
@@ -429,8 +427,7 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
 
           <p className="pm-foot">
             Statistik semua kompetisi musim {seasonLabel(now)}, kecuali starter (hanya liga) · *kartu yang sudah terkonfirmasi di laga selesai. Statistik dari ESPN; rating, riwayat klub, dan caps dari FotMob; tempat
-            lahir dari Wikidata; nilai transfer dan kontrak dari {source}. Gaji hanya tampil bila diisi di <code>lib/salaries.ts</code>
-            {salary ? ` (sumber: ${salary.source})` : ''}. Angka yang tidak diberikan sumber ditampilkan “–”.
+            lahir dari Wikidata; nilai transfer dan kontrak dari {source}. Gaji dari database Supabase proyek ini{salary?.source ? ` (sumber: ${salary.source})` : ''}. Angka yang tidak diberikan sumber ditampilkan “–”.
           </p>
         </div>
       </aside>

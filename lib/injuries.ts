@@ -1,128 +1,113 @@
-// Pemain cedera di skuad Juventus, dari data detail pemain FotMob (playerData → injuryInformation).
-// Sama dengan sumber "Kebugaran & cedera" di popup pemain, jadi dua tempat itu selalu sepakat.
-// FotMob tidak resmi dan bisa memblokir: pemain yang gagal dimuat dihitung di `failed`, tidak pernah dianggap "sehat".
-import { juveSquadPool } from './fotmob';
+// Daftar pemain cedera Juventus dari FotMob (injuryInformation tiap pemain skuad).
+// FotMob tidak resmi; bila satu pemain gagal dimuat, ia dilewati dan dihitung di `failed`. Tidak ada data karangan.
+import { fetchFotmob } from './squad';
 import { parsePlayerData } from './player';
 
-export type InjuryStatus = 'lama' | 'diragukan' | 'segera' | 'absen';
+export type InjuryKind = 'lama' | 'segera' | 'diragukan' | 'absen';
 
 export interface InjuredPlayer {
   id: string;
   name: string;
+  jersey: string;
   photo: string;
-  /** posisi dalam Bahasa Indonesia, mis. "Bek tengah" */
+  /** posisi (Inggris, seperti FotMob) */
   position: string;
-  /** jenis cedera (Indonesia bila dikenali, kalau tidak teks asli FotMob) */
+  /** jenis cedera dalam bahasa Indonesia; teks asli di injuryRaw */
   injury: string;
-  injuryEn: string;
-  /** perkiraan kembali, mis. "awal Desember"; null = FotMob tidak menyebut */
+  injuryRaw: string;
+  /** perkiraan kembali dalam bahasa Indonesia, mis. "Awal Desember 2026"; null = tidak ada */
   returns: string | null;
+  returnsRaw: string | null;
+  /** tanggal perkiraan kembali bila teksnya bisa dibaca */
   returnIso: string | null;
-  status: InjuryStatus;
+  kind: InjuryKind;
 }
 
-export interface InjuriesResponse {
+export interface InjuryResponse {
   players: InjuredPlayer[];
-  /** jumlah pemain skuad yang berhasil dicek di FotMob */
+  /** jumlah pemain skuad yang berhasil diperiksa / gagal */
   checked: number;
-  /** jumlah yang gagal dimuat (status cedera tidak diketahui) */
   failed: number;
   updatedAt: string;
 }
 
-/* ---------- terjemahan sederhana ---------- */
+/* ---------- terjemahan & tanggal ---------- */
 
-const POSITIONS: [RegExp, string][] = [
-  [/goalkeeper|keeper/i, 'Kiper'],
-  [/centre.?back|center.?back/i, 'Bek tengah'],
-  [/right.?back/i, 'Bek kanan'],
-  [/left.?back/i, 'Bek kiri'],
-  [/right.?wing.?back/i, 'Wing-back kanan'],
-  [/left.?wing.?back/i, 'Wing-back kiri'],
-  [/defensive mid/i, 'Gelandang bertahan'],
-  [/attacking mid/i, 'Gelandang serang'],
-  [/central mid|centre mid|center mid/i, 'Gelandang tengah'],
-  [/right.?mid/i, 'Gelandang kanan'],
-  [/left.?mid/i, 'Gelandang kiri'],
-  [/right.?wing/i, 'Sayap kanan'],
-  [/left.?wing/i, 'Sayap kiri'],
-  [/striker|centre.?forward|center.?forward/i, 'Penyerang tengah'],
-  [/forward/i, 'Penyerang'],
-  [/defender/i, 'Bek'],
-  [/midfield/i, 'Gelandang'],
-];
-export const positionId = (en: string | null) => (en && POSITIONS.find(([re]) => re.test(en))?.[1]) || en || '';
+const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const monthIdx = (w: string) => MONTHS.findIndex((m) => m === w.toLowerCase() || m.slice(0, 3) === w.toLowerCase().slice(0, 3));
 
 const BODY: [RegExp, string][] = [
-  [/quadriceps/i, 'paha depan (quadriceps)'],
   [/hamstring/i, 'otot paha belakang (hamstring)'],
-  [/adductor|groin/i, 'pangkal paha'],
+  [/quadricep/i, 'paha depan (quadriceps)'],
   [/thigh/i, 'paha'],
+  [/groin/i, 'pangkal paha'],
   [/calf/i, 'betis'],
-  [/knee/i, 'lutut'],
+  [/achilles/i, 'tendon Achilles'],
   [/ankle/i, 'pergelangan kaki'],
+  [/knee|acl|cruciate|meniscus/i, 'lutut'],
   [/foot|toe/i, 'kaki'],
   [/hip/i, 'pinggul'],
   [/back/i, 'punggung'],
   [/shoulder/i, 'bahu'],
-  [/achilles/i, 'tendon achilles'],
-  [/ligament|cruciate|acl/i, 'ligamen'],
+  [/concussion|head/i, 'kepala (gegar otak)'],
+  [/illness|sick|flu|virus/i, 'sakit'],
   [/muscle|muscular/i, 'otot'],
-  [/head|concussion/i, 'kepala (gegar otak)'],
-  [/rib|chest/i, 'tulang rusuk/dada'],
+  [/knock/i, 'benturan'],
+  [/fracture|broken/i, 'patah tulang'],
+  [/surgery/i, 'pasca operasi'],
+  [/unknown|undisclosed/i, 'jenis belum dikonfirmasi'],
 ];
 
-export function injuryId(en: string): string {
-  const t = en.trim();
-  if (!t) return 'Cedera (jenis belum dikonfirmasi)';
-  if (/^(illness|sick|flu|virus)/i.test(t)) return 'Sakit';
-  if (/^(knock|bruise)/i.test(t)) return 'Benturan';
-  const part = BODY.find(([re]) => re.test(t))?.[1];
-  if (!part) return t; // tidak dikenali: pakai teks asli, jangan menebak
-  const kind = /fracture|broken/i.test(t) ? 'Patah tulang' : /surgery|operation/i.test(t) ? 'Operasi' : /strain|tear|torn|rupture/i.test(t) ? 'Cedera robek/tegang' : 'Cedera';
-  return `${kind} ${part}`;
+export function injuryId(raw: string): string {
+  const hit = BODY.find(([re]) => re.test(raw));
+  return hit ? hit[1][0].toUpperCase() + hit[1].slice(1) : raw;
 }
 
-const MONTHS_EN = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
-const MONTHS_ID = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+const QUAL: Record<string, string> = { early: 'Awal', mid: 'Pertengahan', late: 'Akhir', end: 'Akhir', start: 'Awal' };
 
-/** "Early December" → { label: "awal Desember", date: ~7 Des }. Teks tak dikenali: label = teks asli, date = null. */
-export function parseReturn(text: string | null, now = new Date()): { label: string | null; date: Date | null } {
-  const raw = (text ?? '').trim();
-  if (!raw) return { label: null, date: null };
-
-  const iso = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw);
-  if (iso) {
-    const d = new Date(Date.UTC(+iso[1], +iso[2] - 1, +iso[3]));
-    return { label: `${d.getUTCDate()} ${MONTHS_ID[d.getUTCMonth()]} ${d.getUTCFullYear()}`, date: d };
-  }
-
-  const m = new RegExp(`(early|mid|late)?[\\s-]*(${MONTHS_EN.join('|')})(?:\\s+(\\d{4}))?`, 'i').exec(raw);
-  if (m) {
-    const month = MONTHS_EN.indexOf(m[2].toLowerCase());
-    const part = (m[1] ?? '').toLowerCase();
-    const day = part === 'early' ? 7 : part === 'late' ? 25 : 15;
-    let year = m[3] ? +m[3] : now.getUTCFullYear();
-    let date = new Date(Date.UTC(year, month, day));
-    if (!m[3] && date.getTime() < now.getTime() - 30 * 86400000) date = new Date(Date.UTC(++year, month, day));
-    const prefix = part === 'early' ? 'awal ' : part === 'late' ? 'akhir ' : part === 'mid' ? 'pertengahan ' : '';
-    return { label: `${prefix}${MONTHS_ID[month]}${m[3] ? ` ${m[3]}` : ''}`, date };
-  }
-  return { label: raw, date: null };
+/** "Early December 2026" → "Awal Desember 2026"; teks yang tidak dikenal dikembalikan apa adanya. */
+export function returnId(raw: string): string {
+  const t = raw.trim();
+  if (!t || /^(unknown|tbc|tba)$/i.test(t)) return 'TBC';
+  if (/doubtful/i.test(t)) return 'Diragukan';
+  return t
+    .replace(/\b(early|mid|late|end|start)\b[-\s]*/gi, (_, q: string) => `${QUAL[q.toLowerCase()]} `)
+    .replace(/\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/gi, (m) => MONTHS_ID[monthIdx(m)])
+    .replace(/\b(jan|feb|mar|apr|jun|jul|aug|sep|sept|oct|nov|dec)\b\.?/gi, (m) => MONTHS_ID[monthIdx(m)])
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
-export function classify(returnsText: string | null, injuryEn: string, date: Date | null, now = new Date()): InjuryStatus {
-  if (/doubt|questionable|day.to.day|game.?time|fitness test/i.test(`${returnsText ?? ''} ${injuryEn}`)) return 'diragukan';
-  if (date) {
-    const days = (date.getTime() - now.getTime()) / 86400000;
-    if (days <= 14) return 'segera';
-    if (days > 28) return 'lama';
-    return 'absen';
-  }
-  return /acl|cruciate|rupture|fracture|surgery|achilles/i.test(injuryEn) ? 'lama' : 'absen';
+/** Perkiraan tanggal dari teks FotMob. Tahun tak disebut = kemunculan berikutnya (paling lama 2 bulan ke belakang). */
+export function parseReturn(raw: string | null, now: Date): string | null {
+  const t = String(raw ?? '').trim();
+  if (!t) return null;
+  const iso = /(\d{4})-(\d{2})-(\d{2})/.exec(t);
+  if (iso) return new Date(Date.UTC(+iso[1], +iso[2] - 1, +iso[3])).toISOString();
+  const m = /\b(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)\b/i.exec(t);
+  if (!m) return null;
+  const month = monthIdx(m[1]);
+  const day = /\b(\d{1,2})\b(?!\s*\d{3})/.exec(t.replace(/\b\d{4}\b/, ''));
+  const qual = /early|start/i.test(t) ? 5 : /late|end/i.test(t) ? 25 : 15;
+  const d = day ? Math.min(31, Number(day[1])) : qual;
+  const yr = /\b(20\d{2})\b/.exec(t);
+  let year = yr ? Number(yr[1]) : now.getUTCFullYear();
+  let at = Date.UTC(year, month, d);
+  if (!yr && at < now.getTime() - 60 * 86400000) at = Date.UTC(year + 1, month, d);
+  return new Date(at).toISOString();
 }
 
-/* ---------- ambil data ---------- */
+const SOON_DAYS = 21;
+
+export function classify(injuryRaw: string, returnsRaw: string | null, returnIso: string | null, now: Date): InjuryKind {
+  if (/doubt|knock|minor|fitness|precaution/i.test(`${injuryRaw} ${returnsRaw ?? ''}`)) return 'diragukan';
+  if (!returnIso) return 'absen';
+  const days = (new Date(returnIso).getTime() - now.getTime()) / 86400000;
+  return days <= SOON_DAYS ? 'segera' : 'lama';
+}
+
+/* ---------- pengambilan ---------- */
 
 const HEADERS = {
   Accept: 'application/json, text/plain, */*',
@@ -130,67 +115,53 @@ const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (compatible; bianconeri-matchday-hub)',
 };
 
-async function playerData(id: string): Promise<any | null> {
+async function getJson(url: string): Promise<any | null> {
   try {
-    const res = await fetch(`https://www.fotmob.com/api/data/playerData?id=${encodeURIComponent(id)}`, {
-      headers: HEADERS,
-      next: { revalidate: 1800 }, // cache yang sama dengan popup pemain
-      signal: AbortSignal.timeout(10000),
-    });
+    const res = await fetch(url, { headers: HEADERS, next: { revalidate: 1800 }, signal: AbortSignal.timeout(10000) });
     return res.ok ? await res.json() : null;
   } catch {
     return null;
   }
 }
 
-/** Jalankan `fn` untuk semua item, maksimal `limit` sekaligus (supaya FotMob tidak dibanjiri 30 permintaan). */
-async function mapLimit<T, R>(items: T[], limit: number, fn: (x: T) => Promise<R>): Promise<R[]> {
-  const out: R[] = new Array(items.length);
-  let next = 0;
-  await Promise.all(
-    Array.from({ length: Math.min(limit, items.length) }, async () => {
-      while (next < items.length) {
-        const i = next++;
-        out[i] = await fn(items[i]);
-      }
-    })
-  );
-  return out;
-}
-
-const ORDER: Record<InjuryStatus, number> = { lama: 0, absen: 1, diragukan: 2, segera: 3 };
-
-export async function fetchInjuries(now = new Date()): Promise<InjuriesResponse | null> {
-  const pool = await juveSquadPool();
-  if (!pool.length) return null;
-
-  const results = await mapLimit(pool, 6, async (p) => ({ p, data: await playerData(p.id) }));
-  const players: InjuredPlayer[] = [];
-  let checked = 0;
+export async function fetchInjuries(now = new Date()): Promise<InjuryResponse> {
+  const { players } = await fetchFotmob();
+  const out: InjuredPlayer[] = [];
   let failed = 0;
-  for (const { p, data } of results) {
-    const detail = data ? parsePlayerData(data, p.id) : null;
-    if (!detail) {
-      failed++;
-      continue;
-    }
-    checked++;
-    if (!detail.injury) continue;
-    const ret = parseReturn(detail.injury.returns, now);
-    players.push({
-      id: p.id,
-      name: p.name,
-      photo: p.photo,
-      position: positionId(detail.position),
-      injury: injuryId(detail.injury.name),
-      injuryEn: detail.injury.name,
-      returns: ret.label,
-      returnIso: ret.date ? ret.date.toISOString() : null,
-      status: classify(detail.injury.returns, detail.injury.name, ret.date, now),
+  let checked = 0;
+
+  // 6 permintaan sekaligus supaya tidak membebani FotMob
+  for (let i = 0; i < players.length; i += 6) {
+    const batch = players.slice(i, i + 6);
+    const res = await Promise.all(batch.map((p) => getJson(`https://www.fotmob.com/api/data/playerData?id=${encodeURIComponent(p.id)}`)));
+    batch.forEach((p, k) => {
+      const detail = res[k] ? parsePlayerData(res[k], p.id) : null;
+      if (!detail) {
+        failed += 1;
+        return;
+      }
+      checked += 1;
+      if (!detail.injury) return;
+      const injuryRaw = detail.injury.name;
+      const returnsRaw = detail.injury.returns;
+      const returnIso = parseReturn(returnsRaw, now);
+      out.push({
+        id: p.id,
+        name: p.name,
+        jersey: p.jersey,
+        photo: p.photo,
+        position: detail.position ?? p.position,
+        injury: injuryId(injuryRaw),
+        injuryRaw,
+        returns: returnsRaw ? returnId(returnsRaw) : null,
+        returnsRaw,
+        returnIso,
+        kind: classify(injuryRaw, returnsRaw, returnIso, now),
+      });
     });
   }
-  if (!checked) return null; // FotMob menolak semua permintaan: jangan pura-pura "tidak ada cedera"
 
-  players.sort((a, b) => ORDER[a.status] - ORDER[b.status] || a.name.localeCompare(b.name));
-  return { players, checked, failed, updatedAt: now.toISOString() };
+  const order: Record<InjuryKind, number> = { lama: 0, absen: 1, diragukan: 2, segera: 3 };
+  out.sort((a, b) => order[a.kind] - order[b.kind] || a.name.localeCompare(b.name));
+  return { players: out, checked, failed, updatedAt: now.toISOString() };
 }

@@ -48,7 +48,7 @@ Semua sumber lain tidak resmi; format dan aksesnya bisa berubah atau diblokir se
 
 Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil persentil) dihitung dari data ESPN yang sama dengan halaman Statistik; persentil membandingkan dengan pemain Juventus seposisi yang sudah main minimal 180 menit. Tempat lahir dari Wikidata hanya dipakai bila tanggal lahirnya cocok persis dengan FotMob.
 
-**Gaji** tidak punya sumber gratis yang stabil, jadi diisi manual di `lib/salaries.ts` (kosong secara bawaan, tampil "–"). **Heatmap** belum ada karena tidak ada sumber gratis yang bisa dipakai.
+**Gaji** dibaca dari tabel Supabase lewat `/api/gaji` (env `SUPABASE_URL`, `SUPABASE_KEY`; lihat `.env.example`). Satu request untuk seluruh tabel, di-cache 6 jam; tanpa env atau saat Supabase gagal tampil "–". **Heatmap** belum ada karena tidak ada sumber gratis yang bisa dipakai.
 
 ## Catatan
 

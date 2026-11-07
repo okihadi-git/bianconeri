@@ -1,7 +1,7 @@
 // Rating pemain (estimasi) untuk satu laga: dihitung dari ringkasan (summary) ESPN.
 // ESPN tidak punya rating resmi, jadi angka ini perkiraan otomatis dengan skala 6,0 = rata-rata.
-import { layoutRows } from './pitch';
 import { findPlayer, type FmMatch, type FmPlayer } from './fotmob';
+import { layoutLines } from './pitch';
 import type { LineupPlayer, LiveMatch } from './types';
 
 export type PosGroup = 'GK' | 'DEF' | 'MID' | 'FWD';
@@ -81,14 +81,6 @@ export function groupOf(abbr: string): PosGroup {
   if (/^(CD|LB|RB|SW|WB|LWB|RWB|D)/.test(a)) return 'DEF';
   if (/M/.test(a)) return 'MID';
   return 'FWD';
-}
-
-/** -1 = sisi kiri tim, 0 = tengah, 1 = sisi kanan tim */
-function lateral(abbr: string): number {
-  const a = String(abbr ?? '').toUpperCase();
-  if (/(^|-)L/.test(a)) return -1;
-  if (/(^|-)R/.test(a)) return 1;
-  return 0;
 }
 
 interface Ctx {
@@ -209,7 +201,7 @@ function buildTeam(summary: any, m: LiveMatch, side: 'home' | 'away', fx: FmCtx)
   subs.sort((a, b) => Number(b.rating !== null) - Number(a.rating !== null) || (Number(a.jersey) || 99) - (Number(b.jersey) || 99));
 
   const formation = lineup?.formation ?? '';
-  const rows = layoutPitch(starters, formation, t.isJuve);
+  const rows = layoutRows(starters, formation, t.isJuve);
 
   const rated = [...starters, ...subs].filter((p) => p.rating !== null) as (RatedPlayer & { rating: number })[];
   const avg = rated.length ? round1(rated.reduce((a, p) => a + p.rating, 0) / rated.length) : null;
@@ -227,9 +219,10 @@ function buildTeam(summary: any, m: LiveMatch, side: 'home' | 'away', fx: FmCtx)
   };
 }
 
-/** Susun 11 pemain menjadi baris-baris (kiper dulu, lalu tiap lini) dengan aturan yang sama seperti panel live. */
-function layoutPitch(starters: RatedPlayer[], formation: string, topTeam: boolean): RatedPlayer[][] {
-  return layoutRows(starters, formation, topTeam ? 'down' : 'up');
+/** Susun 11 pemain menjadi baris-baris mengikuti posisi & formasi ESPN (lihat lib/pitch.ts). */
+function layoutRows(starters: RatedPlayer[], formation: string, topTeam: boolean): RatedPlayer[][] {
+  // Tim yang menyerang ke bawah (di atas) menghadap penonton: kanan tim ada di kiri layar.
+  return layoutLines(starters, formation, topTeam);
 }
 
 export function buildRatings(summary: any, m: LiveMatch, fm: FmMatch | null, squad: FmPlayer[]): RatingResponse {

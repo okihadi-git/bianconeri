@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Face from '@/components/Face';
-import { layoutRows } from '@/lib/pitch';
 import { fmtClock, fmtWhen, shortRound } from '@/components/kp';
+import { layoutLines } from '@/lib/pitch';
 import type { Lineup, LineupPlayer, LiveMatch, LiveResponse, LiveSide, Match, ScorerLine, TimelineItem } from '@/lib/types';
 
 const TABS = [
@@ -154,8 +154,9 @@ function Timeline({ items }: { items: TimelineItem[] }) {
 
 /* ---------- susunan pemain ---------- */
 
-/** Baris pemain dihitung dari data ESPN (lib/pitch.ts); tim menyerang ke atas layar. */
-const pitchRows = (lineup: Lineup) => layoutRows(lineup.starters, lineup.formation, 'up');
+function pitchRows(lineup: Lineup): LineupPlayer[][] {
+  return layoutLines(lineup.starters, lineup.formation);
+}
 
 function Pitch({ lineup, juve }: { lineup: Lineup; juve: boolean }) {
   const rows = pitchRows(lineup);
