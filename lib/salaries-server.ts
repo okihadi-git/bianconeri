@@ -63,10 +63,11 @@ export interface SalaryResult {
  * dilakukan di cache CDN lewat header di /api/gaji, yang hanya panjang saat datanya ada.
  */
 export async function fetchSalariesDetailed(): Promise<SalaryResult> {
-  const url = process.env.SUPABASE_URL?.replace(/\/+$/, '');
-  const key = process.env.SUPABASE_KEY;
+  // Nama env yang diterima: SUPABASE_URL / SUPABASE_KEY, atau NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY.
+  const url = (process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL)?.trim().replace(/\/+$/, '');
+  const key = (process.env.SUPABASE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)?.trim();
   if (!url || !key) {
-    const missing = [!url && 'SUPABASE_URL', !key && 'SUPABASE_KEY'].filter(Boolean).join(' dan ');
+    const missing = [!url && 'SUPABASE_URL (atau NEXT_PUBLIC_SUPABASE_URL)', !key && 'SUPABASE_KEY (atau NEXT_PUBLIC_SUPABASE_ANON_KEY)'].filter(Boolean).join(' dan ');
     return { salaries: [], reason: `${missing} belum terbaca di server. Isi di Vercel (Settings → Environment Variables), lalu Redeploy.` };
   }
   try {
