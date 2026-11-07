@@ -1,17 +1,23 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useFetch } from '@/components/kp';
 import PlayerModal from '@/components/PlayerModal';
+import { countryId } from '@/lib/countries';
+import type { InjuryResponse } from '@/lib/injuries';
+import { positionId } from '@/lib/playerprofile';
 import type { PlayerStatsResponse } from '@/lib/playerstats';
+import { salaryFrom, weeklyOf, yearlyOf, type Salary, type SalaryResponse } from '@/lib/salaries';
 import type { SquadGroup, SquadPlayer, SquadResponse } from '@/lib/types';
 
 const GROUPS: SquadGroup[] = ['Kiper', 'Bek', 'Gelandang', 'Penyerang', 'Lainnya'];
 type Filter = 'Semua' | SquadGroup;
-type SortKey = 'pos' | 'value' | 'age' | 'contract';
+type SortKey = 'pos' | 'salary' | 'value' | 'age' | 'contract';
 
 const SORTS: { key: SortKey; label: string }[] = [
   { key: 'pos', label: 'Posisi & nomor' },
+  { key: 'salary', label: 'Gaji tertinggi' },
   { key: 'value', label: 'Nilai pasar tertinggi' },
   { key: 'age', label: 'Usia (muda → tua)' },
   { key: 'contract', label: 'Kontrak berakhir lebih dulu' },
@@ -33,7 +39,8 @@ function fmtContract(iso: string | null) {
 
 const jerseyNum = (p: SquadPlayer) => (p.jersey ? Number(p.jersey) : 999);
 
-function PlayerCard({ p, onOpen }: { p: SquadPlayer; onOpen: (p: SquadPlayer) => void }) {
+function PlayerCard({ p, salary, onOpen }: { p: SquadPlayer; salary: Salary | null; onOpen: (p: SquadPlayer) => void }) {
+  const weekly = salary ? weeklyOf(salary) : null;
   const [broken, setBroken] = useState(false);
   const showPhoto = Boolean(p.photo) && !broken;
   return (
@@ -50,9 +57,14 @@ function PlayerCard({ p, onOpen }: { p: SquadPlayer; onOpen: (p: SquadPlayer) =>
           {p.captain && <span className="sq-cap" title="Kapten">C</span>}
         </div>
         <div className="kp-muted sq-meta">
-          {[p.position, p.age != null ? `${p.age} th` : '', p.nation.join(' / ')].filter(Boolean).join(' · ')}
+          {[positionId(p.position), p.age != null ? `${p.age} th` : '', p.nation.map(countryId).join(' / ')].filter(Boolean).join(' · ')}
         </div>
         <div className="sq-stats">
+          {weekly != null && (
+            <span>
+              Gaji <b>{fmtEuro(Math.round(weekly / 1000) * 1000)}/pekan</b>
+            </span>
+          )}
           <span>
             Nilai <b>{fmtEuro(p.marketValue)}</b>
           </span>
@@ -81,7 +93,20 @@ export default function SkuadPage() {
   };
   const closePlayer = useCallback(() => setSelected(null), []);
 
+  const sal = useFetch<SalaryResponse>('/api/gaji');
+  const inj = useFetch<InjuryResponse>('/api/cedera');
+
   const players = res.data?.players ?? [];
+  const idKind = (id: string) => (res.data?.source === 'fotmob' ? { fotmob: id } : { tm: id });
+  const salaryById = useMemo(() => {
+    const map = new Map<string, Salary>();
+    for (const p of players) {
+      const hit = salaryFrom(sal.data?.salaries, { name: p.name, ids: idKind(p.id) });
+      if (hit) map.set(p.id, hit);
+    }
+    return map;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [players, sal.data, res.data?.source]);
 
   const summary = useMemo(() => {
     const ages = players.filter((p) => p.age != null);
@@ -90,7 +115,14 @@ export default function SkuadPage() {
     const top = valued.reduce<SquadPlayer | null>((best, p) => (!best || (p.marketValue ?? 0) > (best.marketValue ?? 0) ? p : best), null);
     const young = ages.reduce<SquadPlayer | null>((b, p) => (!b || (p.age ?? 0) < (b.age ?? 0) ? p : b), null);
     const old = ages.reduce<SquadPlayer | null>((b, p) => (!b || (p.age ?? 0) > (b.age ?? 0) ? p : b), null);
+    const paid = players.map((p) => ({ p, s: salaryById.get(p.id) })).filter((x): x is { p: SquadPlayer; s: Salary } => Boolean(x.s));
+    const yearly = (s: Salary) => yearlyOf(s) ?? 0;
+    const topPaid = paid.reduce<{ p: SquadPlayer; s: Salary } | null>((b, x) => (!b || yearly(x.s) > yearly(b.s) ? x : b), null);
     return {
+      paidCount: paid.length,
+      totalYearly: paid.reduce((n, x) => n + yearly(x.s), 0),
+      totalWeekly: paid.reduce((n, x) => n + (weeklyOf(x.s) ?? 0), 0),
+      topPaid,
       count: (g: SquadGroup) => players.filter((p) => p.group === g).length,
       avgAge: ages.length ? ages.reduce((n, p) => n + (p.age ?? 0), 0) / ages.length : null,
       young,
@@ -99,7 +131,7 @@ export default function SkuadPage() {
       valuedCount: valued.length,
       top,
     };
-  }, [players]);
+  }, [players, salaryById]);
 
   const sections = useMemo(() => {
     const base = filter === 'Semua' ? players : players.filter((p) => p.group === filter);
@@ -110,12 +142,19 @@ export default function SkuadPage() {
       })).filter((s) => s.items.length);
     }
     const sorted = [...base].sort((a, b) => {
+      if (sort === 'salary') {
+        const y = (p: SquadPlayer) => {
+          const x = salaryById.get(p.id);
+          return x ? yearlyOf(x) ?? -1 : -1;
+        };
+        return y(b) - y(a);
+      }
       if (sort === 'value') return (b.marketValue ?? -1) - (a.marketValue ?? -1);
       if (sort === 'age') return (a.age ?? 999) - (b.age ?? 999);
       return (a.contractUntil ?? '9999').localeCompare(b.contractUntil ?? '9999');
     });
     return [{ label: SORTS.find((s) => s.key === sort)?.label ?? '', items: sorted }];
-  }, [players, filter, sort]);
+  }, [players, filter, sort, salaryById]);
 
   const filters: Filter[] = ['Semua', ...GROUPS.filter((g) => players.some((p) => p.group === g))];
   const src = res.data?.source === 'fotmob' ? 'FotMob' : 'Transfermarkt';
@@ -142,16 +181,49 @@ export default function SkuadPage() {
           </div>
         </div>
         <div className="kp-metric">
-          <div className="kp-metric-label">Total nilai pasar</div>
-          <div className="kp-metric-val">{summary.valuedCount ? fmtEuro(summary.total) : '–'}</div>
+          <div className="kp-metric-label">Cedera</div>
+          <div className="kp-metric-val">{inj.data ? inj.data.players.length : '–'}</div>
           <div className="kp-metric-sub">
-            {summary.top ? `Tertinggi ${summary.top.name} (${fmtEuro(summary.top.marketValue)})` : 'Tidak tersedia dari sumber data'}
+            {inj.data ? (inj.data.players.length ? inj.data.players.map((p) => p.name).join(', ') : 'Tidak ada pemain cedera') : inj.loading ? 'Memuat data…' : 'Data FotMob belum bisa dimuat'}
+            {' · '}
+            <Link href="/cedera" style={{ color: 'var(--kp-red-text)', fontWeight: 800 }}>
+              Lihat menu Cedera →
+            </Link>
           </div>
         </div>
         <div className="kp-metric">
           <div className="kp-metric-label">Pelatih</div>
           <div className="kp-metric-val sq-coach">{res.data?.coach || '–'}</div>
           <div className="kp-metric-sub">{res.data ? `Data: ${src}` : ' '}</div>
+        </div>
+      </div>
+
+      <div className="kp-metrics">
+        <div className="kp-metric">
+          <div className="kp-metric-label">Total gaji kotor / tahun</div>
+          <div className="kp-metric-val">{summary.paidCount ? fmtEuro(summary.totalYearly) : '–'}</div>
+          <div className="kp-metric-sub">
+            {summary.paidCount
+              ? `±${fmtEuro(Math.round(summary.totalWeekly / 1000) * 1000)} per pekan (gaji tetap) · ${summary.paidCount} pemain dengan data`
+              : sal.loading
+              ? 'Memuat data…'
+              : 'Data gaji belum tersedia'}
+          </div>
+        </div>
+        <div className="kp-metric">
+          <div className="kp-metric-label">Gaji tertinggi</div>
+          <div className="kp-metric-val">{summary.topPaid ? fmtEuro(yearlyOf(summary.topPaid.s)) : '–'}</div>
+          <div className="kp-metric-sub">{summary.topPaid ? `${summary.topPaid.p.name} · per tahun` : ' '}</div>
+        </div>
+        <div className="kp-metric">
+          <div className="kp-metric-label">Total nilai pasar</div>
+          <div className="kp-metric-val">{summary.valuedCount ? fmtEuro(summary.total) : '–'}</div>
+          <div className="kp-metric-sub">{summary.valuedCount ? `${summary.valuedCount} pemain, termasuk yang dipinjamkan` : 'Tidak tersedia dari sumber data'}</div>
+        </div>
+        <div className="kp-metric">
+          <div className="kp-metric-label">Nilai tertinggi</div>
+          <div className="kp-metric-val">{summary.top ? fmtEuro(summary.top.marketValue) : '–'}</div>
+          <div className="kp-metric-sub">{summary.top ? summary.top.name : ' '}</div>
         </div>
       </div>
 
@@ -199,7 +271,7 @@ export default function SkuadPage() {
               </div>
               <div className="sq-grid">
                 {s.items.map((p) => (
-                  <PlayerCard key={p.id} p={p} onOpen={openPlayer} />
+                  <PlayerCard key={p.id} p={p} salary={salaryById.get(p.id) ?? null} onOpen={openPlayer} />
                 ))}
               </div>
             </div>
@@ -210,7 +282,7 @@ export default function SkuadPage() {
 
         <footer className="kp-legend">
           <span className="kp-legend-note">
-            Nilai pasar dan tanggal kontrak adalah estimasi Transfermarkt, bukan angka resmi klub. Klik pemain untuk melihat profilnya. Gaji hanya tampil bila diisi manual di lib/salaries.ts, karena tidak disediakan sumber data.
+            Nilai pasar dan tanggal kontrak adalah estimasi Transfermarkt, bukan angka resmi klub. Gaji kotor adalah estimasi pihak ketiga dari database proyek ini (bukan angka resmi klub); “–” berarti datanya tidak ada. Klik pemain untuk melihat profilnya.
           </span>
         </footer>
       </section>

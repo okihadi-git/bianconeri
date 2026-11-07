@@ -50,6 +50,14 @@ Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil pe
 
 **Gaji** dibaca dari tabel Supabase `player_salaries` lewat `/api/gaji` (env `SUPABASE_URL`, `SUPABASE_KEY`; lihat `.env.example`). Satu request untuk seluruh tabel, di-cache 6 jam; tanpa env atau saat Supabase gagal tampil "–". **Heatmap** belum ada karena tidak ada sumber gratis yang bisa dipakai.
 
+## Tab Kontrak, Cedera, dan Skuad
+
+- **Skuad** (`/skuad`): dua baris kartu ringkasan (usia, cedera, gaji, nilai pasar), urutan "Gaji tertinggi", gaji per pekan di tiap kartu.
+- **Kontrak** (`/kontrak`): tabel gaji, bonus, sisa kontrak, nilai pasar; klik pemain membuka popup profil.
+- **Cedera** (`/cedera`): kartu pemain cedera dari status FotMob (`/api/cedera`), berita terkait sebagai tautan.
+- **Lineup**: `lib/pitch.ts` menyusun baris dan urutan kiri-kanan dari kode posisi ESPN; dipakai tab Skor live dan popup rating.
+- **Gaji**: tabel Supabase `player_salaries` lewat `/api/gaji`. Env: `SUPABASE_URL`+`SUPABASE_KEY` atau `NEXT_PUBLIC_SUPABASE_URL`+`NEXT_PUBLIC_SUPABASE_ANON_KEY`. Respons kosong menyertakan `reason`.
+
 ## Catatan
 
 - Halaman `/juventus` sudah dihapus; tautan lama diarahkan oleh `next.config.mjs`.
