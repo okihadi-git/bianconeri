@@ -60,7 +60,8 @@ async function resolve(name: string) {
   if (!hit) return null;
   const data = parse(await getText(`https://www.fotmob.com/api/data/playerData?id=${encodeURIComponent(hit.id)}`, 1800));
   const form = typeof data === 'object' && data ? parseForm(data).filter((f) => f.id && f.minutes > 0) : [];
-  return { id: hit.id, form };
+  const info = typeof data === 'object' && data ? (data as any) : {};
+  return { id: hit.id, form, playerName: String(info.name ?? ''), team: String(info.primaryTeam?.teamName ?? '') };
 }
 
 export async function fetchHeatmap(name: string): Promise<HeatmapResponse | null> {
@@ -73,34 +74,25 @@ export async function fetchHeatmap(name: string): Promise<HeatmapResponse | null
   return { points: used.flat(), matches: used.length, tried: who.form.length, updatedAt: new Date().toISOString() };
 }
 
-/** Ringkasan bentuk JSON (tanpa isi): tipe, panjang, kunci, dan 40 huruf pertama tiap string. */
-function outline(node: unknown, depth = 0): unknown {
-  if (typeof node === 'string') return `string(${node.length}): ${node.slice(0, 40)}`;
-  if (node == null || typeof node !== 'object') return node;
-  if (depth >= 4) return Array.isArray(node) ? `array(${node.length})` : `object(${Object.keys(node).length} kunci)`;
-  if (Array.isArray(node)) return { type: 'array', length: node.length, first: node.slice(0, 2).map((x) => outline(x, depth + 1)) };
-  const keys = Object.keys(node);
-  return { type: 'object', jumlahKunci: keys.length, kunci: keys.slice(0, 8), contoh: Object.fromEntries(keys.slice(0, 2).map((k) => [k, outline((node as any)[k], depth + 1)])) };
-}
-
-/** Untuk pelacakan: bentuk respons FotMob untuk satu pemain (tanpa isi titik). */
+/** Untuk pelacakan: per laga, apakah FotMob punya heatmap dan apakah pemain ini ada di dalamnya (tanpa isi titik). */
 export async function debugHeatmap(name: string) {
   const who = await resolve(name);
   if (!who) return { error: 'pemain tidak ditemukan di skuad FotMob' };
-  const last = who.form.at(-1);
-  if (!last) return { playerId: who.id, error: 'tidak ada laga di playerData' };
-  const text = await getText(heatmapUrl(last.id), 600);
-  const json = parse(text);
-  const byPlayer = typeof json === 'string' || json == null ? new Map() : collectByPlayer(json);
-  return {
-    playerId: who.id,
-    matchId: last.id,
-    url: heatmapUrl(last.id),
-    fetched: text != null,
-    length: text?.length ?? 0,
-    topKeys: json && typeof json === 'object' ? Object.keys(json as object).slice(0, 20) : typeof json,
-    circlesByKey: Object.fromEntries([...byPlayer].map(([k, v]) => [k, v.length])),
-    hasThisPlayer: byPlayer.has(who.id),
-    bentukPlayers: json && typeof json === 'object' ? outline((json as any).players) : null,
-  };
+  const laga = await mapLimit(who.form, 4, async (f) => {
+    const text = await getText(heatmapUrl(f.id), 600);
+    const json = parse(text);
+    const by = json && typeof json === 'object' ? collectByPlayer(json) : new Map<string, Point[]>();
+    return {
+      matchId: f.id,
+      tanggal: f.iso.slice(0, 10),
+      lawan: f.oppName,
+      kompetisi: f.competition,
+      menit: f.minutes,
+      diambil: text != null,
+      jumlahPemainDiHeatmap: by.size,
+      adaPemainIni: by.has(who.id),
+      titikPemainIni: by.get(who.id)?.length ?? 0,
+    };
+  });
+  return { playerId: who.id, nama: name, laga };
 }
