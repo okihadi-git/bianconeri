@@ -8,7 +8,7 @@ import { countryId, flagUrl, shortCode } from '@/lib/countries';
 import type { PlayerDetail, FormEntry } from '@/lib/player';
 import { ageAt, buildProfile, fmtDateId, positionId, seasonsLeft, summarize, trend, type Axis } from '@/lib/playerprofile';
 import type { PlayerStatsResponse } from '@/lib/playerstats';
-import { salaryFrom, type SalaryResponse } from '@/lib/salaries';
+import { salaryFrom, weeklyOf, yearlyOf, type SalaryResponse } from '@/lib/salaries';
 import type { SquadPlayer } from '@/lib/types';
 import './player-modal.css';
 
@@ -197,7 +197,10 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
   const heightCm = player.heightCm ?? detail?.heightCm ?? null;
   const age = ageAt(detail?.birth.iso ?? null, now) ?? player.age;
   const value = player.marketValue ?? detail?.marketValue ?? null;
-  const salary = salaryFrom(salaryRes.data?.salaries, player.name);
+  const salary = salaryFrom(salaryRes.data?.salaries, { name: player.name, ids: [player.id, detail?.id] });
+  const yearly = salary ? yearlyOf(salary) : null;
+  const weekly = salary ? weeklyOf(salary) : null;
+  const k = (n: number) => Math.round(n / 1000) * 1000;
   const left = seasonsLeft(player.contractUntil, now);
   const segments = Math.max(5, left);
 
@@ -265,9 +268,11 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
               )}
             </Row>
             <Row label="Gaji">
-              {salary ? (
+              {salary && (weekly ?? yearly) != null ? (
                 <>
-                  <b>{fmtEuro(salary.eurPerYear)}/tahun</b> <span className="pm-muted">(±{fmtEuro(Math.round(salary.eurPerYear / 52 / 1000) * 1000)}/pekan)</span>
+                  <b>{weekly != null ? `${fmtEuro(k(weekly))}/pekan` : `${fmtEuro(yearly)}/tahun`}</b>
+                  {weekly != null && yearly != null && <span className="pm-muted"> (±{fmtEuro(yearly)}/tahun)</span>}
+                  {salary.bonusPerYear != null && <span className="pm-sub">Termasuk bonus ±{fmtEuro(salary.bonusPerYear)}/tahun</span>}
                 </>
               ) : (
                 <span className="pm-muted">{salaryRes.loading ? '…' : 'Tidak tersedia'}</span>
@@ -283,6 +288,7 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
                 '–'
               )}
             </Row>
+            {salary?.releaseClause != null && <Row label="Klausul rilis"><b>{fmtEuro(salary.releaseClause)}</b></Row>}
             <Row label="Status">
               {detail ? (
                 detail.injury ? (
@@ -411,11 +417,11 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
             )}
             <div className="pm-money">
               <div>
-                <b>{salary ? fmtEuro(Math.round(salary.eurPerYear / 52 / 1000) * 1000) : '–'}</b>
+                <b>{weekly != null ? fmtEuro(k(weekly)) : '–'}</b>
                 <small>gaji/pekan</small>
               </div>
               <div>
-                <b>{salary ? fmtEuro(salary.eurPerYear) : '–'}</b>
+                <b>{yearly != null ? fmtEuro(yearly) : '–'}</b>
                 <small>per tahun</small>
               </div>
               <div>
@@ -427,7 +433,7 @@ export default function PlayerModal({ player, stats, source, onClose }: { player
 
           <p className="pm-foot">
             Statistik semua kompetisi musim {seasonLabel(now)}, kecuali starter (hanya liga) · *kartu yang sudah terkonfirmasi di laga selesai. Statistik dari ESPN; rating, riwayat klub, dan caps dari FotMob; tempat
-            lahir dari Wikidata; nilai transfer dan kontrak dari {source}. Gaji dari database Supabase proyek ini{salary?.source ? ` (sumber: ${salary.source})` : ''}. Angka yang tidak diberikan sumber ditampilkan “–”.
+            lahir dari Wikidata; nilai transfer dan kontrak dari {source}. Gaji kotor dari database proyek ini{salary?.source ? ` (sumber: ${salary.source})` : ''}. Angka yang tidak diberikan sumber ditampilkan “–”.
           </p>
         </div>
       </aside>
