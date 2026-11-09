@@ -58,6 +58,10 @@ Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil pe
 - **Lineup**: `lib/pitch.ts` menyusun baris dan urutan kiri-kanan dari kode posisi ESPN; dipakai tab Skor live dan popup rating.
 - **Gaji**: tabel Supabase `player_salaries` lewat `/api/gaji`. Env: `SUPABASE_URL`+`SUPABASE_KEY` atau `NEXT_PUBLIC_SUPABASE_URL`+`NEXT_PUBLIC_SUPABASE_ANON_KEY`. Respons kosong menyertakan `reason`.
 
+## Halaman Women
+
+`/women` menampilkan klasemen Serie A Women, jadwal & hasil (Serie A Women, Liga Champions Wanita, Coppa Italia Women), dan profil klub. Data dari ESPN lewat `/api/women`. Slug ESPN untuk kompetisi putri tidak terdokumentasi, jadi `lib/women.ts` mencoba beberapa kandidat dan memakai yang memuat Juventus; slug yang dipakai dan jumlah laga per kompetisi ada di field `sources` pada respons API, dan alasan kosong ada di `warnings`.
+
 ## Catatan
 
 - Halaman `/juventus` sudah dihapus; tautan lama diarahkan oleh `next.config.mjs`.
