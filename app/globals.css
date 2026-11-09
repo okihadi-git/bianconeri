@@ -859,3 +859,4 @@ body:has(.kp) { background: #f2f2f2; }
 .wm-grid .kp-title { white-space: nowrap; }
 .wm-grid .kp-card-head small { text-align: right; }
 @media (max-width: 560px) { .wm-grid .kp-title { white-space: normal; } }
+.wm-lain { background: #eeeeee; color: #555555; }

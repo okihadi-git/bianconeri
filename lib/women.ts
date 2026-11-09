@@ -1,12 +1,12 @@
-// Juventus Women: klasemen liga + jadwal & hasil (liga, Liga Champions Wanita, piala) dari ESPN.
-// Slug ESPN untuk kompetisi putri tidak terdokumentasi, jadi dicoba beberapa kandidat (plus penemuan otomatis dari daftar
-// liga ESPN) dan dipakai yang benar-benar memuat Juventus. Slug yang dipakai & jumlah laga tiap kompetisi dikembalikan di
-// `sources` supaya mudah dilacak. Tidak melempar error: data yang tidak ada bernilai kosong + peringatan.
+// Juventus Women: klasemen liga + jadwal & hasil (liga, Liga Champions Wanita, piala).
+//   Sumber utama : FotMob, halaman tim Juventus (W) — memuat tabel Serie A Femminile dan seluruh jadwal/hasil semua kompetisi.
+//   Cadangan     : ESPN (slug kompetisi putri di ESPN tidak terdokumentasi dan sering tidak ada, jadi hanya dipakai bila FotMob gagal).
+// Tidak melempar error: data yang tidak ada bernilai kosong + peringatan; `sources` menjelaskan dari mana data berasal.
 import { ESPN_BASE, addDays, fetchLeagueEvents, eventState, toNum } from './espn';
 
-export type WomenKind = 'liga' | 'eropa' | 'piala';
+export type WomenKind = 'liga' | 'eropa' | 'piala' | 'lain';
 
-const CANDIDATES: Record<WomenKind, { slugs: string[]; name: string; short: string; match: (slug: string) => boolean }> = {
+const CANDIDATES: Record<Exclude<WomenKind, 'lain'>, { slugs: string[]; name: string; short: string; match: (slug: string) => boolean }> = {
   liga: {
     slugs: ['ita.w.1', 'ita.w.serie_a', 'ita.1.w'],
     name: 'Serie A Women',
@@ -65,6 +65,8 @@ export interface WomenResponse {
   league: { slug: string; name: string; season: string } | null;
   standings: WStandingRow[];
   matches: WMatch[];
+  /** asal data: FotMob (utama) atau ESPN (cadangan) */
+  source: 'fotmob' | 'espn' | null;
   sources: { kind: WomenKind; name: string; slug: string | null; events: number; standings?: number }[];
   warnings: string[];
   updatedAt: string;
@@ -87,7 +89,7 @@ async function discoverSlugs(): Promise<string[]> {
 }
 
 /** Kandidat berurutan: slug bawaan yang ada di daftar ESPN lebih dulu, lalu hasil penemuan, lalu sisa bawaan. */
-export function candidateSlugs(kind: WomenKind, discovered: string[]): string[] {
+export function candidateSlugs(kind: Exclude<WomenKind, 'lain'>, discovered: string[]): string[] {
   const def = CANDIDATES[kind];
   const found = discovered.filter(def.match);
   const known = def.slugs.filter((s) => discovered.includes(s));
@@ -149,7 +151,7 @@ const seasonLabel = (now: Date) => {
   return `${end - 1}/${String(end).slice(2)}`;
 };
 
-export function parseMatch(e: any, kind: WomenKind, teamId: string): WMatch | null {
+export function parseMatch(e: any, kind: Exclude<WomenKind, 'lain'>, teamId: string): WMatch | null {
   const comp = e?.competitions?.[0];
   const cs: any[] = comp?.competitors ?? [];
   const us = cs.find((c) => teamId && String(c?.team?.id) === teamId) ?? cs.find((c) => isJuveName(String(c?.team?.displayName ?? '')));
@@ -165,7 +167,7 @@ export function parseMatch(e: any, kind: WomenKind, teamId: string): WMatch | nu
   return {
     id: String(e.id),
     kind,
-    comp: CANDIDATES[kind].short,
+    comp: CANDIDATES[kind as Exclude<WomenKind, 'lain'>].short,
     iso: new Date(e.date).toISOString(),
     venue: String(comp?.venue?.fullName ?? ''),
     status,
@@ -178,7 +180,7 @@ export function parseMatch(e: any, kind: WomenKind, teamId: string): WMatch | nu
   };
 }
 
-export async function fetchWomen(now = new Date()): Promise<WomenResponse> {
+export async function fetchWomenEspn(now = new Date()): Promise<WomenResponse> {
   const warnings: string[] = [];
   const sources: WomenResponse['sources'] = [];
   const discovered = await discoverSlugs();
@@ -240,5 +242,177 @@ export async function fetchWomen(now = new Date()): Promise<WomenResponse> {
   matches.sort((a, b) => a.iso.localeCompare(b.iso));
   if (!matches.length) warnings.push('Jadwal dan hasil Juventus Women tidak ditemukan di ESPN untuk 100 hari ke belakang dan 150 hari ke depan.');
 
-  return { team, league, standings, matches, sources, warnings, updatedAt: now.toISOString() };
+  return { team, league, standings, matches, source: matches.length || standings.length ? 'espn' : null, sources, warnings, updatedAt: now.toISOString() };
+}
+
+/* ---------- FotMob (sumber utama) ---------- */
+
+export const FOTMOB_WOMEN_TEAM_ID = process.env.FOTMOB_WOMEN_TEAM_ID || '956623'; // Juventus (W)
+const fmLogo = (id: unknown) => (id ? `https://images.fotmob.com/image_resources/logo/teamlogo/${id}.png` : '');
+const cleanTeam = (n: string) => n.replace(/\s*\(W\)\s*$/i, '').trim();
+
+const FM_HEADERS = {
+  Accept: 'application/json, text/plain, */*',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'User-Agent': 'Mozilla/5.0 (compatible; bianconeri-matchday-hub)',
+};
+
+/** Cari semua node laga (punya id, status.utcTime, home/away) di mana pun dalam payload; urutan/lokasi field FotMob bisa berubah. */
+export function collectFixtures(data: any): any[] {
+  const out = new Map<string, any>();
+  const walk = (n: any, depth: number) => {
+    if (!n || typeof n !== 'object' || depth > 9) return;
+    if (Array.isArray(n)) return n.forEach((x) => walk(x, depth + 1));
+    if (n.id != null && n.status?.utcTime && n.home && n.away) {
+      out.set(String(n.id), n);
+      return;
+    }
+    for (const v of Object.values(n)) if (v && typeof v === 'object') walk(v, depth + 1);
+  };
+  walk(data, 0);
+  return [...out.values()];
+}
+
+/** Cari tabel liga: larik objek yang punya name, played, pts. Memilih yang memuat Juventus bila ada beberapa tabel. */
+export function findTable(data: any): { rows: any[]; leagueName: string } | null {
+  const found: { rows: any[]; leagueName: string }[] = [];
+  const walk = (n: any, depth: number, leagueName: string) => {
+    if (!n || typeof n !== 'object' || depth > 10) return;
+    if (Array.isArray(n)) {
+      if (n.length >= 4 && n.every((r) => r && typeof r === 'object' && 'pts' in r && 'played' in r && r.name != null)) found.push({ rows: n, leagueName });
+      else n.forEach((x) => walk(x, depth + 1, leagueName));
+      return;
+    }
+    const name = typeof n.leagueName === 'string' ? n.leagueName : leagueName;
+    for (const v of Object.values(n)) if (v && typeof v === 'object') walk(v, depth + 1, name);
+  };
+  walk(data, 0, '');
+  return found.find((f) => f.rows.some((r) => isJuveName(String(r.name)) || String(r.id) === FOTMOB_WOMEN_TEAM_ID)) ?? found[0] ?? null;
+}
+
+export function parseFotmobTable(data: any, teamId: string): { rows: WStandingRow[]; name: string } {
+  const t = findTable(data);
+  if (!t) return { rows: [], name: '' };
+  const rows: WStandingRow[] = t.rows.map((r, i) => {
+    const [gf, ga] = String(r.scoresStr ?? '').split('-').map((x) => Number(x.trim()));
+    const name = cleanTeam(String(r.name ?? r.shortName ?? 'Tim'));
+    const diff = Number(r.goalConDiff);
+    return {
+      id: String(r.id ?? name),
+      name,
+      logo: fmLogo(r.id),
+      position: Number(r.idx) || i + 1,
+      played: Number(r.played) || 0,
+      won: Number(r.wins) || 0,
+      draw: Number(r.draws) || 0,
+      lost: Number(r.losses) || 0,
+      goalsFor: Number.isFinite(gf) ? gf : 0,
+      goalsAgainst: Number.isFinite(ga) ? ga : 0,
+      goalDiff: Number.isFinite(diff) ? diff : (Number.isFinite(gf) && Number.isFinite(ga) ? gf - ga : 0),
+      points: Number(r.pts) || 0,
+      isJuve: String(r.id) === teamId || isJuveName(name),
+    };
+  });
+  rows.sort((a, b) => a.position - b.position);
+  return { rows, name: t.leagueName };
+}
+
+function kindOf(tournament: string): { kind: WomenKind; comp: string } {
+  if (/champions/i.test(tournament)) return { kind: 'eropa', comp: 'UWCL' };
+  if (/coppa|cup|pokal/i.test(tournament)) return { kind: 'piala', comp: 'COPPA' };
+  if (/serie a/i.test(tournament)) return { kind: 'liga', comp: 'SERIE A' };
+  return { kind: 'lain', comp: tournament.replace(/women'?s?/i, '').trim().slice(0, 8).toUpperCase() || 'LAIN' };
+}
+
+export function parseFotmobMatch(f: any, teamId: string): WMatch | null {
+  const t = new Date(f?.status?.utcTime ?? '').getTime();
+  if (!Number.isFinite(t)) return null;
+  const homeIsUs = String(f.home?.id) === teamId || (String(f.away?.id) !== teamId && isJuveName(String(f.home?.name ?? '')));
+  const awayIsUs = String(f.away?.id) === teamId || (!homeIsUs && isJuveName(String(f.away?.name ?? '')));
+  if (!homeIsUs && !awayIsUs) return null;
+  const them = homeIsUs ? f.away : f.home;
+
+  const st = f.status ?? {};
+  if (st.cancelled) return null;
+  const status: WMatch['status'] = st.finished ? 'post' : st.started ? 'live' : 'pre';
+
+  let score: WMatch['score'] = null;
+  if (status !== 'pre') {
+    const m = /(\d+)\s*-\s*(\d+)/.exec(String(st.scoreStr ?? ''));
+    const h = m ? Number(m[1]) : Number(f.home?.score);
+    const a = m ? Number(m[2]) : Number(f.away?.score);
+    if (Number.isFinite(h) && Number.isFinite(a)) score = homeIsUs ? { us: h, them: a } : { us: a, them: h };
+  }
+  const result: WMatch['result'] = status !== 'post' || !score ? null : score.us > score.them ? 'W' : score.us < score.them ? 'L' : 'D';
+  const tournament = String(f.tournament?.name ?? f.tournament?.shortName ?? f.leagueName ?? '');
+  const { kind, comp } = kindOf(tournament);
+  return {
+    id: String(f.id),
+    kind,
+    comp,
+    iso: new Date(t).toISOString(),
+    venue: '',
+    status,
+    home: homeIsUs,
+    opponent: cleanTeam(String(them?.name ?? them?.longName ?? 'TBA')),
+    opponentLogo: fmLogo(them?.id),
+    score,
+    result,
+    round: String(st.reason?.long ?? ''),
+  };
+}
+
+/** null = FotMob tidak bisa dihubungi / tidak memuat data apa pun. */
+export async function fetchWomenFotmob(now = new Date()): Promise<WomenResponse | null> {
+  let data: any = null;
+  try {
+    const res = await fetch(`https://www.fotmob.com/api/data/teams?id=${FOTMOB_WOMEN_TEAM_ID}&ccode3=IDN`, { headers: FM_HEADERS, next: { revalidate: 900 }, signal: AbortSignal.timeout(12000) });
+    data = res.ok ? await res.json() : null;
+  } catch {
+    data = null;
+  }
+  if (!data) return null;
+
+  const teamId = FOTMOB_WOMEN_TEAM_ID;
+  const table = parseFotmobTable(data, teamId);
+  const from = now.getTime() - 100 * 86400000;
+  const to = now.getTime() + 150 * 86400000;
+  const matches = collectFixtures(data)
+    .map((f) => parseFotmobMatch(f, teamId))
+    .filter((m): m is WMatch => m !== null && new Date(m.iso).getTime() >= from && new Date(m.iso).getTime() <= to)
+    .sort((a, b) => a.iso.localeCompare(b.iso));
+  if (!table.rows.length && !matches.length) return null;
+
+  const juve = table.rows.find((r) => r.isJuve) ?? null;
+  const count = (k: WomenKind) => matches.filter((m) => m.kind === k).length;
+  const slug = `fotmob:${teamId}`;
+  const warnings: string[] = [];
+  if (!table.rows.length) warnings.push('Tabel liga tidak ditemukan di data FotMob; jadwal dan hasil tetap ditampilkan.');
+  if (!matches.length) warnings.push('Jadwal dan hasil tidak ditemukan di data FotMob.');
+
+  return {
+    team: { id: teamId, name: juve?.name ?? 'Juventus', logo: fmLogo(teamId) },
+    league: table.rows.length ? { slug, name: 'Serie A Women', season: seasonLabel(now) } : null,
+    standings: table.rows,
+    matches,
+    source: 'fotmob',
+    sources: [
+      { kind: 'liga', name: table.name || 'Serie A Femminile', slug, events: count('liga'), standings: table.rows.length },
+      { kind: 'eropa', name: 'Liga Champions Wanita', slug, events: count('eropa') },
+      { kind: 'piala', name: 'Coppa Italia Women', slug, events: count('piala') },
+      ...(count('lain') ? [{ kind: 'lain' as const, name: 'Lainnya', slug, events: count('lain') }] : []),
+    ],
+    warnings,
+    updatedAt: now.toISOString(),
+  };
+}
+
+/** FotMob dulu; ESPN hanya bila FotMob gagal. */
+export async function fetchWomen(now = new Date()): Promise<WomenResponse> {
+  const fm = await fetchWomenFotmob(now);
+  if (fm) return fm;
+  const espn = await fetchWomenEspn(now);
+  if (espn.source) espn.warnings.unshift('FotMob tidak bisa dimuat; data memakai ESPN (cadangan).');
+  else espn.warnings.unshift('FotMob dan ESPN sama-sama tidak mengembalikan data Juventus Women.');
+  return espn;
 }

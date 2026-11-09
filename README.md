@@ -60,7 +60,12 @@ Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil pe
 
 ## Halaman Women
 
-`/women` menampilkan klasemen Serie A Women, jadwal & hasil (Serie A Women, Liga Champions Wanita, Coppa Italia Women), dan profil klub. Data dari ESPN lewat `/api/women`. Slug ESPN untuk kompetisi putri tidak terdokumentasi, jadi `lib/women.ts` mencoba beberapa kandidat dan memakai yang memuat Juventus; slug yang dipakai dan jumlah laga per kompetisi ada di field `sources` pada respons API, dan alasan kosong ada di `warnings`.
+`/women` menampilkan klasemen Serie A Women, jadwal & hasil (Serie A, Liga Champions Wanita, Coppa Italia Women), dan profil klub, lewat `/api/women`.
+
+- **Sumber utama: FotMob**, halaman tim Juventus (W), ID `956623` (bisa diganti dengan env `FOTMOB_WOMEN_TEAM_ID`). Satu request memuat tabel liga dan seluruh jadwal/hasil semua kompetisi.
+- **Cadangan: ESPN**, hanya bila FotMob gagal. Slug kompetisi putri di ESPN tidak terdokumentasi dan sering tidak ada.
+- Field `source` pada respons menunjukkan sumber yang dipakai, `sources` jumlah data per kompetisi, `warnings` alasan bila ada yang kosong.
+- FotMob tidak menyediakan nama stadion di daftar laga, jadi baris jadwal tidak menampilkan stadion.
 
 ## Catatan
 
