@@ -3,6 +3,8 @@
 //   Cadangan     : ESPN (slug kompetisi putri di ESPN tidak terdokumentasi dan sering tidak ada, jadi hanya dipakai bila FotMob gagal).
 // Tidak melempar error: data yang tidak ada bernilai kosong + peringatan; `sources` menjelaskan dari mana data berasal.
 import { ESPN_BASE, addDays, fetchLeagueEvents, eventState, toNum } from './espn';
+import { parseFotmob } from './squad';
+import type { SquadPlayer } from './types';
 
 export type WomenKind = 'liga' | 'eropa' | 'piala' | 'lain';
 
@@ -60,7 +62,20 @@ export interface WMatch {
   round: string;
 }
 
+export interface WTransfer {
+  id: string;
+  name: string;
+  /** klub asal (untuk masuk) atau klub tujuan (untuk keluar) */
+  club: string;
+  loan: boolean;
+  iso: string;
+}
+
 export interface WomenResponse {
+  /** skuad tim utama (FotMob); kosong bila tidak tersedia */
+  squad: SquadPlayer[];
+  info: { coach: string; captain: string; venue: string; competitions: string[] } | null;
+  transfers: { label: string; in: WTransfer[]; out: WTransfer[] } | null;
   team: { id: string; name: string; logo: string } | null;
   league: { slug: string; name: string; season: string } | null;
   standings: WStandingRow[];
@@ -242,7 +257,7 @@ export async function fetchWomenEspn(now = new Date()): Promise<WomenResponse> {
   matches.sort((a, b) => a.iso.localeCompare(b.iso));
   if (!matches.length) warnings.push('Jadwal dan hasil Juventus Women tidak ditemukan di ESPN untuk 100 hari ke belakang dan 150 hari ke depan.');
 
-  return { team, league, standings, matches, source: matches.length || standings.length ? 'espn' : null, sources, warnings, updatedAt: now.toISOString() };
+  return { squad: [], info: null, transfers: null, team, league, standings, matches, source: matches.length || standings.length ? 'espn' : null, sources, warnings, updatedAt: now.toISOString() };
 }
 
 /* ---------- FotMob (sumber utama) ---------- */
@@ -362,6 +377,69 @@ export function parseFotmobMatch(f: any, teamId: string): WMatch | null {
   };
 }
 
+/** Nama kapten dari penanda isCaptain pada anggota skuad FotMob (kosong bila FotMob tidak menandainya). */
+export function parseCaptain(data: any): string {
+  for (const g of data?.squad?.squad ?? []) for (const m of g?.members ?? []) if (m?.isCaptain === true && m?.name) return String(m.name);
+  return '';
+}
+
+/** Nama stadion kandang bila FotMob menyertakannya di data tim. */
+export function parseVenue(data: any): string {
+  const v = data?.overview?.venue?.name ?? data?.overview?.venue?.widget?.name ?? data?.details?.sportsTeamJSONLD?.location?.name ?? data?.venue?.name ?? '';
+  return typeof v === 'string' ? v.trim() : '';
+}
+
+const isoOf = (v: unknown): string | null => {
+  const t = new Date(String(v ?? '')).getTime();
+  return Number.isFinite(t) ? new Date(t).toISOString() : null;
+};
+
+/**
+ * Transfer musim ini dari data tim FotMob (larik berisi playerId + fromClub/toClub, di mana pun posisinya).
+ * Masuk = klub tujuan Juventus (W), keluar = klub asal Juventus (W). Hanya yang sejak 1 Juni musim berjalan.
+ */
+export function parseTransfers(data: any, teamId: string, now: Date): WomenResponse['transfers'] {
+  const items = new Map<string, any>();
+  const walk = (n: any, depth: number) => {
+    if (!n || typeof n !== 'object' || depth > 9) return;
+    if (Array.isArray(n)) return n.forEach((x) => walk(x, depth + 1));
+    if (n.playerId != null && n.name && ('fromClub' in n || 'toClub' in n)) {
+      items.set(`${n.playerId}|${n.transferDate}|${n.fromClub}|${n.toClub}`, n);
+      return;
+    }
+    for (const v of Object.values(n)) if (v && typeof v === 'object') walk(v, depth + 1);
+  };
+  walk(data?.transfers ?? data, 0);
+  if (!items.size) return null;
+
+  const seasonEnd = now.getUTCMonth() >= 6 ? now.getUTCFullYear() + 1 : now.getUTCFullYear();
+  const start = Date.UTC(seasonEnd - 1, 5, 1);
+  const end = now.getTime() + 60 * 86400000;
+  const inn: WTransfer[] = [];
+  const out: WTransfer[] = [];
+  for (const t of items.values()) {
+    const iso = isoOf(t.transferDate);
+    if (!iso || new Date(iso).getTime() < start || new Date(iso).getTime() > end) continue;
+    const to = String(t.toClub ?? '');
+    const from = String(t.fromClub ?? '');
+    const toUs = String(t.toClubId) === teamId || isJuveName(to);
+    const fromUs = String(t.fromClubId) === teamId || isJuveName(from);
+    const loan = Boolean(t.onLoan) || /loan/i.test(String(t.transferType?.text ?? t.transferText ?? ''));
+    const base = { id: String(t.playerId), name: String(t.name), loan, iso };
+    if (toUs && !fromUs) inn.push({ ...base, club: cleanTeam(from) || 'tanpa klub' });
+    else if (fromUs && !toUs) out.push({ ...base, club: cleanTeam(to) || 'tanpa klub' });
+  }
+  if (!inn.length && !out.length) return null;
+  const byDate = (a: WTransfer, b: WTransfer) => b.iso.localeCompare(a.iso) || a.name.localeCompare(b.name);
+  inn.sort(byDate);
+  out.sort(byDate);
+  // semua di jendela musim panas (Jun–Sep) → "musim panas"; bila ada yang lebih lambat (mis. Januari) → "musim ini"
+  const summerOnly = [...inn, ...out].every((t) => [5, 6, 7, 8].includes(new Date(t.iso).getUTCMonth()));
+  return { label: summerOnly ? `musim panas ${seasonEnd - 1}` : 'musim ini', in: inn, out };
+}
+
+const GROUP_ORDER = ['Kiper', 'Bek', 'Gelandang', 'Penyerang', 'Lainnya'];
+
 /** null = FotMob tidak bisa dihubungi / tidak memuat data apa pun. */
 export async function fetchWomenFotmob(now = new Date()): Promise<WomenResponse | null> {
   let data: any = null;
@@ -390,7 +468,15 @@ export async function fetchWomenFotmob(now = new Date()): Promise<WomenResponse 
   if (!table.rows.length) warnings.push('Tabel liga tidak ditemukan di data FotMob; jadwal dan hasil tetap ditampilkan.');
   if (!matches.length) warnings.push('Jadwal dan hasil tidak ditemukan di data FotMob.');
 
+  const sq = parseFotmob(data);
+  const squad = [...sq.players].sort((a, b) => GROUP_ORDER.indexOf(a.group) - GROUP_ORDER.indexOf(b.group) || (Number(a.jersey) || 999) - (Number(b.jersey) || 999) || a.name.localeCompare(b.name));
+  const comps = [count('liga') ? 'Serie A Women' : '', count('eropa') ? 'Liga Champions Wanita' : '', count('piala') ? 'Coppa Italia Women' : ''].filter(Boolean);
+  const transfers = parseTransfers(data, teamId, now);
+
   return {
+    squad,
+    info: { coach: sq.coach, captain: parseCaptain(data), venue: parseVenue(data), competitions: comps },
+    transfers,
     team: { id: teamId, name: juve?.name ?? 'Juventus', logo: fmLogo(teamId) },
     league: table.rows.length ? { slug, name: 'Serie A Women', season: seasonLabel(now) } : null,
     standings: table.rows,

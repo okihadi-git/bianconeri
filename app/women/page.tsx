@@ -1,7 +1,8 @@
 'use client';
 
-import ClubProfile from '@/components/ClubProfile';
 import { useFetch } from '@/components/kp';
+import { countryId, flagUrl } from '@/lib/countries';
+import type { SquadGroup, SquadPlayer } from '@/lib/types';
 import type { WMatch, WomenResponse } from '@/lib/women';
 
 const WIB = 'Asia/Jakarta';
@@ -36,6 +37,115 @@ function MatchRow({ m }: { m: WMatch }) {
         </span>
       )}
     </li>
+  );
+}
+
+const GROUPS: SquadGroup[] = ['Kiper', 'Bek', 'Gelandang', 'Penyerang', 'Lainnya'];
+
+function Flag({ nation }: { nation: string }) {
+  const url = flagUrl(nation);
+  // eslint-disable-next-line @next/next/no-img-element
+  return url ? <img className="wm-flag" src={url} alt={countryId(nation)} title={countryId(nation)} width={20} height={14} loading="lazy" onError={(e) => ((e.target as HTMLImageElement).style.display = 'none')} /> : <i className="wm-flag wm-noflag" />;
+}
+
+function SquadCard({ players }: { players: SquadPlayer[] }) {
+  return (
+    <section className="kp-card wm-block">
+      <header className="kp-card-head">
+        <h2 className="kp-title">Skuad Juventus Women</h2>
+        <small className="kp-muted">Nomor punggung, negara, usia</small>
+      </header>
+      <div className="wm-squad">
+        {GROUPS.map((g) => {
+          const list = players.filter((p) => p.group === g);
+          if (!list.length) return null;
+          return (
+            <div key={g}>
+              <h3 className="wm-group">
+                {g} · {list.length}
+              </h3>
+              <div className="wm-chips">
+                {list.map((p) => (
+                  <div className="wm-chip" key={p.id}>
+                    <span className="wm-no">{p.jersey}</span>
+                    {p.nation[0] ? <Flag nation={p.nation[0]} /> : <i className="wm-flag wm-noflag" />}
+                    <span className="wm-pname">{p.name}</span>
+                    {p.age != null && <small>{p.age}</small>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function TransferList({ title, rows, dir }: { title: string; rows: NonNullable<WomenResponse['transfers']>['in']; dir: 'dari' | 'ke' }) {
+  return (
+    <div>
+      <h3 className="wm-group">{title}</h3>
+      {rows.length ? (
+        <ul className="wm-tr">
+          {rows.map((t) => (
+            <li key={`${t.id}${t.iso}`}>
+              <b>{t.name}</b>
+              <span>
+                {dir} {t.club}
+                {t.loan ? ' · pinjaman' : ''}
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="kp-muted">Tidak ada.</p>
+      )}
+    </div>
+  );
+}
+
+function TeamCard({ d }: { d: WomenResponse }) {
+  const info = d.info;
+  const tr = d.transfers;
+  return (
+    <section className="kp-card wm-block">
+      <header className="kp-card-head">
+        <h2 className="kp-title">Tim & transfer</h2>
+        <small className="kp-muted">Pelatih, kapten, rekrutan musim ini</small>
+      </header>
+      <div className="wm-team">
+        {info && (info.coach || info.captain || info.venue) && (
+          <p className="wm-meta">
+            {info.coach && (
+              <span>
+                Pelatih <b>{info.coach}</b>
+              </span>
+            )}
+            {info.captain && (
+              <span>
+                Kapten <b>{info.captain}</b>
+              </span>
+            )}
+            {info.venue && (
+              <span>
+                Kandang <b>{info.venue}</b>
+              </span>
+            )}
+          </p>
+        )}
+        {info && info.competitions.length > 0 && <p className="wm-comps">Musim {d.league?.season ?? ''}: {info.competitions.join(', ').replace(/, ([^,]*)$/, ' dan $1')}.</p>}
+        {tr ? (
+          <div className="wm-trgrid">
+            <TransferList title={`Rekrutan ${tr.label}`} rows={tr.in} dir="dari" />
+            <TransferList title="Keluar" rows={tr.out} dir="ke" />
+          </div>
+        ) : (
+          <p className="kp-muted">Data transfer musim ini belum tersedia dari sumber data.</p>
+        )}
+        <p className="wm-src kp-muted">Sumber: FotMob (skuad, pelatih, transfer). {!info?.captain && 'Kapten tidak ditandai di data sumber. '}Data tidak resmi dan bisa terlambat diperbarui.</p>
+      </div>
+    </section>
   );
 }
 
@@ -168,8 +278,8 @@ export default function WomenPage() {
         </section>
       </div>
 
-      <h2 className="kp-title wm-section">Profil & sejarah klub</h2>
-      <ClubProfile club="juventus-women" id="women" tierLabel="Di kasta tertinggi" />
+      {d && d.squad.length > 0 && <SquadCard players={d.squad} />}
+      {d && (d.info || d.transfers) && <TeamCard d={d} />}
     </div>
   );
 }

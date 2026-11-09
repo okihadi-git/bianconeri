@@ -860,3 +860,25 @@ body:has(.kp) { background: #f2f2f2; }
 .wm-grid .kp-card-head small { text-align: right; }
 @media (max-width: 560px) { .wm-grid .kp-title { white-space: normal; } }
 .wm-lain { background: #eeeeee; color: #555555; }
+
+/* Women: skuad + tim & transfer */
+.wm-block { margin-bottom: 22px; }
+.wm-squad, .wm-team { padding: 4px 20px 22px; }
+.wm-group { margin: 18px 0 10px; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; }
+.wm-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
+.wm-chip { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--kp-line); border-radius: 8px; background: #ffffff; min-width: 0; }
+.wm-no { min-width: 22px; color: var(--kp-muted); font-weight: 800; }
+.wm-flag { width: 20px; height: 14px; border-radius: 2px; object-fit: cover; box-shadow: 0 0 0 1px #0000001a; flex: none; display: inline-block; }
+.wm-noflag { background: #e4e4ea; }
+.wm-pname { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+.wm-chip small { color: var(--kp-muted); }
+.wm-meta { display: flex; flex-wrap: wrap; gap: 6px 22px; margin: 14px 0 6px; }
+.wm-meta b { font-weight: 800; }
+.wm-comps { margin: 4px 0 6px; color: #4a5068; }
+.wm-trgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 760px) { .wm-trgrid { grid-template-columns: 1fr; gap: 4px; } }
+.wm-tr { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.wm-tr li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 10px 14px; border: 1px solid var(--kp-line); border-radius: 8px; }
+.wm-tr li b { font-weight: 800; }
+.wm-tr li span { color: var(--kp-muted); font-size: 13px; text-align: right; }
+.wm-src { margin: 16px 0 0; font-size: 12.5px; }
