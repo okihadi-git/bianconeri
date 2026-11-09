@@ -17,6 +17,8 @@ import {
   useFetch,
   type ZoneDef,
 } from '@/components/kp';
+import JalurKeTrofi from '@/components/JalurKeTrofi';
+import { pickMode } from '@/lib/jalur';
 import { COPPA_FINAL, COPPA_TITLES, STAGE_LABEL, coppaStatus, seasonOf } from '@/lib/coppa';
 import type { Letter, Match, PlayerStat, SimpleMatch, Team } from '@/lib/types';
 
@@ -287,6 +289,8 @@ function KompetisiInner() {
       if (compKey === 'coppa') return 'Jalur ke Roma';
       if (!comp.table) return 'Pertandingan & jadwal';
     }
+    // Tab ini berganti nama otomatis: "Jalur ke Eropa" (berebut 4 besar) atau "Jalan ke trofi" (ikut berebut gelar)
+    if (k === 'trofi') return pickMode(standings) === 'gelar' ? 'Jalan ke trofi' : 'Jalur ke Eropa';
     return fallback;
   };
 
@@ -432,7 +436,9 @@ function KompetisiInner() {
             />
           )}
 
-          {!['klasemen', 'lagalain', 'topskor'].includes(tab) && (
+          {tab === 'trofi' && compKey === 'seriea' && <JalurKeTrofi standings={standings} loading={standingsRes.loading} error={standingsRes.error} />}
+
+          {!['klasemen', 'lagalain', 'topskor', 'trofi'].includes(tab) && (
             <div className="kp-card kp-empty">Bagian ini belum tersedia.</div>
           )}
         </>

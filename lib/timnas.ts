@@ -2,7 +2,7 @@
 // Sumber: ESPN (jadwal/skor timnas senior + susunan pemain tiap laga). ESPN tidak punya daftar panggilan resmi,
 // jadi "dipanggil" = tercatat di susunan pemain (inti atau cadangan) sebuah laga. Rating = estimasi dari lib/ratings.ts,
 // bukan rating resmi. Semua fungsi pengambil data tidak melempar error; data yang tak ada bernilai kosong.
-import { eventState, getScoreboard } from './espn';
+import { ESPN_BASE, eventState } from './espn';
 import { countryId, countryInfo, flagUrl } from './countries';
 import { fetchInjuries } from './injuries';
 import { loadJuve } from './juve';
@@ -50,7 +50,7 @@ const NATIONAL = [
   { slug: 'concacaf.nations.league', name: 'CONCACAF Nations League' },
   { slug: 'caf.nations_qual', name: 'Kualifikasi Piala Afrika' },
 ] as const;
-const compName = (slug: string) => NATIONAL.find((c) => c.slug === slug)?.name ?? slug;
+const compName = (slug: string) => NATIONAL.find((c) => c.slug === slug)?.name ?? (slug === 'all' ? 'Laga timnas' : slug);
 
 /* ---------- tipe respons ---------- */
 
@@ -132,9 +132,25 @@ export interface TimnasResponse {
   derby: string[]; // id laga
   afterBreak: { opponent: string; iso: string; competition: string } | null;
   warnings: string[];
-  /** jumlah laga yang dikembalikan ESPN per kompetisi pada jendela ini (untuk pelacakan jadwal kosong) */
-  sources: { slug: string; name: string; events: number }[];
   updatedAt: string;
+  /** hanya ada bila diminta (?debug=1): apa yang dikembalikan ESPN untuk tiap permintaan */
+  debug?: Diag;
+}
+
+export interface BoardDiag {
+  slug: string;
+  range: string;
+  status: number | string;
+  events: number;
+  sample: string[];
+}
+
+export interface Diag {
+  strategy: string;
+  wanted: string[];
+  eventsFound: number;
+  relevant: number;
+  boards: BoardDiag[];
 }
 
 /* ---------- data mentah ---------- */
@@ -180,75 +196,84 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (x: T) => Promise<R
   return out;
 }
 
-const monthKeys = (from: Date, to: Date): string[] => {
+const teamsOf = (e: any) =>
+  (e?.competitions?.[0]?.competitors ?? []).map((c: any) => String(c?.team?.displayName ?? c?.team?.name ?? '?')).join(' vs ');
+
+/** Satu permintaan scoreboard ESPN; hasil (status HTTP, jumlah laga, contoh) dicatat di `diag` supaya penyebab kosong bisa dilacak. */
+async function board(slug: string, range: string, diag: BoardDiag[], revalidate = 600): Promise<any[]> {
+  const url = `${ESPN_BASE}/site/v2/sports/soccer/${slug}/scoreboard?dates=${range}&limit=1000`;
+  try {
+    const res = await fetch(url, { next: { revalidate }, signal: AbortSignal.timeout(15000) });
+    if (!res.ok) {
+      diag.push({ slug, range, status: res.status, events: 0, sample: [] });
+      return [];
+    }
+    const data = await res.json();
+    const events: any[] = (data?.events ?? []).map((e: any) => ({ ...e, _league: slug }));
+    diag.push({ slug, range, status: res.status, events: events.length, sample: events.slice(0, 3).map(teamsOf) });
+    return events;
+  } catch (err: any) {
+    diag.push({ slug, range, status: String(err?.message ?? err), events: 0, sample: [] });
+    return [];
+  }
+}
+
+/** Daftar tanggal YYYYMMDD dari `from` sampai `to` (inklusif). */
+function daysBetween(from: string, to: string): string[] {
   const out: string[] = [];
-  for (let c = new Date(Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), 1)); c <= to; c = new Date(Date.UTC(c.getUTCFullYear(), c.getUTCMonth() + 1, 1))) {
-    out.push(`${c.getUTCFullYear()}${String(c.getUTCMonth() + 1).padStart(2, '0')}`);
+  for (let t = new Date(`${from}T00:00:00Z`).getTime(); t <= new Date(`${to}T00:00:00Z`).getTime(); t += 86_400_000) {
+    out.push(new Date(t).toISOString().slice(0, 10).replace(/-/g, ''));
   }
   return out;
-};
+}
 
 /**
- * Laga satu kompetisi dalam jendela jeda. ESPN sering mengembalikan KOSONG untuk format rentang tanggal
- * (YYYYMMDD-YYYYMMDD) padahal laganya ada (lihat catatan serupa di lib/live.ts dan fetchLeagueEvents), jadi format bulanan
- * (YYYYMM) selalu ikut diminta dan hasilnya digabung, lalu disaring ke jendela waktu yang sama.
+ * Cari laga timnas dengan tiga cara bertahap, berhenti di cara pertama yang menghasilkan laga:
+ *  1) per kompetisi, satu permintaan untuk seluruh rentang tanggal
+ *  2) per kompetisi utama, satu permintaan per hari (kalau rentang tanggal tidak didukung)
+ *  3) semua sepak bola per hari ("all"), disaring lewat nama negara
  */
-export async function windowEvents(slug: string, b: BreakDef, revalidate = 600): Promise<any[]> {
-  const from = new Date(`${b.from}T00:00:00Z`);
-  const to = new Date(`${b.to}T23:59:59Z`);
-  const range = `${b.from.replace(/-/g, '')}-${b.to.replace(/-/g, '')}`;
-  const batches = await Promise.all([getScoreboard(slug, range, revalidate), ...monthKeys(from, to).map((m) => getScoreboard(slug, m, revalidate))]);
-  const seen = new Set<string>();
-  return batches
-    .flat()
-    .filter((e) => {
-      const id = String(e?.id ?? '');
-      const t = new Date(e?.date).getTime();
-      if (!id || !Number.isFinite(t) || t < from.getTime() || t > to.getTime() || seen.has(id)) return false;
+async function findEvents(b: BreakDef, diag: Diag): Promise<any[]> {
+  const dedupe = (lists: any[][]) => {
+    const seen = new Set<string>();
+    return lists.flat().filter((e) => {
+      const id = String(e?.id);
+      if (seen.has(id)) return false;
       seen.add(id);
       return true;
     });
-}
+  };
+  const range = `${b.from.replace(/-/g, '')}-${b.to.replace(/-/g, '')}`;
 
-export interface Collected {
-  raw: RawMatch[];
-  sources: TimnasResponse['sources'];
-  /** laga timnas ditemukan di ESPN (sebelum disaring ke negara pemain Juventus) */
-  found: number;
-  /** jumlah negara kebangsaan unik di skuad */
-  nations: number;
+  let events = dedupe(await Promise.all(NATIONAL.map((c) => board(c.slug, range, diag.boards))));
+  if (events.length) return (diag.strategy = 'per kompetisi, rentang tanggal'), events;
+
+  const days = daysBetween(b.from, b.to);
+  const main = NATIONAL.slice(0, 2);
+  events = dedupe(await mapLimit(main.flatMap((c) => days.map((d) => ({ slug: c.slug, d }))), 8, (x) => board(x.slug, x.d, diag.boards)));
+  if (events.length) return (diag.strategy = 'per kompetisi, per hari'), events;
+
+  events = dedupe(await mapLimit(days, 6, (d) => board('all', d, diag.boards, 1800)));
+  diag.strategy = events.length ? 'semua sepak bola per hari' : 'tidak ada laga ditemukan';
+  return events;
 }
 
 /** Ambil laga timnas yang melibatkan negara pemain Juventus, lengkap dengan susunan pemain bila laga sudah selesai. */
-export async function collectMatchesDetailed(b: BreakDef, squad: SquadPlayer[]): Promise<Collected> {
+export async function collectMatches(b: BreakDef, squad: SquadPlayer[]): Promise<{ raw: RawMatch[]; diag: Diag }> {
   const wanted = new Set(squad.flatMap((p) => p.nation.map(countryKey)));
-  const lists = await Promise.all(NATIONAL.map((c) => windowEvents(c.slug, b)));
-  const sources = NATIONAL.map((c, i) => ({ slug: c.slug as string, name: c.name as string, events: lists[i].length }));
+  const diag: Diag = { strategy: '', wanted: [...wanted].slice(0, 60), eventsFound: 0, relevant: 0, boards: [] };
 
-  const seen = new Set<string>();
-  const unique = lists.flat().filter((e) => {
-    const id = String(e?.id);
-    if (seen.has(id)) return false;
-    seen.add(id);
-    return true;
-  });
-  const events = unique
+  const found = await findEvents(b, diag);
+  diag.eventsFound = found.length;
+  const events = found
     .filter((e) => {
       const teams = (e?.competitions?.[0]?.competitors ?? []).map((c: any) => countryKey(String(c?.team?.displayName ?? c?.team?.name ?? '')));
       return teams.some((t: string) => wanted.has(t));
     })
     .sort((a, c) => new Date(a.date).getTime() - new Date(c.date).getTime());
+  diag.relevant = events.length;
 
-  const raw = await collectRaw(events);
-  return { raw, sources, found: unique.length, nations: wanted.size };
-}
-
-export async function collectMatches(b: BreakDef, squad: SquadPlayer[]): Promise<RawMatch[]> {
-  return (await collectMatchesDetailed(b, squad)).raw;
-}
-
-async function collectRaw(events: any[]): Promise<RawMatch[]> {
-  return mapLimit(events, 6, async (e): Promise<RawMatch> => {
+  const raw = await mapLimit(events, 6, async (e): Promise<RawMatch> => {
     const comps: any[] = e?.competitions?.[0]?.competitors ?? [];
     const home = comps.find((c) => c.homeAway === 'home') ?? comps[0];
     const away = comps.find((c) => c.homeAway === 'away') ?? comps[1];
@@ -286,6 +311,7 @@ async function collectRaw(events: any[]): Promise<RawMatch[]> {
     }
     return raw;
   });
+  return { raw, diag };
 }
 
 /* ---------- agregasi (murni, mudah diuji) ---------- */
@@ -304,7 +330,7 @@ export interface AggregateInput {
   now?: Date;
 }
 
-export function aggregate(inp: AggregateInput): Omit<TimnasResponse, 'breakKey' | 'breaks' | 'state' | 'warnings' | 'sources' | 'updatedAt'> {
+export function aggregate(inp: AggregateInput): Omit<TimnasResponse, 'breakKey' | 'breaks' | 'state' | 'warnings' | 'updatedAt'> {
   const { raw, squad, clubInjured, clubTimes, clubNext } = inp;
   const finished = raw.filter((m) => m.status === 'post');
 
@@ -473,21 +499,21 @@ async function loadSquad(): Promise<SquadPlayer[]> {
 
 const cache = new Map<string, { at: number; body: TimnasResponse }>();
 
-export async function fetchTimnas(key?: string | null, now = new Date()): Promise<TimnasResponse | null> {
+export async function fetchTimnas(key?: string | null, now = new Date(), withDebug = false): Promise<TimnasResponse | null> {
   const def = BREAKS.find((b) => b.key === key) ?? defaultBreak(now);
-  const hit = cache.get(def.key);
+  const hit = withDebug ? undefined : cache.get(def.key);
   if (hit && now.getTime() - hit.at < 10 * 60_000) return hit.body;
 
   const squad = await loadSquad();
   if (!squad.length) return null;
 
   const [collected, injuries, juve] = await Promise.all([
-    collectMatchesDetailed(def, squad),
+    collectMatches(def, squad),
     fetchInjuries().catch(() => null),
     loadJuve().catch(() => null),
   ]);
 
-  const { raw } = collected;
+  const { raw, diag } = collected;
   const club = juve ? [...juve.past, ...juve.upcoming].sort((a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime()) : [];
   const agg = aggregate({
     raw,
@@ -499,9 +525,8 @@ export async function fetchTimnas(key?: string | null, now = new Date()): Promis
   });
 
   const warnings: string[] = [];
-  if (collected.nations === 0) warnings.push('Data kebangsaan pemain skuad kosong, jadi laga timnas tidak bisa dicocokkan dengan pemain Juventus.');
-  else if (collected.found === 0) warnings.push(`ESPN tidak mengembalikan laga timnas apa pun untuk ${def.label} (${collected.sources.map((x) => `${x.name}: ${x.events}`).join(', ')}).`);
-  else if (!raw.length) warnings.push(`${collected.found} laga timnas ditemukan di ESPN, tetapi tidak ada yang melibatkan negara pemain Juventus.`);
+  if (!diag.eventsFound) warnings.push('ESPN tidak mengembalikan satu pun laga timnas pada rentang tanggal jeda ini (lihat ?debug=1 untuk detail).');
+  else if (!raw.length) warnings.push(`ESPN mengembalikan ${diag.eventsFound} laga, tetapi tidak ada yang melibatkan negara pemain Juventus (kebangsaan di skuad: ${diag.wanted.slice(0, 12).join(', ')}).`);
   const noRoster = raw.filter((m) => m.status === 'post' && !m.hasRosters).length;
   if (noRoster) warnings.push(`${noRoster} laga selesai tanpa data susunan pemain dari ESPN.`);
   if (!injuries) warnings.push('Daftar cedera klub (FotMob) tidak bisa dimuat, jadi status "Masuk daftar cedera klub" tidak dihitung.');
@@ -513,9 +538,9 @@ export async function fetchTimnas(key?: string | null, now = new Date()): Promis
     state: breakState(def, now),
     ...agg,
     warnings,
-    sources: collected.sources,
     updatedAt: now.toISOString(),
+    ...(withDebug ? { debug: diag } : {}),
   };
-  if (raw.length) cache.set(def.key, { at: now.getTime(), body });
+  if (raw.length && !withDebug) cache.set(def.key, { at: now.getTime(), body });
   return body;
 }
