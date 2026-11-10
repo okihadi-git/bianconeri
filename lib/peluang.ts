@@ -50,6 +50,40 @@ function mulberry32(seed: number) {
   };
 }
 
+/** Rasio serang/bertahan tiap tim relatif terhadap rata-rata liga, ditarik ke 1,0 dengan bobot `priorGames` laga. */
+export function teamStrengths(teams: SimTeam[], muHome: number, muAway: number, priorGames = 6) {
+  const mu = (muHome + muAway) / 2;
+  return {
+    att: teams.map((t) => (t.gf + priorGames * mu) / ((t.played + priorGames) * mu)),
+    def: teams.map((t) => (t.ga + priorGames * mu) / ((t.played + priorGames) * mu)),
+  };
+}
+
+/** Peluang menang/seri/kalah tuan rumah bila gol tuan rumah ~ Poisson(lh) dan gol tamu ~ Poisson(la). */
+export function outcomeProbs(lh: number, la: number): { win: number; draw: number; loss: number } {
+  const MAX = 12;
+  const pmf = (l: number) => {
+    const out = [Math.exp(-l)];
+    for (let k = 1; k <= MAX; k++) out.push((out[k - 1] * l) / k);
+    return out;
+  };
+  const h = pmf(lh);
+  const a = pmf(la);
+  let win = 0;
+  let draw = 0;
+  let loss = 0;
+  for (let x = 0; x <= MAX; x++) {
+    for (let y = 0; y <= MAX; y++) {
+      const pr = h[x] * a[y];
+      if (x > y) win += pr;
+      else if (x === y) draw += pr;
+      else loss += pr;
+    }
+  }
+  const tot = win + draw + loss;
+  return { win: win / tot, draw: draw / tot, loss: loss / tot };
+}
+
 export function simulate(inp: SimInput): SimOut[] {
   const { teams, remaining, muHome, muAway } = inp;
   const n = teams.length;
@@ -60,10 +94,7 @@ export function simulate(inp: SimInput): SimOut[] {
   const rnd = mulberry32(inp.seed ?? 1);
 
   const idx = new Map(teams.map((t, i) => [t.id, i]));
-  const mu = (muHome + muAway) / 2;
-  // rasio serang/bertahan relatif terhadap rata-rata liga, ditarik ke 1.0 dengan bobot K laga
-  const att = teams.map((t) => (t.gf + K * mu) / ((t.played + K) * mu));
-  const def = teams.map((t) => (t.ga + K * mu) / ((t.played + K) * mu));
+  const { att, def } = teamStrengths(teams, muHome, muAway, K);
 
   const home: number[] = [];
   const away: number[] = [];

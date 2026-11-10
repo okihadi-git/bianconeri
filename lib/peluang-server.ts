@@ -34,19 +34,41 @@ const CONFIG: Record<string, { ucl: number; relegation: number }> = { 'ita.1': {
 const SIMS = 10_000;
 const cache = new Map<string, { at: number; sig: string; body: PeluangResponse }>();
 
-export async function fetchPeluang(league = 'ita.1'): Promise<PeluangResponse | null> {
-  const cfg = CONFIG[league];
-  if (!cfg) return null;
+export interface SeasonRow {
+  id: string;
+  name: string;
+  logo: string;
+  position: number;
+  points: number;
+  played: number;
+  gf: number;
+  ga: number;
+  gd: number;
+}
 
+export interface Season {
+  rows: SeasonRow[];
+  /** semua laga musim ini (selesai dan belum) dari ESPN */
+  events: any[];
+  /** pasangan (kandang, tamu) yang sudah selesai */
+  done: [string, string][];
+  muHome: number;
+  muAway: number;
+  now: Date;
+}
+
+/** Klasemen + seluruh laga musim ini + rata-rata gol liga. Dipakai tab Peluang juara dan Perebutan gelar. */
+export async function loadSeason(league: string): Promise<Season | null> {
   const now = new Date();
+  const end = new Date(Date.UTC(seasonStart().getUTCFullYear() + 1, 5, 30));
   const [res, events] = await Promise.all([
     fetch(`${ESPN_BASE}/v2/sports/soccer/${league}/standings`, { next: { revalidate: 1800 }, signal: AbortSignal.timeout(15_000) }).catch(() => null),
-    fetchLeagueEvents(league, seasonStart(), now).catch(() => [] as any[]),
+    fetchLeagueEvents(league, seasonStart(), end).catch(() => [] as any[]),
   ]);
   if (!res?.ok) return null;
   const data = await res.json();
   const entries: any[] = data?.children?.flatMap((g: any) => g?.standings?.entries ?? []) ?? data?.standings?.entries ?? [];
-  const rows = entries
+  const rows: SeasonRow[] = entries
     .map((e) => {
       const stat = (name: string) => Number((e.stats ?? []).find((s: any) => s.name === name)?.value ?? 0);
       return {
@@ -64,11 +86,6 @@ export async function fetchPeluang(league = 'ita.1'): Promise<PeluangResponse | 
     .filter((r) => r.id);
   if (rows.length < 8) return null;
 
-  const sig = `${league}:${rows.reduce((n, r) => n + r.played, 0)}:${rows.reduce((n, r) => n + r.points, 0)}`;
-  const hit = cache.get(league);
-  if (hit && hit.sig === sig && now.getTime() - hit.at < 15 * 60_000) return hit.body;
-
-  // laga selesai: pasangan (kandang, tamu) dan rata-rata gol kandang/tamu
   const done: [string, string][] = [];
   let hg = 0;
   let ag = 0;
@@ -81,8 +98,20 @@ export async function fetchPeluang(league = 'ita.1'): Promise<PeluangResponse | 
     hg += toNum(h.score);
     ag += toNum(a.score);
   }
-  const muHome = done.length >= 20 ? hg / done.length : 1.45;
-  const muAway = done.length >= 20 ? ag / done.length : 1.15;
+  return { rows, events, done, muHome: done.length >= 20 ? hg / done.length : 1.45, muAway: done.length >= 20 ? ag / done.length : 1.15, now };
+}
+
+export async function fetchPeluang(league = 'ita.1'): Promise<PeluangResponse | null> {
+  const cfg = CONFIG[league];
+  if (!cfg) return null;
+
+  const season = await loadSeason(league);
+  if (!season) return null;
+  const { rows, done, muHome, muAway, now } = season;
+
+  const sig = `${league}:${rows.reduce((n, r) => n + r.played, 0)}:${rows.reduce((n, r) => n + r.points, 0)}`;
+  const hit = cache.get(league);
+  if (hit && hit.sig === sig && now.getTime() - hit.at < 15 * 60_000) return hit.body;
 
   const ids = rows.map((r) => r.id);
   const remaining = remainingPairs(ids, done);
