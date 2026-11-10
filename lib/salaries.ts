@@ -1,6 +1,6 @@
 // Gaji pemain: tipe dan pencarian (murni, aman dipakai di komponen klien).
 // Datanya diambil server dari tabel Supabase `player_salaries` (lib/salaries-server.ts) dan disajikan /api/gaji.
-import { normName } from './names';
+import { sameNameStrict } from './names';
 
 export interface Salary {
   name: string;
@@ -28,16 +28,6 @@ export interface SalaryResponse {
 /** Gaji tetap per tahun bila ada, kalau tidak total per tahun, kalau tidak 52 × per pekan. */
 export const yearlyOf = (s: Salary): number | null => s.totalPerYear ?? s.fixedPerYear ?? (s.fixedPerWeek != null ? s.fixedPerWeek * 52 : null);
 export const weeklyOf = (s: Salary): number | null => s.fixedPerWeek ?? (s.fixedPerYear != null ? s.fixedPerYear / 52 : null);
-
-/** Kata nama dianggap sama bila persis sama, atau salah satunya awalan yang lain (min. 3 huruf): "Nico" ↔ "Nicolás". */
-const sameWord = (a: string, b: string) => a === b || (Math.min(a.length, b.length) >= 3 && (a.startsWith(b) || b.startsWith(a)));
-
-/** Semua kata nama yang lebih pendek ada di nama yang lebih panjang ("Bremer" ↔ "Gleison Bremer"). Tanpa tebakan nama belakang saja. */
-const sameNameStrict = (a: string, b: string) => {
-  const [x, y] = [normName(a), normName(b)];
-  const [short, long] = x.length <= y.length ? [x, y] : [y, x];
-  return short.length > 0 && short.every((w) => long.some((l) => sameWord(w, l)));
-};
 
 /** ID pemain menurut jenisnya. ID Transfermarkt dan FotMob dibandingkan HANYA dengan kolomnya sendiri (tm_id / fotmob_id). */
 export interface SalaryIds {

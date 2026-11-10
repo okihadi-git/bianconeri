@@ -68,6 +68,16 @@ Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil pe
 - Skuad, pelatih, kapten, kandang, dan transfer dibaca dari payload FotMob yang sama (tanpa request tambahan). Kapten dan kandang hanya tampil bila FotMob menyertakannya; transfer dihitung sejak 1 Juni musim berjalan. Jalur cadangan ESPN tidak punya data ini, jadi bagian itu disembunyikan.
 - FotMob tidak menyediakan nama stadion di daftar laga, jadi baris jadwal tidak menampilkan stadion.
 
+## Halaman Akademi
+
+`/akademi` menampilkan Juventus Next Gen, Juventus Youth (Primavera), pemain yang naik ke tim utama, dan pemain pinjaman, lewat `/api/akademi`.
+
+- **FotMob** untuk tabel liga, jadwal & hasil, skuad, top skor, dan pemain pinjaman. ID tim: Next Gen `956184`, Youth `394206` (ganti lewat env `FOTMOB_NEXTGEN_ID` / `FOTMOB_YOUTH_ID`). Nama liga dibaca dari data, tidak ditulis tangan.
+- **Pemain pinjaman** = transfer pinjaman keluar dari tim utama sejak 1 Juni musim berjalan (`transfers` di data FotMob tim utama); statistiknya dari 5 laga terakhir di klub peminjam.
+- **Naik ke tim utama** = pemain skuad Next Gen/Youth yang namanya cocok ketat dengan pemain yang tercatat bermain di statistik ESPN tim utama.
+- Pencetak gol per pertandingan tidak tersedia di data FotMob, jadi baris hasil tidak menampilkannya.
+- `sources` pada respons API menunjukkan jumlah data per sumber; `warnings` menjelaskan bila ada yang kosong.
+
 ## Catatan
 
 - Halaman `/juventus` sudah dihapus; tautan lama diarahkan oleh `next.config.mjs`.

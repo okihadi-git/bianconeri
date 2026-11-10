@@ -2,19 +2,9 @@
 
 import { useFetch } from '@/components/kp';
 import { countryId, flagUrl } from '@/lib/countries';
+import { dayLabel, timeLabel } from '@/lib/wib';
 import type { SquadGroup, SquadPlayer } from '@/lib/types';
 import type { WMatch, WomenResponse } from '@/lib/women';
-
-const WIB = 'Asia/Jakarta';
-
-/** "Jum, 13 Nov" */
-function dayLabel(iso: string) {
-  const parts = new Intl.DateTimeFormat('id-ID', { weekday: 'short', day: 'numeric', month: 'short', timeZone: WIB }).formatToParts(new Date(iso));
-  const get = (t: string) => parts.find((p) => p.type === t)?.value ?? '';
-  return `${get('weekday')}, ${get('day')} ${get('month')}`;
-}
-/** "00:45 WIB" */
-const timeLabel = (iso: string) => `${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: WIB }).format(new Date(iso))} WIB`;
 
 function MatchRow({ m }: { m: WMatch }) {
   const done = m.status === 'post';

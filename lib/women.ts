@@ -60,6 +60,8 @@ export interface WMatch {
   score: { us: number; them: number } | null;
   result: 'W' | 'D' | 'L' | null;
   round: string;
+  /** nama kompetisi apa adanya dari sumber (mis. "Serie C Grp. B") */
+  tournament?: string;
 }
 
 export interface WTransfer {
@@ -289,7 +291,7 @@ export function collectFixtures(data: any): any[] {
 }
 
 /** Cari tabel liga: larik objek yang punya name, played, pts. Memilih yang memuat Juventus bila ada beberapa tabel. */
-export function findTable(data: any): { rows: any[]; leagueName: string } | null {
+export function findTable(data: any, prefer?: RegExp): { rows: any[]; leagueName: string } | null {
   const found: { rows: any[]; leagueName: string }[] = [];
   const walk = (n: any, depth: number, leagueName: string) => {
     if (!n || typeof n !== 'object' || depth > 10) return;
@@ -302,11 +304,12 @@ export function findTable(data: any): { rows: any[]; leagueName: string } | null
     for (const v of Object.values(n)) if (v && typeof v === 'object') walk(v, depth + 1, name);
   };
   walk(data, 0, '');
-  return found.find((f) => f.rows.some((r) => isJuveName(String(r.name)) || String(r.id) === FOTMOB_WOMEN_TEAM_ID)) ?? found[0] ?? null;
+  const mine = found.filter((f) => f.rows.some((r) => isJuveName(String(r.name)) || String(r.id) === FOTMOB_WOMEN_TEAM_ID || /juventus/i.test(String(r.name))));
+  return (prefer && mine.find((f) => prefer.test(f.leagueName))) || mine[0] || found[0] || null;
 }
 
-export function parseFotmobTable(data: any, teamId: string): { rows: WStandingRow[]; name: string } {
-  const t = findTable(data);
+export function parseFotmobTable(data: any, teamId: string, prefer?: RegExp): { rows: WStandingRow[]; name: string } {
+  const t = findTable(data, prefer);
   if (!t) return { rows: [], name: '' };
   const rows: WStandingRow[] = t.rows.map((r, i) => {
     const [gf, ga] = String(r.scoresStr ?? '').split('-').map((x) => Number(x.trim()));
@@ -374,6 +377,7 @@ export function parseFotmobMatch(f: any, teamId: string): WMatch | null {
     score,
     result,
     round: String(st.reason?.long ?? ''),
+    tournament,
   };
 }
 

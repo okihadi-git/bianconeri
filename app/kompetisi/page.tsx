@@ -18,6 +18,7 @@ import {
   type ZoneDef,
 } from '@/components/kp';
 import JalurKeTrofi from '@/components/JalurKeTrofi';
+import PeluangJuara from '@/components/PeluangJuara';
 import { pickMode } from '@/lib/jalur';
 import { COPPA_FINAL, COPPA_TITLES, STAGE_LABEL, coppaStatus, seasonOf } from '@/lib/coppa';
 import type { Letter, Match, PlayerStat, SimpleMatch, Team } from '@/lib/types';
@@ -438,7 +439,9 @@ function KompetisiInner() {
 
           {tab === 'trofi' && compKey === 'seriea' && <JalurKeTrofi standings={standings} loading={standingsRes.loading} error={standingsRes.error} />}
 
-          {!['klasemen', 'lagalain', 'topskor', 'trofi'].includes(tab) && (
+          {tab === 'peluang' && compKey === 'seriea' && <PeluangJuara />}
+
+          {!['klasemen', 'lagalain', 'topskor', 'trofi', 'peluang'].includes(tab) && (
             <div className="kp-card kp-empty">Bagian ini belum tersedia.</div>
           )}
         </>

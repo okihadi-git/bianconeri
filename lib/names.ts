@@ -39,3 +39,14 @@ export function findPlayer<T extends { name: string }>(name: string, pool: T[]):
     unique(toks.filter((f) => f.tokens.length > 1 && t.length > 1 && f.tokens.at(-1) === t.at(-1)));
   return hit?.p ?? null;
 }
+
+/** Kata nama dianggap sama bila persis sama, atau salah satunya awalan yang lain (min. 3 huruf): "Nico" ↔ "Nicolás". */
+const sameWord = (a: string, b: string) => a === b || (Math.min(a.length, b.length) >= 3 && (a.startsWith(b) || b.startsWith(a)));
+
+/** Semua kata nama yang lebih pendek ada di nama yang lebih panjang ("Bremer" ↔ "Gleison Bremer"). Tanpa tebakan nama belakang saja. */
+export const sameNameStrict = (a: string, b: string) => {
+  const [x, y] = [normName(a), normName(b)];
+  const [short, long] = x.length <= y.length ? [x, y] : [y, x];
+  return short.length > 0 && short.every((w) => long.some((l) => sameWord(w, l)));
+};
+
