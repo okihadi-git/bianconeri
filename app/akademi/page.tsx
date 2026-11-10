@@ -4,6 +4,8 @@ import { useMemo, useState } from 'react';
 import Face from '@/components/Face';
 import { useFetch } from '@/components/kp';
 import type { AcademyKey, AcademyPlayer, AcademyTeam, AkademiResponse, LoanPlayer } from '@/lib/akademi';
+import { MIN_MINUTES, readiness } from '@/lib/akademi-index';
+import type { PerfResponse, PerfRow } from '@/lib/akademi-stats';
 import { sameNameStrict } from '@/lib/names';
 import { totalsOf } from '@/lib/playerprofile';
 import type { PlayerStatsResponse } from '@/lib/playerstats';
@@ -316,6 +318,172 @@ function promotedFrom(squad: AcademyPlayer[], stats: PlayerStatsResponse | null)
   return out.sort((a, b) => b.minutes - a.minutes);
 }
 
+/* ---------- performa pemain + kesiapan naik ---------- */
+
+type SortKey = 'name' | 'apps' | 'minutes' | 'ga' | 'cards' | 'rating';
+const COLS: { key: SortKey; label: string; left?: boolean }[] = [
+  { key: 'name', label: 'Pemain', left: true },
+  { key: 'apps', label: 'Main' },
+  { key: 'minutes', label: 'Menit' },
+  { key: 'ga', label: 'G · A' },
+  { key: 'cards', label: 'Kartu' },
+  { key: 'rating', label: 'Rating' },
+];
+const sortValue = (r: PerfRow, k: SortKey): number | string => {
+  switch (k) {
+    case 'name':
+      return r.name;
+    case 'apps':
+      return r.apps;
+    case 'minutes':
+      return r.minutes;
+    case 'ga':
+      return r.goals * 100 + r.assists;
+    case 'cards':
+      return r.red * 100 + r.yellow;
+    case 'rating':
+      return r.rating ?? -1;
+  }
+};
+
+function PerformaPanel({ title, squad }: { title: string; squad: AcademyPlayer[] }) {
+  const perf = useFetch<PerfResponse>('/api/akademi/performa');
+  const [key, setKey] = useState<SortKey>('minutes');
+  const [asc, setAsc] = useState(false);
+  const info = useMemo(() => new Map(squad.map((p) => [p.id, p])), [squad]);
+  const d = perf.data;
+  const rows = useMemo(() => {
+    const list = [...(d?.rows ?? [])];
+    list.sort((a, b) => {
+      const x = sortValue(a, key);
+      const y = sortValue(b, key);
+      const c = typeof x === 'string' ? x.localeCompare(y as string) : (x as number) - (y as number);
+      return (asc ? c : -c) || b.minutes - a.minutes;
+    });
+    return list;
+  }, [d, key, asc]);
+  const ages = useMemo(() => new Map(squad.map((p) => [p.id, p.age])), [squad]);
+  const ready = useMemo(() => (d ? readiness(d.rows, ages, d.coverage.withLineup).slice(0, 6) : []), [d, ages]);
+  const click = (k: SortKey) => {
+    if (k === key) setAsc((v) => !v);
+    else {
+      setKey(k);
+      setAsc(k === 'name');
+    }
+  };
+  const asOf = d ? new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(new Date(d.asOf)) : '';
+
+  return (
+    <>
+      <section className="kp-card ak-panel">
+        <header className="kp-card-head">
+          <h2 className="kp-title">{title}</h2>
+          <small className="kp-muted">{d ? `${d.rows.length} pemain tampil · semua kompetisi musim ini` : ' '}</small>
+        </header>
+        {perf.loading && <div className="kp-empty">Menghitung performa pemain dari semua laga musim ini… (pertama kali bisa beberapa detik)</div>}
+        {perf.error && <div className="kp-empty">Performa pemain belum bisa dimuat dari FotMob. Coba muat ulang beberapa saat lagi.</div>}
+        {d && d.warnings.length > 0 && <div className="wm-warn ak-perf-warn">{d.warnings.map((w) => <p key={w}>{w}</p>)}</div>}
+        {d && rows.length > 0 && (
+          <div className="ak-tbl-wrap">
+            <table className="ak-perf">
+              <thead>
+                <tr>
+                  {COLS.map((c) => (
+                    <th key={c.key} className={c.left ? 'ak-l' : ''} aria-sort={c.key === key ? (asc ? 'ascending' : 'descending') : 'none'}>
+                      <button type="button" onClick={() => click(c.key)} className={c.key === key ? 'on' : ''}>
+                        {c.label}
+                        {c.key === key ? (asc ? ' ▲' : ' ▼') : ''}
+                      </button>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((r) => {
+                  const p = info.get(r.id);
+                  return (
+                    <tr key={r.id}>
+                      <td className="ak-l">
+                        <span className="ak-who">
+                          <Face src={r.photo} name={r.name} size={36} />
+                          <span>
+                            <b>{r.name}</b>
+                            <small>{[p?.age != null ? `${p.age} th` : '', p?.group].filter(Boolean).join(' · ')}</small>
+                          </span>
+                        </span>
+                      </td>
+                      <td>
+                        {r.apps} <small>({r.starts})</small>
+                      </td>
+                      <td>{r.minutes}&prime;</td>
+                      <td>
+                        <b>{r.goals}</b> · {r.assists}
+                      </td>
+                      <td>
+                        {r.yellow > 0 && (
+                          <span className="ak-cards">
+                            <i className="ak-cy" />
+                            {r.yellow > 1 ? `×${r.yellow}` : ''}
+                          </span>
+                        )}
+                        {r.red > 0 && (
+                          <span className="ak-cards">
+                            <i className="ak-cr" />
+                            {r.red > 1 ? `×${r.red}` : ''}
+                          </span>
+                        )}
+                      </td>
+                      <td>{r.rating != null ? <span className={`ak-rate ak-rate-sm ${ratingClass(r.rating)}`}>{dec(r.rating, 1)}</span> : <span className="kp-muted">–</span>}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {d && rows.length > 0 && (
+          <p className="kp-note ak-note">
+            Main = jumlah laga (angka dalam kurung = starter). Menit dihitung dari data pergantian pemain. Rating = rata-rata rating FotMob per laga, tampil bila ada minimal 2 laga berating. Klik judul kolom untuk mengurutkan.
+            Data terbaca dari {d.coverage.withLineup} dari {d.coverage.found} laga selesai (kejadian: {d.coverage.withEvents}, rating: {d.coverage.withRatings}).
+          </p>
+        )}
+      </section>
+
+      {d && ready.length > 0 && (
+        <section className="kp-card ak-panel">
+          <header className="kp-card-head">
+            <h2 className="kp-title">Siap naik ke tim utama?</h2>
+            <small className="kp-muted">Indeks gabungan rating, menit, kontribusi gol, dan usia · musim ini</small>
+          </header>
+          <ol className="ak-ready">
+            {ready.map((x, i) => (
+              <li key={x.row.id}>
+                <span className="ak-rank">{i + 1}</span>
+                <div className="ak-ready-who">
+                  <b>{x.row.name}</b>
+                  <small>
+                    {[x.age != null ? `${x.age} th` : '', info.get(x.row.id)?.group, `${x.row.minutes}′`, `${x.row.goals}G ${x.row.assists}A`, x.row.rating != null ? `rating ${dec(x.row.rating)}` : ''].filter(Boolean).join(' · ')}
+                  </small>
+                </div>
+                <i className="ak-ready-bar">
+                  <u style={{ width: `${Math.max(2, x.score)}%` }} />
+                </i>
+                <b className="ak-ready-score">{x.score}</b>
+              </li>
+            ))}
+          </ol>
+          <p className="kp-note ak-note">
+            Indeks buatan Matchday Hub, bukan penilaian klub: rating di atas 6,4 dan menit bermain menaikkan skor, gol + assist per 90 menit dihitung sampai 1,2, pemain lebih muda mendapat bonus. Minimal {MIN_MINUTES} menit. Bila
+            FotMob tidak memberi rating, komponen itu dilewati dan bobot lainnya disesuaikan.
+          </p>
+        </section>
+      )}
+
+      {d && <p className="kp-note ak-foot">Sumber: FotMob · data per {asOf} · diperbarui otomatis</p>}
+    </>
+  );
+}
+
 /* ---------- halaman ---------- */
 
 export default function AkademiPage() {
@@ -433,6 +601,7 @@ export default function AkademiPage() {
 
       {ak.loading && <div className="kp-card kp-empty">Memuat data akademi…</div>}
       {tab === 'nextgen' && nextgen && <TeamPanel t={nextgen} />}
+      {tab === 'nextgen' && nextgen && <PerformaPanel title={`Performa pemain ${nextgen.name.replace(/^Juventus\s*/i, '') || 'Next Gen'}`} squad={(d?.squad ?? []).filter((p) => p.team === 'nextgen')} />}
       {tab === 'youth' && youth && <TeamPanel t={youth} />}
       {tab === 'loans' && d && <LoanPanel loans={d.loans} />}
       {d && ((tab === 'nextgen' && !nextgen) || (tab === 'youth' && !youth)) && <div className="kp-card kp-empty">Data tim ini belum tersedia dari FotMob.</div>}

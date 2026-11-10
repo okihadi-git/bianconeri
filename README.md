@@ -75,6 +75,7 @@ Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil pe
 - **FotMob** untuk tabel liga, jadwal & hasil, skuad, top skor, dan pemain pinjaman. ID tim: Next Gen `956184`, Youth `394206` (ganti lewat env `FOTMOB_NEXTGEN_ID` / `FOTMOB_YOUTH_ID`). Nama liga dibaca dari data, tidak ditulis tangan.
 - **Pemain pinjaman** = transfer pinjaman keluar dari tim utama sejak 1 Juni musim berjalan (`transfers` di data FotMob tim utama); statistiknya dari 5 laga terakhir di klub peminjam.
 - **Naik ke tim utama** = pemain skuad Next Gen/Youth yang namanya cocok ketat dengan pemain yang tercatat bermain di statistik ESPN tim utama.
+- **Performa pemain Next Gen** (`/api/akademi/performa`) menjumlahkan semua laga selesai musim ini dari `matchDetails` FotMob: laga, starter, menit (dari data pergantian), gol, assist, kartu, dan rata-rata rating. Kekosongan data dijelaskan di `warnings` dan `coverage` (jumlah laga yang punya lineup/kejadian/rating). Panel "Siap naik ke tim utama?" memakai indeks buatan Matchday Hub (rumus di `lib/akademi-index.ts`), bukan penilaian klub.
 - Pencetak gol per pertandingan tidak tersedia di data FotMob, jadi baris hasil tidak menampilkannya.
 - `sources` pada respons API menunjukkan jumlah data per sumber; `warnings` menjelaskan bila ada yang kosong.
 

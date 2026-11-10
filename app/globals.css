@@ -950,3 +950,32 @@ body:has(.kp) { background: #f2f2f2; }
 .ak-rate.hi { background: #1f8a4c; color: #ffffff; }
 .ak-rate-sm { min-width: 34px; padding: 2px 6px; font-size: 13px; }
 @media (max-width: 560px) { .ak-min-row { grid-template-columns: 1fr; gap: 4px; } .ak-min-row b { text-align: left; } .ak-loan-grid { grid-template-columns: 1fr; } }
+
+/* performa pemain */
+.ak-perf { width: 100%; border-collapse: collapse; font-size: 14px; }
+.ak-perf th { padding: 0; background: #eceef3; text-align: center; }
+.ak-perf th button { width: 100%; padding: 10px 12px; border: 0; background: none; font: inherit; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #7a8099; cursor: pointer; }
+.ak-perf th button.on { color: #111a3a; }
+.ak-perf th.ak-l button { text-align: left; padding-left: 20px; }
+.ak-perf td { padding: 9px 12px; text-align: center; border-bottom: 1px solid var(--kp-line); white-space: nowrap; }
+.ak-perf td.ak-l { text-align: left; padding-left: 20px; }
+.ak-perf td small { color: var(--kp-muted); }
+.ak-who { display: inline-flex; align-items: center; gap: 12px; }
+.ak-who > span { display: grid; gap: 1px; text-align: left; }
+.ak-who b { font-weight: 800; }
+.ak-who small { font-size: 12px; }
+.ak-cards { display: inline-flex; align-items: center; gap: 4px; margin: 0 3px; }
+.ak-cy, .ak-cr { display: inline-block; width: 12px; height: 15px; border-radius: 2px; background: #f4a52b; }
+.ak-cr { background: var(--juve-pink-deep); }
+.ak-note { padding: 12px 20px 16px; margin: 0; line-height: 1.5; }
+.ak-perf-warn { margin: 0 20px 12px; padding: 10px 14px; border: 1px solid #f0d9a0; border-radius: 8px; }
+.ak-ready { list-style: none; margin: 0; padding: 4px 20px 6px; display: grid; gap: 14px; }
+.ak-ready li { display: grid; grid-template-columns: 24px minmax(160px, 1.2fr) minmax(120px, 3fr) 34px; gap: 14px; align-items: center; }
+.ak-rank { font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; color: var(--kp-muted); }
+.ak-ready-who { display: grid; gap: 1px; min-width: 0; }
+.ak-ready-who b { font-weight: 800; }
+.ak-ready-who small { color: var(--kp-muted); font-size: 12px; }
+.ak-ready-bar { display: block; height: 9px; border-radius: 5px; background: #e4e4ea; overflow: hidden; }
+.ak-ready-bar u { display: block; height: 100%; border-radius: 5px; background: var(--juve-pink-deep); text-decoration: none; }
+.ak-ready-score { text-align: right; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; }
+@media (max-width: 640px) { .ak-ready li { grid-template-columns: 22px 1fr 30px; } .ak-ready-bar { grid-column: 2 / 4; grid-row: 2; } }
