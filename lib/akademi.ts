@@ -131,12 +131,28 @@ export function parseTopScorers(data: any): { name: string; goals: number }[] {
   return out.filter((p) => (seen.has(p.name) ? false : (seen.add(p.name), true))).sort((a, b) => b.goals - a.goals).slice(0, 5);
 }
 
-export function parseAcademyTeam(data: any, key: AcademyKey, id: string, now: Date, prefer?: RegExp): AcademyTeam {
+/** 1 Juli musim berjalan (musim Juli–Juni). */
+export const seasonStartOf = (now: Date) => Date.UTC(now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1, 6, 1);
+
+/** Hanya liga Primavera: bukan piala (Coppa/Supercoppa/Viareggio) dan bukan UEFA Youth League. */
+export const primaveraLeagueOnly = (tournament: string) => /primavera/i.test(tournament) && !/coppa|cup|supercoppa|viareggio|youth league/i.test(tournament);
+
+export interface TeamParseOptions {
+  /** tabel yang dipilih bila ada beberapa (mis. /primavera/) */
+  prefer?: RegExp;
+  /** hanya laga dari kompetisi yang lolos filter ini */
+  keep?: (tournament: string) => boolean;
+}
+
+export function parseAcademyTeam(data: any, key: AcademyKey, id: string, now: Date, opts: TeamParseOptions = {}): AcademyTeam {
+  const { prefer, keep } = opts;
   const table = parseFotmobTable(data, id, prefer);
   const juve = table.rows.find((r) => r.isJuve) ?? null;
+  // hanya musim berjalan: tanpa ini hasil musim lalu ikut tampil saat laga musim baru masih sedikit
+  const start = seasonStartOf(now);
   const all = collectFixtures(data)
     .map((f) => parseFotmobMatch(f, id))
-    .filter((m): m is WMatch => m !== null);
+    .filter((m): m is WMatch => m !== null && new Date(m.iso).getTime() >= start && (!keep || keep(m.tournament ?? '')));
   const results = all.filter((m) => m.status === 'post').sort((a, b) => b.iso.localeCompare(a.iso));
   const live = all.filter((m) => m.status === 'live');
   const next = [...live, ...all.filter((m) => m.status === 'pre').sort((a, b) => a.iso.localeCompare(b.iso))];
@@ -146,7 +162,6 @@ export function parseAcademyTeam(data: any, key: AcademyKey, id: string, now: Da
     .filter((x): x is 'M' | 'S' | 'K' => x !== null)
     .reverse();
   const sq = parseFotmob(data);
-  void now;
   return {
     key,
     id,
@@ -240,11 +255,12 @@ export async function fetchAkademi(now = new Date()): Promise<AkademiResponse> {
   const [ngData, ytData, firstData] = await Promise.all([fm(`teams?id=${FOTMOB_NEXTGEN_ID}&ccode3=IDN`, 900), fm(`teams?id=${FOTMOB_YOUTH_ID}&ccode3=IDN`, 900), fm(`teams?id=${FOTMOB_TEAM_ID}&ccode3=IDN`, 1800)]);
 
   const nextgen = ngData ? parseAcademyTeam(ngData, 'nextgen', FOTMOB_NEXTGEN_ID, now) : null;
-  const youth = ytData ? parseAcademyTeam(ytData, 'youth', FOTMOB_YOUTH_ID, now, /primavera/i) : null;
+  const youth = ytData ? parseAcademyTeam(ytData, 'youth', FOTMOB_YOUTH_ID, now, { prefer: /primavera/i, keep: primaveraLeagueOnly }) : null;
   sources.push({ key: 'nextgen', id: FOTMOB_NEXTGEN_ID, ok: Boolean(nextgen), note: nextgen ? `${nextgen.league || 'tanpa tabel'} · ${nextgen.standings.length} tim · ${nextgen.results.length} hasil · ${nextgen.next.length} jadwal` : undefined });
   sources.push({ key: 'youth', id: FOTMOB_YOUTH_ID, ok: Boolean(youth), note: youth ? `${youth.league || 'tanpa tabel'} · ${youth.standings.length} tim · ${youth.results.length} hasil · ${youth.next.length} jadwal` : undefined });
   if (!nextgen) warnings.push('Data Juventus Next Gen tidak bisa dimuat dari FotMob.');
   if (!youth) warnings.push('Data Juventus Youth (Primavera) tidak bisa dimuat dari FotMob.');
+  else if (!youth.results.length && !youth.next.length) warnings.push(`Tidak ada laga Primavera 1 musim ini di data FotMob untuk tim ID ${FOTMOB_YOUTH_ID}. Bila itu tim lama, isi env FOTMOB_YOUTH_ID dengan ID tim Juventus U20 yang aktif.`);
 
   const squad = [...(ngData ? parseAcademySquad(ngData, 'nextgen') : []), ...(ytData ? parseAcademySquad(ytData, 'youth') : [])];
 

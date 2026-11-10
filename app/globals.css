@@ -979,3 +979,11 @@ body:has(.kp) { background: #f2f2f2; }
 .ak-ready-bar u { display: block; height: 100%; border-radius: 5px; background: var(--juve-pink-deep); text-decoration: none; }
 .ak-ready-score { text-align: right; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; }
 @media (max-width: 640px) { .ak-ready li { grid-template-columns: 22px 1fr 30px; } .ak-ready-bar { grid-column: 2 / 4; grid-row: 2; } }
+
+/* pencetak gol */
+.ak-scorers { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; padding: 4px 16px 18px; }
+.ak-scorer { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px; background: #eef0f4; min-width: 0; }
+.ak-scorer > b { flex: 1; min-width: 0; font-weight: 800; overflow-wrap: anywhere; }
+.ak-ini { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: #ffffff; border: 1px solid var(--kp-line); font-size: 12px; font-weight: 800; color: #7a8099; flex: none; }
+.ak-balls { font-size: 12px; letter-spacing: 2px; white-space: nowrap; }
+.ak-goals { min-width: 16px; text-align: right; font-family: var(--font-kp-display), 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; }

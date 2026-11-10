@@ -6,6 +6,7 @@
 // kekosongan dicatat di `coverage` (jumlah laga yang punya lineup/kejadian/rating) — tidak ada angka karangan.
 import { fotmobPhoto } from './squad';
 import { normName } from './names';
+import { parseTopScorers } from './akademi';
 import { collectFixtures } from './women';
 
 export interface PerfRow {
@@ -210,10 +211,10 @@ async function mapLimit<T, R>(items: T[], limit: number, fn: (t: T) => Promise<R
 }
 
 /** Laga selesai tim ini sejak 1 Juli musim berjalan (maksimal 60 laga). */
-export function seasonFixtures(teamData: any, teamId: string, now: Date): { id: string; side: 'home' | 'away' }[] {
+export function seasonFixtures(teamData: any, teamId: string, now: Date, keep?: (tournament: string) => boolean): { id: string; side: 'home' | 'away' }[] {
   const seasonStart = Date.UTC(now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1, 6, 1);
   return collectFixtures(teamData)
-    .filter((f) => f?.status?.finished && !f?.status?.cancelled && new Date(f.status.utcTime).getTime() >= seasonStart)
+    .filter((f) => f?.status?.finished && !f?.status?.cancelled && new Date(f.status.utcTime).getTime() >= seasonStart && (!keep || keep(String(f?.tournament?.name ?? ''))))
     .map((f) => ({ id: String(f.id), side: String(f.home?.id) === teamId ? ('home' as const) : String(f.away?.id) === teamId ? ('away' as const) : null }))
     .filter((f): f is { id: string; side: 'home' | 'away' } => f.side !== null)
     .slice(0, 60);
@@ -245,4 +246,67 @@ export async function fetchPerformance(teamId: string, now = new Date()): Promis
     if (!cov.withRatings) warnings.push('Rating pemain tidak tersedia untuk kompetisi ini di FotMob.');
   }
   return { rows: toRows(acc), coverage: cov, asOf: now.toISOString(), warnings };
+}
+
+/* ---------- pencetak gol (liga tanpa data susunan pemain) ---------- */
+
+export interface ScorerRow {
+  id: string;
+  name: string;
+  goals: number;
+}
+
+export interface ScorersResponse {
+  rows: ScorerRow[];
+  /** events = dihitung dari kejadian gol tiap laga; team = hanya daftar teratas dari halaman tim FotMob (kurang lengkap) */
+  source: 'events' | 'team' | null;
+  coverage: { found: number; fetched: number; withGoals: number };
+  asOf: string;
+  warnings: string[];
+}
+
+/** Hitung gol per pemain (tanpa gol bunuh diri) untuk sisi tim kita dari satu laga. */
+export function countGoals(detail: any, side: 'home' | 'away', acc: Map<string, ScorerRow>): boolean {
+  let any = false;
+  for (const e of eventsOf(detail)) {
+    if (String(e?.type ?? '').toLowerCase() !== 'goal') continue;
+    if (e?.isHome !== (side === 'home')) continue;
+    if (e?.ownGoal === true || /own/i.test(String(e?.eventType ?? e?.goalDescription ?? ''))) continue;
+    const name = String(e?.player?.name ?? e?.playerName ?? e?.nameStr ?? '').trim();
+    const id = String(e?.player?.id ?? e?.playerId ?? (name ? normName(name).join('-') : ''));
+    if (!id || !name) continue;
+    const row = acc.get(id) ?? { id, name, goals: 0 };
+    row.goals += 1;
+    acc.set(id, row);
+    any = true;
+  }
+  return any;
+}
+
+export async function fetchScorers(teamId: string, keep: (tournament: string) => boolean, now = new Date()): Promise<ScorersResponse | null> {
+  const team = await fm(`teams?id=${teamId}&ccode3=IDN`, 900);
+  if (!team) return null;
+  const fixtures = seasonFixtures(team, teamId, now, keep);
+  const details = await mapLimit(fixtures, 6, (f) => fm(`matchDetails?matchId=${encodeURIComponent(f.id)}`, 21600));
+  const acc = new Map<string, ScorerRow>();
+  const cov = { found: fixtures.length, fetched: 0, withGoals: 0 };
+  details.forEach((d, i) => {
+    if (!d) return;
+    cov.fetched += 1;
+    if (countGoals(d, fixtures[i].side, acc)) cov.withGoals += 1;
+  });
+
+  const warnings: string[] = [];
+  let rows = [...acc.values()].sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name));
+  let source: ScorersResponse['source'] = rows.length ? 'events' : null;
+  if (!rows.length) {
+    // cadangan: daftar top skor dari halaman tim FotMob (biasanya hanya beberapa nama teratas)
+    rows = parseTopScorers(team).map((s) => ({ id: normName(s.name).join('-'), name: s.name, goals: s.goals }));
+    if (rows.length) {
+      source = 'team';
+      warnings.push('Kejadian gol per laga tidak tersedia; yang ditampilkan hanya daftar teratas dari halaman tim FotMob.');
+    } else if (!cov.found) warnings.push('Belum ada laga liga selesai musim ini di data FotMob.');
+    else warnings.push('FotMob tidak mencatat gol per pemain untuk laga liga ini.');
+  }
+  return { rows, source, coverage: cov, asOf: now.toISOString(), warnings };
 }

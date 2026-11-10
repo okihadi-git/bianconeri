@@ -5,7 +5,7 @@ import Face from '@/components/Face';
 import { useFetch } from '@/components/kp';
 import type { AcademyKey, AcademyPlayer, AcademyTeam, AkademiResponse, LoanPlayer } from '@/lib/akademi';
 import { MIN_MINUTES, readiness } from '@/lib/akademi-index';
-import type { PerfResponse, PerfRow } from '@/lib/akademi-stats';
+import type { PerfResponse, PerfRow, ScorersResponse } from '@/lib/akademi-stats';
 import { sameNameStrict } from '@/lib/names';
 import { totalsOf } from '@/lib/playerprofile';
 import type { PlayerStatsResponse } from '@/lib/playerstats';
@@ -484,6 +484,50 @@ function PerformaPanel({ title, squad }: { title: string; squad: AcademyPlayer[]
   );
 }
 
+/* ---------- pencetak gol (liga tanpa susunan pemain) ---------- */
+
+const initialsOf = (n: string) => {
+  const t = n.trim().split(/\s+/).filter(Boolean);
+  return (t.length < 2 ? (t[0] ?? '?').slice(0, 2) : t[0][0] + t[t.length - 1][0]).toUpperCase();
+};
+
+function ScorersPanel({ title }: { title: string }) {
+  const res = useFetch<ScorersResponse>('/api/akademi/pencetak');
+  const d = res.data;
+  const asOf = d ? new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(new Date(d.asOf)) : '';
+  return (
+    <>
+      <section className="kp-card ak-panel">
+        <header className="kp-card-head">
+          <h2 className="kp-title">{title}</h2>
+          <small className="kp-muted">Sumber data liga hanya mencatat gol (tanpa susunan pemain)</small>
+        </header>
+        {res.loading && <div className="kp-empty">Menghitung pencetak gol dari semua laga liga musim ini…</div>}
+        {res.error && <div className="kp-empty">Pencetak gol belum bisa dimuat dari FotMob. Coba muat ulang beberapa saat lagi.</div>}
+        {d && d.warnings.length > 0 && <div className="wm-warn ak-perf-warn">{d.warnings.map((w) => <p key={w}>{w}</p>)}</div>}
+        {d && !d.rows.length && !d.warnings.length && <div className="kp-empty">Belum ada gol tercatat musim ini.</div>}
+        {d && d.rows.length > 0 && (
+          <div className="ak-scorers">
+            {d.rows.map((r) => (
+              <div className="ak-scorer" key={r.id}>
+                <span className="ak-ini">{initialsOf(r.name)}</span>
+                <b>{r.name}</b>
+                <span className="ak-balls" aria-hidden="true">
+                  {'⚽'.repeat(Math.min(r.goals, 6))}
+                </span>
+                <span className="ak-goals" title={`${r.goals} gol`}>
+                  {r.goals}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+      {d && <p className="kp-note ak-foot">Sumber: FotMob · data per {asOf} · diperbarui otomatis</p>}
+    </>
+  );
+}
+
 /* ---------- halaman ---------- */
 
 export default function AkademiPage() {
@@ -516,7 +560,7 @@ export default function AkademiPage() {
     <div className="kp" id="akademi">
       <header className="ak-head">
         <h2 className="kp-title">Akademi Juventus</h2>
-        <small className="kp-muted">Juventus Next Gen, Juventus Youth (Primavera), dan pemain pinjaman</small>
+        <small className="kp-muted">Juventus Next Gen, Juventus Youth (U20, hanya Primavera 1), dan pemain pinjaman</small>
       </header>
 
       <div className="kp-metrics">
@@ -603,10 +647,11 @@ export default function AkademiPage() {
       {tab === 'nextgen' && nextgen && <TeamPanel t={nextgen} />}
       {tab === 'nextgen' && nextgen && <PerformaPanel title={`Performa pemain ${nextgen.name.replace(/^Juventus\s*/i, '') || 'Next Gen'}`} squad={(d?.squad ?? []).filter((p) => p.team === 'nextgen')} />}
       {tab === 'youth' && youth && <TeamPanel t={youth} />}
+      {tab === 'youth' && youth && <ScorersPanel title={`Pencetak gol ${TEAM_LABEL.youth}`} />}
       {tab === 'loans' && d && <LoanPanel loans={d.loans} />}
       {d && ((tab === 'nextgen' && !nextgen) || (tab === 'youth' && !youth)) && <div className="kp-card kp-empty">Data tim ini belum tersedia dari FotMob.</div>}
 
-      <p className="kp-note ak-foot">Sumber: FotMob (tabel, jadwal, hasil, skuad, pemain pinjaman) dan ESPN (penampilan di tim utama). Data tidak resmi dan bisa terlambat diperbarui; pemain pinjaman dihitung dari transfer pinjaman keluar sejak 1 Juni musim berjalan.</p>
+      <p className="kp-note ak-foot">Sumber: FotMob (tabel, jadwal, hasil musim ini, skuad, pemain pinjaman) dan ESPN (penampilan di tim utama). Data tidak resmi dan bisa terlambat diperbarui; pemain pinjaman dihitung dari transfer pinjaman keluar sejak 1 Juni musim berjalan.</p>
     </div>
   );
 }
