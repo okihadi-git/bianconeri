@@ -70,12 +70,12 @@ Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil pe
 
 ## Halaman Akademi
 
-`/akademi` menampilkan Juventus Next Gen, Juventus Youth (Primavera), pemain yang naik ke tim utama, dan pemain pinjaman, lewat `/api/akademi`.
+`/akademi` menampilkan Juventus Next Gen, pemain yang naik ke tim utama, dan pemain pinjaman, lewat `/api/akademi`.
 
-- **FotMob** untuk tabel liga, jadwal & hasil, skuad, top skor, dan pemain pinjaman. ID tim: Next Gen `956184`, Youth `394206` (ganti lewat env `FOTMOB_NEXTGEN_ID` / `FOTMOB_YOUTH_ID`). Nama liga dibaca dari data, tidak ditulis tangan.
+- **FotMob** untuk tabel liga, jadwal & hasil musim ini, skuad, top skor, dan pemain pinjaman. ID tim Next Gen `956184` (ganti lewat env `FOTMOB_NEXTGEN_ID`). Nama liga dibaca dari data, tidak ditulis tangan.
 - **Pemain pinjaman** = transfer pinjaman keluar dari tim utama sejak 1 Juni musim berjalan (`transfers` di data FotMob tim utama); statistiknya dari 5 laga terakhir di klub peminjam.
-- **Naik ke tim utama** = pemain skuad Next Gen/Youth yang namanya cocok ketat dengan pemain yang tercatat bermain di statistik ESPN tim utama.
-- **Youth (U20)** hanya memakai laga musim berjalan (sejak 1 Juli) dan hanya Campionato Primavera 1; UEFA Youth League, Coppa, dan hasil musim lalu disaring. **Pencetak gol Youth** (`/api/akademi/pencetak`) dihitung dari kejadian gol tiap laga liga (gol bunuh diri tidak dihitung). Bila tim FotMob yang dipakai ternyata tim lama, ganti ID lewat env `FOTMOB_YOUTH_ID`; `warnings` pada `/api/akademi` akan memberi tahu bila tidak ada laga Primavera musim ini.
+- **Naik ke tim utama** = pemain skuad Next Gen yang namanya cocok ketat dengan pemain yang tercatat bermain di statistik ESPN tim utama.
+- Juventus Youth (U20/Primavera) tidak ditampilkan: FotMob tidak memuat laga Primavera 1 Juventus musim ini.
 - **Performa pemain Next Gen** (`/api/akademi/performa`) menjumlahkan semua laga selesai musim ini dari `matchDetails` FotMob: laga, starter, menit (dari data pergantian), gol, assist, kartu, dan rata-rata rating. Kekosongan data dijelaskan di `warnings` dan `coverage` (jumlah laga yang punya lineup/kejadian/rating). Panel "Siap naik ke tim utama?" memakai indeks buatan Matchday Hub (rumus di `lib/akademi-index.ts`), bukan penilaian klub.
 - Pencetak gol per pertandingan tidak tersedia di data FotMob, jadi baris hasil tidak menampilkannya.
 - `sources` pada respons API menunjukkan jumlah data per sumber; `warnings` menjelaskan bila ada yang kosong.
