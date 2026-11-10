@@ -1,4 +1,4 @@
-// Akademi Juventus: Juventus Next Gen, Juventus Youth (Primavera), dan pemain yang dipinjamkan — semuanya dari FotMob.
+// Akademi Juventus: Juventus Next Gen dan pemain yang dipinjamkan — semuanya dari FotMob.
 //   Tim      : /api/data/teams?id=…  (tabel liga, jadwal & hasil, skuad, top skor) — pola yang sama dengan halaman Women
 //   Pinjaman : daftar transfer keluar berstatus pinjaman di data tim utama → /api/data/playerData?id=… tiap pemain
 // Tidak melempar error; yang tidak ada di sumber bernilai kosong dan dijelaskan di `warnings`/`sources`.
@@ -7,9 +7,7 @@ import type { SquadGroup } from './types';
 import { collectFixtures, parseFotmobMatch, parseFotmobTable, parseTransfers, type WMatch, type WStandingRow } from './women';
 
 export const FOTMOB_NEXTGEN_ID = process.env.FOTMOB_NEXTGEN_ID || '956184'; // Juventus Next Gen
-export const FOTMOB_YOUTH_ID = process.env.FOTMOB_YOUTH_ID || '394206'; // Juventus U19/U20 (Primavera)
-
-export type AcademyKey = 'nextgen' | 'youth';
+export type AcademyKey = 'nextgen';
 
 export interface AcademyTeam {
   key: AcademyKey;
@@ -79,7 +77,6 @@ export interface LoanPlayer {
 
 export interface AkademiResponse {
   nextgen: AcademyTeam | null;
-  youth: AcademyTeam | null;
   squad: AcademyPlayer[];
   loans: LoanPlayer[];
   sources: { key: string; id: string; ok: boolean; note?: string }[];
@@ -134,9 +131,6 @@ export function parseTopScorers(data: any): { name: string; goals: number }[] {
 /** 1 Juli musim berjalan (musim Juli–Juni). */
 export const seasonStartOf = (now: Date) => Date.UTC(now.getUTCMonth() >= 6 ? now.getUTCFullYear() : now.getUTCFullYear() - 1, 6, 1);
 
-/** Hanya liga Primavera: bukan piala (Coppa/Supercoppa/Viareggio) dan bukan UEFA Youth League. */
-export const primaveraLeagueOnly = (tournament: string) => /primavera/i.test(tournament) && !/coppa|cup|supercoppa|viareggio|youth league/i.test(tournament);
-
 export interface TeamParseOptions {
   /** tabel yang dipilih bila ada beberapa (mis. /primavera/) */
   prefer?: RegExp;
@@ -165,7 +159,7 @@ export function parseAcademyTeam(data: any, key: AcademyKey, id: string, now: Da
   return {
     key,
     id,
-    name: str(data?.details?.name) || (key === 'nextgen' ? 'Juventus Next Gen' : 'Juventus Youth'),
+    name: str(data?.details?.name) || 'Juventus Next Gen',
     league: table.name,
     standings: table.rows,
     position: juve?.position ?? null,
@@ -252,17 +246,13 @@ export function parseLoanee(data: any, id: string): LoanPlayer | null {
 export async function fetchAkademi(now = new Date()): Promise<AkademiResponse> {
   const warnings: string[] = [];
   const sources: AkademiResponse['sources'] = [];
-  const [ngData, ytData, firstData] = await Promise.all([fm(`teams?id=${FOTMOB_NEXTGEN_ID}&ccode3=IDN`, 900), fm(`teams?id=${FOTMOB_YOUTH_ID}&ccode3=IDN`, 900), fm(`teams?id=${FOTMOB_TEAM_ID}&ccode3=IDN`, 1800)]);
+  const [ngData, firstData] = await Promise.all([fm(`teams?id=${FOTMOB_NEXTGEN_ID}&ccode3=IDN`, 900), fm(`teams?id=${FOTMOB_TEAM_ID}&ccode3=IDN`, 1800)]);
 
   const nextgen = ngData ? parseAcademyTeam(ngData, 'nextgen', FOTMOB_NEXTGEN_ID, now) : null;
-  const youth = ytData ? parseAcademyTeam(ytData, 'youth', FOTMOB_YOUTH_ID, now, { prefer: /primavera/i, keep: primaveraLeagueOnly }) : null;
   sources.push({ key: 'nextgen', id: FOTMOB_NEXTGEN_ID, ok: Boolean(nextgen), note: nextgen ? `${nextgen.league || 'tanpa tabel'} · ${nextgen.standings.length} tim · ${nextgen.results.length} hasil · ${nextgen.next.length} jadwal` : undefined });
-  sources.push({ key: 'youth', id: FOTMOB_YOUTH_ID, ok: Boolean(youth), note: youth ? `${youth.league || 'tanpa tabel'} · ${youth.standings.length} tim · ${youth.results.length} hasil · ${youth.next.length} jadwal` : undefined });
   if (!nextgen) warnings.push('Data Juventus Next Gen tidak bisa dimuat dari FotMob.');
-  if (!youth) warnings.push('Data Juventus Youth (Primavera) tidak bisa dimuat dari FotMob.');
-  else if (!youth.results.length && !youth.next.length) warnings.push(`Tidak ada laga Primavera 1 musim ini di data FotMob untuk tim ID ${FOTMOB_YOUTH_ID}. Bila itu tim lama, isi env FOTMOB_YOUTH_ID dengan ID tim Juventus U20 yang aktif.`);
 
-  const squad = [...(ngData ? parseAcademySquad(ngData, 'nextgen') : []), ...(ytData ? parseAcademySquad(ytData, 'youth') : [])];
+  const squad = ngData ? parseAcademySquad(ngData, 'nextgen') : [];
 
   // pemain pinjaman: transfer keluar berstatus pinjaman sejak 1 Juni musim berjalan
   let loans: LoanPlayer[] = [];
@@ -276,5 +266,5 @@ export async function fetchAkademi(now = new Date()): Promise<AkademiResponse> {
     sources.push({ key: 'loans', id: FOTMOB_TEAM_ID, ok: true, note: `${outs.length} transfer pinjaman keluar, ${loans.length} berhasil dimuat` });
   }
 
-  return { nextgen, youth, squad, loans, sources, warnings, updatedAt: now.toISOString() };
+  return { nextgen, squad, loans, sources, warnings, updatedAt: now.toISOString() };
 }
