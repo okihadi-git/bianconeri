@@ -5,16 +5,16 @@ import Face from '@/components/Face';
 import { useFetch } from '@/components/kp';
 import type { AcademyKey, AcademyPlayer, AcademyTeam, AkademiResponse, LoanPlayer } from '@/lib/akademi';
 import { MIN_MINUTES, readiness } from '@/lib/akademi-index';
-import type { PerfResponse, PerfRow, ScorersResponse } from '@/lib/akademi-stats';
+import type { PerfResponse, PerfRow } from '@/lib/akademi-stats';
 import { sameNameStrict } from '@/lib/names';
 import { totalsOf } from '@/lib/playerprofile';
 import type { PlayerStatsResponse } from '@/lib/playerstats';
 import { dayLabel, shortDate, timeLabel } from '@/lib/wib';
 import type { WMatch, WStandingRow } from '@/lib/women';
 
-type Tab = AcademyKey | 'loans';
+type Tab = 'nextgen' | 'loans';
 
-const TEAM_LABEL: Record<AcademyKey, string> = { nextgen: 'Next Gen', youth: 'Youth' };
+const TEAM_LABEL: Record<AcademyKey, string> = { nextgen: 'Next Gen' };
 const dec = (n: number, d = 2) => n.toFixed(d).replace('.', ',');
 const letter = (r: WMatch['result']) => (r === 'W' ? 'M' : r === 'D' ? 'S' : r === 'L' ? 'K' : '');
 
@@ -484,50 +484,6 @@ function PerformaPanel({ title, squad }: { title: string; squad: AcademyPlayer[]
   );
 }
 
-/* ---------- pencetak gol (liga tanpa susunan pemain) ---------- */
-
-const initialsOf = (n: string) => {
-  const t = n.trim().split(/\s+/).filter(Boolean);
-  return (t.length < 2 ? (t[0] ?? '?').slice(0, 2) : t[0][0] + t[t.length - 1][0]).toUpperCase();
-};
-
-function ScorersPanel({ title }: { title: string }) {
-  const res = useFetch<ScorersResponse>('/api/akademi/pencetak');
-  const d = res.data;
-  const asOf = d ? new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' }).format(new Date(d.asOf)) : '';
-  return (
-    <>
-      <section className="kp-card ak-panel">
-        <header className="kp-card-head">
-          <h2 className="kp-title">{title}</h2>
-          <small className="kp-muted">Sumber data liga hanya mencatat gol (tanpa susunan pemain)</small>
-        </header>
-        {res.loading && <div className="kp-empty">Menghitung pencetak gol dari semua laga liga musim ini…</div>}
-        {res.error && <div className="kp-empty">Pencetak gol belum bisa dimuat dari FotMob. Coba muat ulang beberapa saat lagi.</div>}
-        {d && d.warnings.length > 0 && <div className="wm-warn ak-perf-warn">{d.warnings.map((w) => <p key={w}>{w}</p>)}</div>}
-        {d && !d.rows.length && !d.warnings.length && <div className="kp-empty">Belum ada gol tercatat musim ini.</div>}
-        {d && d.rows.length > 0 && (
-          <div className="ak-scorers">
-            {d.rows.map((r) => (
-              <div className="ak-scorer" key={r.id}>
-                <span className="ak-ini">{initialsOf(r.name)}</span>
-                <b>{r.name}</b>
-                <span className="ak-balls" aria-hidden="true">
-                  {'⚽'.repeat(Math.min(r.goals, 6))}
-                </span>
-                <span className="ak-goals" title={`${r.goals} gol`}>
-                  {r.goals}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-      {d && <p className="kp-note ak-foot">Sumber: FotMob · data per {asOf} · diperbarui otomatis</p>}
-    </>
-  );
-}
-
 /* ---------- halaman ---------- */
 
 export default function AkademiPage() {
@@ -535,16 +491,12 @@ export default function AkademiPage() {
   const stats = useFetch<PlayerStatsResponse>('/api/juventus/stats');
   const [tab, setTab] = useState<Tab>('nextgen');
   const d = ak.data;
-  const { nextgen, youth } = d ?? { nextgen: null, youth: null };
+  const nextgen = d?.nextgen ?? null;
 
   const promoted = useMemo(() => promotedFrom(d?.squad ?? [], stats.data), [d, stats.data]);
 
-  const scorers = [
-    ...(nextgen?.topScorers.map((s) => ({ ...s, team: 'nextgen' as const })) ?? []),
-    ...(youth?.topScorers.map((s) => ({ ...s, team: 'youth' as const })) ?? []),
-  ].sort((a, b) => b.goals - a.goals);
-  const top = scorers[0] ?? null;
-  const topBy = (k: AcademyKey) => (k === 'nextgen' ? nextgen : youth)?.topScorers[0];
+  const top = nextgen?.topScorers[0] ?? null;
+  const loans = d?.loans ?? [];
 
   const TeamMetric = ({ t, k, red }: { t: AcademyTeam | null; k: AcademyKey; red?: boolean }) => (
     <div className={`kp-metric${red ? ' kp-metric-red' : ''}`}>
@@ -560,28 +512,20 @@ export default function AkademiPage() {
     <div className="kp" id="akademi">
       <header className="ak-head">
         <h2 className="kp-title">Akademi Juventus</h2>
-        <small className="kp-muted">Juventus Next Gen, Juventus Youth (U20, hanya Primavera 1), dan pemain pinjaman</small>
+        <small className="kp-muted">Juventus Next Gen dan pemain pinjaman</small>
       </header>
 
       <div className="kp-metrics">
         <TeamMetric t={nextgen} k="nextgen" red />
-        <TeamMetric t={youth} k="youth" />
         <div className="kp-metric">
-          <div className="kp-metric-label">Top skor akademi</div>
+          <div className="kp-metric-label">Top skor Next Gen</div>
           <div className="kp-metric-val sq-coach">{top ? `${top.name.split(' ').slice(-1)[0]} ${top.goals}` : '–'}</div>
-          <div className="kp-metric-sub">
-            {top
-              ? (['nextgen', 'youth'] as const)
-                  .map((k) => {
-                    const s = topBy(k);
-                    return s ? `${TEAM_LABEL[k]}: ${s.name.split(' ').slice(-1)[0]} ${s.goals} gol` : '';
-                  })
-                  .filter(Boolean)
-                  .join(' · ')
-              : ak.loading
-              ? 'Memuat data…'
-              : 'Tidak ada di sumber data'}
-          </div>
+          <div className="kp-metric-sub">{top ? `${top.name} · ${top.goals} gol` : ak.loading ? 'Memuat data…' : 'Tidak ada di sumber data'}</div>
+        </div>
+        <div className="kp-metric">
+          <div className="kp-metric-label">Dipinjamkan</div>
+          <div className="kp-metric-val">{d ? loans.length : '–'}</div>
+          <div className="kp-metric-sub">{d ? (loans.length ? loans.slice(0, 3).map((p) => p.name.split(' ').slice(-1)[0]).join(', ') + (loans.length > 3 ? '…' : '') : 'Tidak ada') : ak.loading ? 'Memuat data…' : ' '}</div>
         </div>
         <div className="kp-metric">
           <div className="kp-metric-label">Debut tim utama</div>
@@ -635,9 +579,6 @@ export default function AkademiPage() {
         <button type="button" className={`sq-chip${tab === 'nextgen' ? ' active' : ''}`} onClick={() => setTab('nextgen')}>
           {tabLabel('nextgen', nextgen)}
         </button>
-        <button type="button" className={`sq-chip${tab === 'youth' ? ' active' : ''}`} onClick={() => setTab('youth')}>
-          {tabLabel('youth', youth)}
-        </button>
         <button type="button" className={`sq-chip${tab === 'loans' ? ' active' : ''}`} onClick={() => setTab('loans')}>
           Dipinjamkan{d ? ` (${d.loans.length})` : ''}
         </button>
@@ -646,10 +587,8 @@ export default function AkademiPage() {
       {ak.loading && <div className="kp-card kp-empty">Memuat data akademi…</div>}
       {tab === 'nextgen' && nextgen && <TeamPanel t={nextgen} />}
       {tab === 'nextgen' && nextgen && <PerformaPanel title={`Performa pemain ${nextgen.name.replace(/^Juventus\s*/i, '') || 'Next Gen'}`} squad={(d?.squad ?? []).filter((p) => p.team === 'nextgen')} />}
-      {tab === 'youth' && youth && <TeamPanel t={youth} />}
-      {tab === 'youth' && youth && <ScorersPanel title={`Pencetak gol ${TEAM_LABEL.youth}`} />}
       {tab === 'loans' && d && <LoanPanel loans={d.loans} />}
-      {d && ((tab === 'nextgen' && !nextgen) || (tab === 'youth' && !youth)) && <div className="kp-card kp-empty">Data tim ini belum tersedia dari FotMob.</div>}
+      {d && tab === 'nextgen' && !nextgen && <div className="kp-card kp-empty">Data tim ini belum tersedia dari FotMob.</div>}
 
       <p className="kp-note ak-foot">Sumber: FotMob (tabel, jadwal, hasil musim ini, skuad, pemain pinjaman) dan ESPN (penampilan di tim utama). Data tidak resmi dan bisa terlambat diperbarui; pemain pinjaman dihitung dari transfer pinjaman keluar sejak 1 Juni musim berjalan.</p>
     </div>
