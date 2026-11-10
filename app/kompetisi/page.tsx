@@ -19,6 +19,7 @@ import {
 } from '@/components/kp';
 import JalurKeTrofi from '@/components/JalurKeTrofi';
 import PeluangJuara from '@/components/PeluangJuara';
+import LajuPoin from '@/components/LajuPoin';
 import PerebutanGelar from '@/components/PerebutanGelar';
 import { pickMode } from '@/lib/jalur';
 import { COPPA_FINAL, COPPA_TITLES, STAGE_LABEL, coppaStatus, seasonOf } from '@/lib/coppa';
@@ -444,7 +445,9 @@ function KompetisiInner() {
 
           {tab === 'gelar' && compKey === 'seriea' && <PerebutanGelar />}
 
-          {!['klasemen', 'lagalain', 'topskor', 'trofi', 'peluang', 'gelar'].includes(tab) && (
+          {tab === 'laju' && compKey === 'seriea' && <LajuPoin />}
+
+          {!['klasemen', 'lagalain', 'topskor', 'trofi', 'peluang', 'gelar', 'laju'].includes(tab) && (
             <div className="kp-card kp-empty">Bagian ini belum tersedia.</div>
           )}
         </>
