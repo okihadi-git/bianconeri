@@ -1,9 +1,9 @@
-import Kreator from '@/components/Kreator';
+import AnalitikTabs from '@/components/AnalitikTabs';
 
 export default function AnalitikPage() {
   return (
     <div className="kp" id="analitik">
-      <Kreator />
+      <AnalitikTabs />
     </div>
   );
 }
