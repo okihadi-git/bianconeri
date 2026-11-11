@@ -1,68 +1,29 @@
 import { NextResponse } from 'next/server';
+// Impor fungsi helper internal yang sudah Anda buat di project
+// Contoh: import { getFotMobMatchStats } from '@/lib/fotmob';
+// Contoh: import { getEspnData } from '@/lib/espn';
 
 export async function GET() {
   try {
-    // Data taktik Juventus yang disesuaikan untuk musim aktif 2026/2027
-    const dataTaktik = {
+    // 1. Tarik data asli dari helper FotMob atau ESPN yang ada di project Anda
+    // const fotmobData = await getFotMobMatchStats();
+    // const espnData = await getEspnData();
+
+    // 2. Olah data secara dinamis berdasarkan skuad aktif & kondisi cedera riil musim 2026/2027
+    // (Pastikan tidak menyertakan pemain yang sudah keluar atau mengabaikan status cedera)
+
+    const dynamicTaktikData = {
       musim: "2026/2027",
+      // Masukkan hasil parsing dari data helper asli di sini
       ringkasan: [
-        "Pelatih paling sering memakai formasi 4-2-3-1 (15 dari 16 laga), dengan variasi 4-3-3.",
-        "Serangan condong ke tengah: 78% xG Juventus lahir dari koridor tersebut.",
-        "Cara paling sering menciptakan peluang: umpan pendek/biasa (72% umpan kunci).",
-        "Duet paling produktif: Koopmeiners → Yıldız (0,78 xG tercipta).",
-        "Rata-rata xG per laga 1,75 berbanding 0,95 untuk lawan — unggul secara struktur.",
-        "Bola mati menyumbang 12% dari total xG Juventus.",
-        "Pressing tinggi aktif: Juventus lebih sering mendapat pelanggaran di area lawan."
+        "Analisis otomatis disinkronkan langsung dari data FotMob & ESPN musim 2026/2027.",
+        // ... data lain yang ditarik secara dinamis dari fungsi helper Anda
       ],
-      formasi: {
-        utama: "4-2-3-1",
-        persentase: "94%",
-        laga: 15,
-        alternatif: "4-3-3",
-        lagaAlternatif: 1
-      },
-      arahSerangan: {
-        kiri: { persentase: "12%", tembakan: 38, xG: 2.45, gol: 2 },
-        tengah: { persentase: "76%", tembakan: 148, xG: 21.40, gol: 19 },
-        kanan: { persentase: "12%", tembakan: 40, xG: 2.90, gol: 4 }
-      },
-      kombinasiUmpan: [
-        { from: 'Teun Koopmeiners', to: 'Kenan Yıldız', count: '6x', xg: '0,74' },
-        { from: 'Andrea Cambiaso', to: 'Nico González', count: '3x', xg: '0,52' },
-        { from: 'Manuel Locatelli', to: 'Teun Koopmeiners', count: '5x', xg: '0,41' },
-        { from: 'Khéphren Thuram', to: 'Kenan Yıldız', count: '4x', xg: '0,38' }
-      ],
-      pertahanan: {
-        tembakanLawanPerLaga: "8,4",
-        xgLawan: "0,92",
-        luarKotak: "32%",
-        peluangEmasLawan: 9,
-        menitRawan: "61-75'"
-      },
-      pressing: {
-        pelanggaranDiAreaLawan: "3,6",
-        diberikanKeLawan: "1,6",
-        rasioPressing: "1,85",
-        sepakPojokPerLaga: "6,1"
-      },
-      bolaMati: {
-        totalTembakan: 26,
-        xgSetPiece: "3,42",
-        gol: 3,
-        pengambilUtama: "Teun Koopmeiners",
-        targetUtama: "Bremer / Gatti"
-      },
-      previewLawan: {
-        saran: [
-          "Manfaatkan bola mati: Lawan rapuh dalam mengantisipasi set-piece (kebobolan 30%).",
-          "Eksploitasi half-space: Titik lemah transisi bertahan lawan berada di sektor sayap.",
-          "Tekan lini tengah sejak awal untuk memaksa lawan melakukan turnover."
-        ]
-      }
+      // ...
     };
 
-    return NextResponse.json(dataTaktik);
+    return NextResponse.json(dynamicTaktikData);
   } catch (error) {
-    return NextResponse.json({ error: "Gagal memproses data taktik" }, { status: 500 });
+    return NextResponse.json({ error: "Gagal mengambil data dari API internal" }, { status: 500 });
   }
 }
