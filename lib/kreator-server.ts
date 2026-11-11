@@ -11,7 +11,7 @@ const HEADERS = {
   'User-Agent': 'Mozilla/5.0 (compatible; bianconeri-matchday-hub)',
 };
 
-async function getJson(url: string, revalidate: number): Promise<any | null> {
+export async function getJson(url: string, revalidate: number): Promise<any | null> {
   try {
     const res = await fetch(url, { headers: HEADERS, next: { revalidate }, signal: AbortSignal.timeout(10_000) });
     return res.ok ? await res.json() : null;
@@ -21,7 +21,7 @@ async function getJson(url: string, revalidate: number): Promise<any | null> {
 }
 
 /** Semua laga Juventus yang sudah selesai di data tim FotMob (tanpa asumsi letak cabangnya). */
-function finishedFixtureIds(team: any): { id: string; t: number }[] {
+export function finishedFixtureIds(team: any): { id: string; t: number }[] {
   const out = new Map<string, number>();
   const walk = (n: any, depth = 0) => {
     if (!n || typeof n !== 'object' || depth > 8) return;

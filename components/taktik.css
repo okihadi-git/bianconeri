@@ -1,0 +1,17 @@
+/* Statistik → Bedah Taktik */
+.bt-nav { display: flex; gap: 8px; padding: 12px; background: #fff; border: 1px solid var(--line, #e4e4e4); border-radius: 14px; overflow-x: auto; margin-bottom: 16px; }
+.bt-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 0; border-radius: 999px; background: #eef0f5; color: #1c2430; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.bt-chip:hover { background: #e2e5ee; }
+.bt-chip.on { background: #111827; color: #fff; }
+.bt-card { background: #fff; border: 1px solid var(--line, #e4e4e4); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.bt-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--line, #e4e4e4); }
+.bt-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; }
+.bt-head small { margin-left: auto; color: var(--muted, #7a7a7a); font-size: 13px; }
+.bt-ico { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: #111; font-size: 18px; }
+.bt-empty { padding: 36px 20px; text-align: center; color: var(--muted, #7a7a7a); }
+.bt-list { list-style: none; margin: 0; padding: 16px 20px 8px; display: grid; gap: 10px; }
+.bt-list li { display: flex; align-items: center; gap: 16px; background: #eef0f5; border-left: 4px solid var(--juve-yellow, #ffc72c); border-radius: 10px; padding: 12px 18px; font-size: 14.5px; }
+.bt-list em { font-style: normal; font-family: var(--display); font-size: 20px; color: #111; min-width: 14px; }
+.bt-list p { margin: 0; line-height: 1.5; }
+.bt-note { margin: 8px 20px 10px; font-size: 12px; color: var(--muted, #7a7a7a); line-height: 1.55; }
+@media (max-width: 600px) { .bt-head small { display: none; } }
