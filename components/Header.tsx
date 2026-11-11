@@ -2,7 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import StatTabs from '@/components/StatTabs';
 import TimTabs, { isTimPath } from '@/components/TimTabs';
+import { isStatPath } from '@/lib/stat-tabs';
 
 export default function Header() {
   const pathname = usePathname();
@@ -41,7 +43,7 @@ export default function Header() {
             <Link href="/" className={pathname === '/' ? 'active' : ''}>Beranda</Link>
             <Link href="/kompetisi" className={pathname === '/kompetisi' ? 'active' : ''}>Kompetisi</Link>
             <Link href="/skuad" className={isTimPath(pathname) ? 'active' : ''}>Tim</Link>
-            <Link href="/statistik" className={pathname === '/statistik' ? 'active' : ''}>Statistik</Link>
+            <Link href="/statistik" className={isStatPath(pathname) ? 'active' : ''}>Statistik</Link>
             <Link href="/berita" className={pathname === '/berita' ? 'active' : ''}>Berita</Link>
             <Link href="/klub" className={pathname === '/klub' ? 'active' : ''}>Klub</Link>
           </nav>
@@ -54,6 +56,9 @@ export default function Header() {
 
       {/* SUB-MENU TIM: Skuad, Kontrak, Pelatih, Cedera, Timnas, Akademi, Women */}
       {isTimPath(pathname) && <TimTabs />}
+
+      {/* SUB-MENU STATISTIK: Statistik, Pusat Laga, Analitik, Bedah Taktik, Analisa, Rating FIFA, Pemain Serupa, FPL */}
+      {isStatPath(pathname) && <StatTabs />}
     </>
   );
 }
