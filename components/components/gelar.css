@@ -1,0 +1,67 @@
+/* Tab "Perebutan gelar" */
+.gl { padding-bottom: 8px; }
+.gl-logo { object-fit: contain; flex: none; display: inline-block; vertical-align: middle; }
+.gl-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 6px 20px 14px; font-size: 13px; color: var(--muted); }
+.gl-chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font: inherit; font-weight: 800; color: #333; cursor: pointer; }
+.gl-chip.on { background: #0c1330; border-color: #0c1330; color: #fff; }
+.gl-chip:disabled { opacity: 0.45; cursor: not-allowed; }
+.gl-chip:focus-visible { outline: 2px solid var(--juve-blue, #1b3a8a); outline-offset: 2px; }
+.gl-max { margin-left: 4px; }
+
+.gl-cards { display: grid; grid-template-columns: repeat(var(--cols, 1), minmax(0, 1fr)); gap: 14px; padding: 0 20px; }
+.gl-card { border: 1px solid var(--line); border-radius: 14px; padding: 14px 14px 12px; background: #fff; min-width: 0; }
+.gl-card.hero { border: 2px solid #d81e3a; }
+.gl-card header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.gl-card header b { font-family: var(--display); font-weight: 400; font-size: 20px; display: block; line-height: 1.1; }
+.gl-card header small { color: var(--muted); font-size: 12px; }
+.gl-card dl { margin: 0; display: grid; gap: 6px; font-size: 13px; }
+.gl-card dl > div { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.gl-card dt { color: var(--muted); }
+.gl-card dd { margin: 0; }
+.gl-card dd .blue, .gl-card .blue { color: var(--juve-blue, #1b3a8a); font-weight: 700; }
+.gl-badge { display: inline-block; padding: 2px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; color: #fff; text-transform: capitalize; }
+.gl-badge.gl-Ringan { background: #2ea86a; } .gl-badge.gl-Sedang { background: #e8b400; } .gl-badge.gl-Berat { background: #e0414f; }
+.gl-diff { margin: 4px 0 10px; text-align: right; font-size: 11.5px; color: var(--muted); }
+.gl-fx { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.gl-fx li { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 8px; background: #eef0f5; border-left: 4px solid #cfd3de; font-size: 13px; }
+.gl-fx li.vs { border: 1px dashed #c9a24b; border-left: 4px solid #cfd3de; background: #fbf8ee; }
+.gl-fx .gl-ha { width: 12px; color: var(--muted); font-weight: 700; font-size: 12px; }
+.gl-fx b { flex: 1; font-weight: 800; letter-spacing: 0.02em; }
+.gl-fx time { color: var(--muted); font-size: 12px; }
+.gl-sword { font-size: 12px; }
+.gl-l-mudah { border-left-color: #2ea86a !important; } .gl-l-sedang { border-left-color: #e8b400 !important; } .gl-l-berat { border-left-color: #e0414f !important; }
+.gl-none { color: var(--muted); }
+
+.gl-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 14px 20px 4px; font-size: 12px; color: var(--muted); align-items: center; }
+.gl-legend i { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.gl-d-mudah { background: #2ea86a; } .gl-d-sedang { background: #e8b400; } .gl-d-berat { background: #e0414f; }
+.gl-h { margin: 22px 20px 10px; font-family: var(--display); font-weight: 400; font-size: 18px; }
+.gl-dec { list-style: none; margin: 0; padding: 0 20px; display: grid; gap: 8px; }
+.gl-dec li { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.gl-dec li span { color: var(--muted); font-size: 12px; }
+.gl-dec time { margin-left: auto; color: var(--muted); font-size: 12.5px; }
+.gl-empty { margin: 0 20px; color: var(--muted); font-size: 13px; }
+
+.gl-scn { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: end; padding: 0 20px 14px; }
+.gl-scn label { display: grid; gap: 2px; width: 190px; }
+.gl-scn label span { font-size: 13px; font-weight: 700; }
+.gl-scn label b { font-family: var(--display); font-weight: 400; font-size: 24px; color: #d81e3a; }
+.gl-scn input[type='range'] { width: 100%; accent-color: #d81e3a; }
+.gl-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.gl-presets button { padding: 9px 16px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.gl-presets button.on { background: #d81e3a; border-color: #d81e3a; color: #fff; }
+.gl-result { margin: 0 20px 14px; padding: 16px 20px; border-radius: 14px; background: #fde9ee; border: 1px solid #f4cdd6; display: grid; gap: 4px; }
+.gl-big { font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1.1; }
+.gl-result p { margin: 0; font-size: 15px; }
+.gl-result small { color: var(--muted); font-size: 12.5px; }
+.gl-tablewrap { margin: 0 20px; overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+.gl-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.gl-table th { background: #eef0f5; font-size: 10.5px; letter-spacing: 0.08em; color: #6b7280; padding: 10px 14px; text-align: center; }
+.gl-table td { padding: 10px 14px; text-align: center; border-top: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.gl-table .l { text-align: left; }
+.gl-table tr.me td { background: #fde9ee; }
+.gl-table tr.me .l span { color: #c0293a; font-weight: 800; }
+.gl-warn { margin: 12px 20px 0; padding: 8px 12px; border-radius: 8px; background: #fff8e1; color: #8a6200; font-size: 12.5px; }
+.gl-foot { margin: 12px 20px 16px; font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+@media (max-width: 900px) { .gl-cards { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); } }

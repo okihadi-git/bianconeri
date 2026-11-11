@@ -1,0 +1,31 @@
+/* Tab "Laju poin": poin kumulatif per laga */
+.lj { padding-bottom: 6px; }
+.lj-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; padding: 4px 20px 16px; }
+.lj-tile { border: 1px solid var(--line); border-radius: 14px; padding: 16px 18px; display: grid; gap: 4px; align-content: start; background: #fff; }
+.lj-tile small { font-size: 13px; color: var(--muted); font-weight: 600; }
+.lj-tile b { font-family: var(--display); font-weight: 400; font-size: 36px; line-height: 1.05; }
+.lj-tile span { font-size: 12.5px; color: var(--muted); }
+.lj-hero { background: linear-gradient(135deg, #0c1330, #1b3a8a); border-color: #0c1330; color: #fff; }
+.lj-hero small { color: #ffc72c; }
+.lj-hero span { color: #cdd4e5; }
+
+.lj-pick { display: flex; align-items: center; gap: 10px; padding: 0 20px 10px; font-size: 13px; color: var(--muted); }
+.lj-pick select { padding: 8px 12px; border: 1px solid var(--line); border-radius: 10px; background: #fff; font: inherit; font-weight: 800; color: #222; min-width: 180px; }
+.lj-pick select:focus-visible { outline: 2px solid var(--juve-blue, #1b3a8a); outline-offset: 2px; }
+.lj-legend { display: flex; flex-wrap: wrap; gap: 6px 22px; padding: 0 20px 6px; font-size: 12.5px; color: var(--muted); }
+.lj-legend i { display: inline-block; width: 22px; height: 4px; border-radius: 2px; margin-right: 6px; vertical-align: 3px; }
+.lj-legend i.dash { height: 0; border-top: 3px dashed; background: transparent !important; }
+
+.lj-chart { position: relative; padding: 0 12px; touch-action: pan-y; }
+.lj-chart svg { width: 100%; height: auto; display: block; }
+.lj-grid { stroke: #e7e9f0; }
+.lj-axis { font-size: 13px; fill: #8a91a6; }
+.lj-end { font-size: 20px; font-weight: 800; fill: #c0293a; }
+.lj-hover { stroke: #9aa1b5; stroke-dasharray: 4 4; }
+.lj-tip { position: absolute; top: 10px; display: grid; gap: 2px; padding: 8px 12px; border-radius: 10px; background: rgba(12, 19, 48, 0.94); color: #fff; font-size: 12.5px; pointer-events: none; min-width: 170px; box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25); }
+.lj-tip b { font-size: 12px; opacity: 0.85; margin-bottom: 2px; }
+.lj-tip span { background: #fff; border-radius: 4px; padding: 1px 6px; font-weight: 800; }
+.lj-warn { margin: 12px 20px 0; padding: 8px 12px; border-radius: 8px; background: #fff8e1; color: #8a6200; font-size: 12.5px; }
+.lj-foot { margin: 12px 20px 16px; font-size: 12px; color: var(--muted); line-height: 1.55; }
+
+@media (max-width: 600px) { .lj-tile b { font-size: 30px; } .lj-axis { font-size: 18px; } .lj-end { font-size: 26px; } }
