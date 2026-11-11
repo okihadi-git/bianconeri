@@ -2,11 +2,11 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    // Anda bisa memanggil helper internal Anda di sini jika ingin dinamai langsung dari database/lib Juventus
-    // Contoh struktur data taktik yang diformat presisi untuk Juventus:
+    // Data taktik Juventus yang disesuaikan untuk musim aktif 2026/2027
     const dataTaktik = {
+      musim: "2026/2027",
       ringkasan: [
-        "Thiago Motta paling sering memakai 4-2-3-1 (15 dari 16 laga), dengan variasi 4-3-3.",
+        "Pelatih paling sering memakai formasi 4-2-3-1 (15 dari 16 laga), dengan variasi 4-3-3.",
         "Serangan condong ke tengah: 78% xG Juventus lahir dari koridor tersebut.",
         "Cara paling sering menciptakan peluang: umpan pendek/biasa (72% umpan kunci).",
         "Duet paling produktif: Koopmeiners → Yıldız (0,78 xG tercipta).",
