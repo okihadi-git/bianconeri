@@ -1,0 +1,41 @@
+/* Statistik → Analitik → 04 Pemain pengganti (tema hitam Juventus, aksen kuning) */
+.pg { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.pg-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.pg-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.pg-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.pg-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.pg-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+
+.pg-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 14px; }
+.pg-card { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 104px; }
+.pg-card small { color: var(--juve-yellow, #ffc72c); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.pg-card b { font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.05; }
+.pg-card span { color: #a8a8b8; font-size: 12.5px; }
+.pg-card.hero { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); }
+.pg-card.hero small, .pg-card.hero b, .pg-card.hero span { color: #000; }
+
+.pg-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 36px; padding: 18px 20px 4px; }
+.pg h3 { margin: 0 0 12px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+
+.pg-chart { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; }
+.pg-col { display: grid; gap: 8px; }
+.pg-barwrap { height: 140px; display: flex; align-items: flex-end; }
+.pg-barwrap i { display: block; width: 100%; border-radius: 4px 4px 0 0; background: linear-gradient(#ffd75e, var(--juve-yellow, #ffc72c) 60%, #e0a800); }
+.pg-barwrap i.zero { background: #3a3a3a; }
+.pg-col code { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: #a8a8b8; text-align: center; }
+
+.pg-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pg-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 10px 14px; }
+.pg-list b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pg-icons { display: inline-flex; align-items: center; gap: 5px; }
+.pg-icons em { font-style: normal; color: #8d8da0; font-size: 13px; }
+.pg-ball { width: 13px; height: 13px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #cfd6ea 70%); border: 2px solid #4f7cff; box-sizing: border-box; display: inline-block; }
+.pg-a { font-style: normal; font-size: 10.5px; font-weight: 800; line-height: 1; background: #ff4d8d; color: #fff; border-radius: 4px; padding: 3px 5px; }
+.pg-apps { color: #a8a8b8; font-size: 12px; min-width: 62px; text-align: right; white-space: nowrap; }
+.pg-note { margin: 16px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1000px) {
+  .pg-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pg-cols { grid-template-columns: 1fr; gap: 24px; }
+  .pg-head small { display: none; }
+}

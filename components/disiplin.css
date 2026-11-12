@@ -1,0 +1,36 @@
+/* Statistik → Analitik → 12 Disiplin (tema hitam Juventus, aksen kuning) */
+.dc { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.dc-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.dc-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.dc-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.dc-numtag { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.dc-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+.dc-empty.small { padding: 20px 0; font-size: 13px; text-align: left; }
+
+.dc-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 6px; }
+.dc-tile { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 104px; min-width: 0; }
+.dc-tile small { color: var(--juve-yellow, #ffc72c); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.dc-tile b { font-family: var(--display); font-weight: 400; font-size: 44px; line-height: 1.05; }
+.dc-tile b.dc-who { font-size: 34px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dc-tile span { color: #a8a8b8; font-size: 12.5px; }
+.dc-tile.hero { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); }
+.dc-tile.hero small, .dc-tile.hero b, .dc-tile.hero span { color: #000; }
+
+.dc-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; padding: 18px 20px 4px; }
+.dc h3 { margin: 0 0 12px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+.dc-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.dc-list li { display: grid; grid-template-columns: minmax(130px, 190px) minmax(0, 1fr) 44px; align-items: center; gap: 14px; font-size: 13.5px; }
+.dc-name { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dc-cards { display: inline-flex; gap: 3px; flex: none; }
+.dc-y, .dc-r { display: inline-block; width: 11px; height: 14px; border-radius: 2px; }
+.dc-y { background: #ffc72c; }
+.dc-r { background: #e8344f; }
+.dc-bar { height: 10px; border-radius: 999px; background: #242424; overflow: hidden; }
+.dc-bar i { display: block; height: 100%; border-radius: 999px; }
+.dc-bar.warm i { background: linear-gradient(90deg, #f0821e, var(--juve-yellow, #ffc72c)); }
+.dc-bar.green i { background: linear-gradient(90deg, #2fa866, #62c78e); }
+.dc-list b { text-align: right; font-variant-numeric: tabular-nums; }
+.dc-note { margin: 16px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1100px) { .dc-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dc-cols { grid-template-columns: 1fr; gap: 26px; } }
+@media (max-width: 560px) { .dc-tiles { grid-template-columns: 1fr; } .dc-list li { grid-template-columns: minmax(100px, 140px) minmax(0, 1fr) 40px; gap: 10px; } .dc-head small { display: none; } }

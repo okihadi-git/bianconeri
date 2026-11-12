@@ -1,0 +1,29 @@
+/* Statistik → Analitik → 07 Kondisi laga (tema hitam Juventus, aksen kuning) */
+.kl { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.kl-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.kl-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.kl-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.kl-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.kl-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+
+.kl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; padding: 18px 20px 6px; }
+.kl-card { background: #141414; border: 1px solid #262626; border-radius: 12px; padding: 14px 16px 12px; display: grid; gap: 2px; align-content: start; }
+.kl-card h4 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 14px; }
+.kl-card > small { color: #a8a8b8; font-size: 11.5px; }
+.kl-gauge { position: relative; margin: 8px 6px 0; }
+.kl-gauge svg { display: block; width: 100%; height: auto; }
+.kl-gauge path { fill: none; stroke-width: 16; stroke-linecap: round; }
+.kl-gauge .track { stroke: #2a2f3d; }
+.kl-gauge .fill { stroke: var(--juve-yellow, #ffc72c); }
+.kl-gauge > div { position: absolute; left: 0; right: 0; bottom: 4px; display: grid; justify-items: center; }
+.kl-gauge b { font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1; }
+.kl-gauge span { font-size: 11px; color: #a8a8b8; margin-top: 18px; }
+.kl-card dl { display: grid; grid-template-columns: auto auto; gap: 5px 8px; margin: 10px 0 0; font-size: 12px; }
+.kl-card dt { color: #a8a8b8; }
+.kl-card dd { margin: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+.kl-card dd em { font-style: normal; font-weight: 400; font-size: 10.5px; color: #a8a8b8; }
+.kl-note { margin: 14px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1000px) {
+  .kl-head small { display: none; }
+}
