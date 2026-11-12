@@ -1,0 +1,71 @@
+/* Statistik → Analitik → 03 Situasi skor (tema hitam Juventus, aksen kuning; biru = tertinggal/kebobolan) */
+.ss { --ss-lead: var(--juve-yellow, #ffc72c); --ss-level: #7c8097; --ss-trail: #4f7cff; background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.ss-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.ss-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.ss-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.ss-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.ss-pills { display: flex; gap: 8px; padding: 14px 20px 0; overflow-x: auto; }
+.ss-pill { border: 1px solid #333; background: transparent; color: #ccc; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.ss-pill.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
+.ss-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+
+.ss-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 14px; }
+.ss-card { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 104px; }
+.ss-card small { color: var(--juve-yellow, #ffc72c); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.ss-card b { font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.05; white-space: nowrap; }
+.ss-card span { color: #a8a8b8; font-size: 12.5px; }
+.ss-card.hero { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); }
+.ss-card.hero small, .ss-card.hero b, .ss-card.hero span { color: #000; }
+
+.ss-stack { display: flex; height: 26px; margin: 0 20px; border-radius: 13px; overflow: hidden; background: #1a1a1a; }
+.ss-stack i { display: block; height: 100%; }
+.ss-stack .lead, .ss-key .lead { background: var(--ss-lead); }
+.ss-stack .level, .ss-key .level { background: var(--ss-level); }
+.ss-stack .trail, .ss-key .trail { background: var(--ss-trail); }
+.ss-key { list-style: none; margin: 8px 20px 0; padding: 0; display: flex; gap: 16px; font-size: 12px; color: #a8a8b8; }
+.ss-key li { display: inline-flex; align-items: center; gap: 6px; }
+.ss-key i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.ss-cols .ss-key { margin: 12px 0 0; }
+
+.ss-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 36px; padding: 20px 20px 4px; }
+.ss h3 { margin: 0 0 12px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+
+.ss-bins { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ss-bins li { display: grid; grid-template-columns: 16px minmax(0, 1fr) 62px minmax(0, 1fr) 16px; align-items: center; gap: 8px; }
+.ss-bins .n { font-size: 12px; font-weight: 700; color: #d8d8e4; }
+.ss-bins .n.c { text-align: right; }
+.ss-bins .l, .ss-bins .r { height: 16px; display: flex; }
+.ss-bins .l { justify-content: flex-end; }
+.ss-bins .l i, .ss-bins .r i { display: block; height: 100%; min-width: 0; border-radius: 4px; }
+.ss-bins .l i { background: var(--ss-lead); }
+.ss-bins .r i { background: var(--ss-trail); }
+.ss-bins code { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: #a8a8b8; text-align: center; }
+
+.ss-matches { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.ss-m { display: grid; grid-template-columns: minmax(110px, 190px) minmax(0, 1fr) 52px; align-items: center; gap: 12px; }
+.ss-mn { font-size: 12.5px; color: #e4e4ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ss-flow { position: relative; height: 14px; border-radius: 7px; background: var(--ss-level); }
+.ss-flow i { position: absolute; top: 0; height: 100%; }
+.ss-flow i.lead { background: var(--ss-lead); }
+.ss-flow i.level { background: var(--ss-level); }
+.ss-flow i.trail { background: var(--ss-trail); }
+.ss-flow i:first-child { border-radius: 7px 0 0 7px; }
+.ss-flow i:last-of-type { border-radius: 0 7px 7px 0; }
+.ss-flow i:only-of-type { border-radius: 7px; }
+.ss-ball { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #fff; border: 2px solid #000; box-sizing: border-box; box-shadow: 0 0 0 1px #ffffff55; }
+.ss-ball.opp { background: #dbe4ff; }
+.ss-score { text-align: center; font-weight: 800; font-size: 13px; padding: 4px 0; border-radius: 6px; color: #fff; font-variant-numeric: tabular-nums; }
+.ss-score.M { background: #1f9d55; }
+.ss-score.S { background: #6b6f85; }
+.ss-score.K { background: #d63447; }
+.ss-note { margin: 16px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1000px) {
+  .ss-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ss-cols { grid-template-columns: 1fr; gap: 24px; }
+  .ss-head small { display: none; }
+}
+@media (max-width: 520px) {
+  .ss-m { grid-template-columns: minmax(0, 1fr) 48px; }
+  .ss-flow { grid-column: 1 / -1; grid-row: 2; }
+}
