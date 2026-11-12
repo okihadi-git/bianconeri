@@ -1,7 +1,8 @@
 // Statistik pemain Juventus per kompetisi: dihitung dari ringkasan (summary) tiap laga yang sudah selesai di ESPN.
-// ESPN tidak menyediakan rating pemain maupun xG, jadi dua data itu sengaja tidak ada.
+// ESPN tidak menyediakan rating pemain maupun xG. Rating di sini adalah ESTIMASI dari lib/ratings.ts (statistik ESPN, skala 6,0 = rata-rata).
 import { JUVE_ID, isCompleted } from './espn';
 import { buildLiveMatch, fetchSummary } from './live';
+import { buildRatings, type RatedPlayer } from './ratings';
 import type { LineupPlayer } from './types';
 
 export type PosGroup = 'Kiper' | 'Bek' | 'Gelandang' | 'Penyerang';
@@ -19,6 +20,20 @@ export interface StatLine {
   onTarget: number | null;
 }
 
+/** Rating (estimasi) satu pemain di satu laga yang ia mainkan. */
+export interface MatchRating {
+  matchId: string;
+  league: string;
+  iso: string;
+  opp: string;
+  rating: number | null;
+  minutes: number;
+  goals: number;
+  assists: number;
+  /** rating tertinggi di antara pemain Juventus pada laga itu */
+  best: boolean;
+}
+
 export interface PlayerRow {
   id: string;
   name: string;
@@ -29,11 +44,23 @@ export interface PlayerRow {
   photo?: string;
   /** slug kompetisi -> angka */
   by: Record<string, StatLine>;
+  /** rating per laga (estimasi), urut menurut tanggal */
+  ratings?: MatchRating[];
+}
+
+/** Angka tim per kompetisi. */
+export interface TeamLine {
+  matches: number;
+  gf: number;
+  ga: number;
+  cleanSheets: number;
 }
 
 export interface PlayerStatsResponse {
   /** jumlah laga selesai per kompetisi */
   matches: Record<string, number>;
+  /** gol, kebobolan, dan clean sheet Juventus per kompetisi */
+  team?: Record<string, TeamLine>;
   players: PlayerRow[];
   updatedAt: string;
 }
@@ -79,7 +106,8 @@ export async function buildPlayerStats(
 ): Promise<PlayerStatsResponse> {
   const done = events.filter(isCompleted);
   const matches: Record<string, number> = {};
-  const people = new Map<string, { name: string; votes: Record<string, number>; by: Record<string, StatLine> }>();
+  const team: Record<string, TeamLine> = {};
+  const people = new Map<string, { name: string; votes: Record<string, number>; by: Record<string, StatLine>; ratings: MatchRating[] }>();
 
   const summaries: { event: any; summary: any }[] = [];
   for (let i = 0; i < done.length; i += 8) {
@@ -95,6 +123,27 @@ export async function buildPlayerStats(
     if (!lineup) continue;
     matches[league] = (matches[league] ?? 0) + 1;
 
+    const juveSide = live.home.isJuve ? live.home : live.away;
+    const oppSide = juveSide === live.home ? live.away : live.home;
+    const t = (team[league] ??= { matches: 0, gf: 0, ga: 0, cleanSheets: 0 });
+    t.matches += 1;
+    t.gf += juveSide.score;
+    t.ga += oppSide.score;
+    if (oppSide.score === 0) t.cleanSheets += 1;
+
+    // rating estimasi tiap pemain Juventus di laga ini; kegagalan tidak boleh merusak statistik lainnya
+    const ratedById = new Map<string, RatedPlayer>();
+    let bestId = '';
+    try {
+      const rated = buildRatings(summary, live, null, []);
+      const side = rated.home.isJuve ? rated.home : rated.away;
+      for (const rp of [...side.rows.flat(), ...side.subs]) ratedById.set(rp.id, rp);
+      let top = -1;
+      for (const rp of ratedById.values()) if (rp.rating !== null && rp.rating > top) (top = rp.rating), (bestId = rp.id);
+    } catch {
+      /* tanpa rating untuk laga ini */
+    }
+
     // Laga yang lanjut ke perpanjangan waktu: ada menit di atas 95 (selain tambahan waktu "90+x")
     const maxMinute = Math.max(0, ...live.timeline.filter((t) => t.kind !== 'period').map((t) => minuteOf(t.minute) ?? 0));
     const length = maxMinute > 95 || live.shootout ? 120 : 90;
@@ -108,7 +157,7 @@ export async function buildPlayerStats(
       const off = minuteOf(p.subOff) ?? length;
 
       const entry = raw.get(p.id);
-      const person = people.get(p.id) ?? { name: p.name, votes: {}, by: {} };
+      const person = people.get(p.id) ?? { name: p.name, votes: {}, by: {}, ratings: [] };
       people.set(p.id, person);
       const line = (person.by[league] ??= emptyLine());
 
@@ -121,6 +170,21 @@ export async function buildPlayerStats(
       line.assists = addNullable(line.assists, statOf(entry, 'goalAssists'));
       line.shots = addNullable(line.shots, statOf(entry, 'totalShots'));
       line.onTarget = addNullable(line.onTarget, statOf(entry, 'shotsOnTarget'));
+
+      const rp = ratedById.get(p.id);
+      if (rp && rp.rating !== null) {
+        person.ratings.push({
+          matchId: String(event.id),
+          league,
+          iso: String(live.iso ?? event.date ?? ''),
+          opp: oppSide.name,
+          rating: rp.rating,
+          minutes: Math.max(0, off - on),
+          goals: rp.goals,
+          assists: rp.assists,
+          best: p.id === bestId,
+        });
+      }
 
       for (const abbr of [entry?.position?.abbreviation, entry?.athlete?.position?.abbreviation, p.position]) {
         const a = String(abbr ?? '').trim();
@@ -136,8 +200,8 @@ export async function buildPlayerStats(
 
   const players: PlayerRow[] = [...people.entries()].map(([id, p]) => {
     const pos = Object.entries(p.votes).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '';
-    return { id, name: p.name, group: groupOf(pos), pos, by: p.by };
+    return { id, name: p.name, group: groupOf(pos), pos, by: p.by, ratings: p.ratings.sort((a, b) => a.iso.localeCompare(b.iso)) };
   });
 
-  return { matches, players, updatedAt: new Date().toISOString() };
+  return { matches, team, players, updatedAt: new Date().toISOString() };
 }
