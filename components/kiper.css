@@ -1,0 +1,23 @@
+/* Statistik → Analisa → Kiper (tema terang) */
+.kg { padding-bottom: 8px; }
+.kg-h { margin: 20px 20px 10px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+
+.kg-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 0 20px; }
+.kg-tile { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 92px; background: #fff; min-width: 0; }
+.kg-tile small { color: var(--muted); font-size: 13px; font-weight: 600; }
+.kg-tile b { font-family: var(--display); font-weight: 400; font-size: 32px; line-height: 1.05; }
+.kg-tile span { color: var(--muted); font-size: 11.5px; }
+.kg-tile.dark { background: #141b34; border-color: #141b34; color: #fff; }
+.kg-tile.dark small { color: var(--juve-yellow, #ffc72c); }
+.kg-tile.dark span { color: #b9c0d8; }
+
+.kg-tablewrap { margin: 18px 20px 0; overflow-x: auto; }
+.kg-table { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.kg-table th { background: #eef0f5; font-size: 10.5px; letter-spacing: .1em; color: #6b7280; padding: 10px 14px; text-align: center; white-space: nowrap; }
+.kg-table th:first-child { text-align: left; }
+.kg-table td { padding: 13px 14px; text-align: center; border-bottom: 1px solid var(--line); }
+.kg-table td:first-child { text-align: left; font-weight: 700; white-space: nowrap; }
+.kg-note { margin: 14px 20px 8px; font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+@media (max-width: 900px) { .kg-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .kg-tiles { grid-template-columns: 1fr; } }

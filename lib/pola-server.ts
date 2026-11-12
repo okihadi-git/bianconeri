@@ -9,14 +9,14 @@ import { toGoals, type PolaGame, type PolaResponse } from './pola';
 const MATCH_WINDOW_MS = 4 * 3600 * 1000;
 
 /** xG tiap laga ESPN dari FotMob (dicocokkan lewat waktu kick-off). Gagal = kosong, bukan error. */
-async function xgByMatch(games: PolaGame[]): Promise<{ xg: Map<string, { f: number; a: number }>; tried: number }> {
+export async function xgByMatch(games: Pick<PolaGame, 'id' | 'iso'>[]): Promise<{ xg: Map<string, { f: number; a: number }>; tried: number }> {
   const out = new Map<string, { f: number; a: number }>();
   const team = await getJson(`https://www.fotmob.com/api/data/teams?id=${FOTMOB_TEAM_ID}&ccode3=IDN`, 600).catch(() => null);
   const fixtures = team ? finishedFixtureIds(team) : [];
   if (!fixtures.length) return { xg: out, tried: 0 };
 
   const used = new Set<string>();
-  const pairs: { game: PolaGame; fid: string }[] = [];
+  const pairs: { game: Pick<PolaGame, 'id' | 'iso'>; fid: string }[] = [];
   for (const g of games) {
     const t = new Date(g.iso).getTime();
     const hit = fixtures.filter((f) => !used.has(f.id) && Math.abs(f.t - t) <= MATCH_WINDOW_MS).sort((a, b) => Math.abs(a.t - t) - Math.abs(b.t - t))[0];
