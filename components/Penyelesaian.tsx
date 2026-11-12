@@ -145,9 +145,8 @@ function DiffList({ players, selectedId, onPick }: { players: PlayerShooting[]; 
 
 /** Statistik → Analitik → 02 Penyelesaian (peta tembakan + gol vs xG per pemain Juventus). */
 export default function Penyelesaian() {
-  const [comp, setComp] = useState('all');
   const [pick, setPick] = useState('');
-  const res = useFetch<PenyelesaianResponse>(`/api/analitik/penyelesaian?comp=${encodeURIComponent(comp)}`);
+  const res = useFetch<PenyelesaianResponse>(`/api/analitik/penyelesaian`);
   const d = res.data;
   const player = d?.players.find((p) => p.id === pick) ?? d?.players[0];
 
@@ -158,16 +157,6 @@ export default function Penyelesaian() {
         <h2>PENYELESAIAN</h2>
         <small>Peta tembakan &amp; gol vs xG per pemain</small>
       </header>
-
-      {d && d.competitions.length > 1 ? (
-        <div className="pe-pills" role="tablist" aria-label="Kompetisi">
-          {[{ id: 'all', name: 'Semua' }, ...d.competitions].map((c) => (
-            <button key={c.id} type="button" role="tab" aria-selected={comp === c.id} className={`pe-pill${comp === c.id ? ' on' : ''}`} onClick={() => setComp(c.id)}>
-              {c.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       {res.loading ? <div className="pe-empty">Memuat peta tembakan… (pertama kali bisa beberapa detik)</div> : null}
       {!res.loading && (res.error || !d) ? <div className="pe-empty">Data belum bisa dimuat. Coba muat ulang beberapa saat lagi.</div> : null}

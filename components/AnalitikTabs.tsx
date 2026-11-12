@@ -7,10 +7,7 @@ import SituasiSkor from '@/components/SituasiSkor';
 import Pengganti from '@/components/Pengganti';
 import BolaMati from '@/components/BolaMati';
 import Penguasaan from '@/components/Penguasaan';
-import RekorBeruntun from '@/components/RekorBeruntun';
-import JadwalPadat from '@/components/JadwalPadat';
-import MusimIniVsLalu from '@/components/MusimIniVsLalu';
-import ProfilSkuad from '@/components/ProfilSkuad';
+import KondisiLaga from '@/components/KondisiLaga';
 import './analitik-tabs.css';
 
 /** Sub-tab di dalam Statistik → Analitik. Satu entri per section; tambah section baru cukup menambah satu baris di sini. */
@@ -21,10 +18,7 @@ const SECTIONS = [
   { id: 'pemain-pengganti', num: '04', label: 'Pemain Pengganti', View: Pengganti },
   { id: 'bola-mati', num: '05', label: 'Bola Mati', View: BolaMati },
   { id: 'penguasaan-bola', num: '06', label: 'Penguasaan Bola', View: Penguasaan },
-  { id: 'rekor-beruntun', num: '08', label: 'Rekor Beruntun', View: RekorBeruntun },
-  { id: 'jadwal-padat', num: '09', label: 'Jadwal Padat', View: JadwalPadat },
-  { id: 'musim-ini-vs-lalu', num: '10', label: 'Musim Ini vs Lalu', View: MusimIniVsLalu },
-  { id: 'profil-skuad', num: '11', label: 'Profil Skuad', View: ProfilSkuad },
+  { id: 'kondisi-laga', num: '07', label: 'Kondisi Laga', View: KondisiLaga },
 ] as const;
 
 type Id = (typeof SECTIONS)[number]['id'];

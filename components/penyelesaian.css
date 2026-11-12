@@ -4,9 +4,6 @@
 .pe-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
 .pe-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
 .pe-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
-.pe-pills { display: flex; gap: 8px; padding: 14px 20px 0; overflow-x: auto; }
-.pe-pill { border: 1px solid #333; background: transparent; color: #ccc; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
-.pe-pill.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
 .pe-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
 
 .pe-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .8fr) minmax(0, 1.2fr); gap: 22px; padding: 18px 20px 4px; align-items: start; }

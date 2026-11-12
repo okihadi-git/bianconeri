@@ -79,26 +79,9 @@ function pair(stats: any, keyRe: RegExp, titleRe: RegExp): [number, number] | nu
   return found;
 }
 
-/** Ringkas satu pertandingan FotMob → penguasaan bola, skor, dan xG. Null bila penguasaan bola atau skor tidak ada. */
-export function parseMatchPossession(data: any, teamId: string): PossMatch | null {
-  const home = data?.general?.homeTeam;
-  const away = data?.general?.awayTeam;
-  const juveHome = String(home?.id) === teamId;
-  if (!juveHome && String(away?.id) !== teamId) return null;
-
+/** xG per laga = jumlah xG per tembakan; kalau peta tembakan tidak ada, pakai statistik xG laga. Null bila FotMob tidak melaporkan. */
+export function matchXg(data: any, teamId: string, juveHome: boolean): { xgFor: number | null; xgAgainst: number | null } {
   const stats = data?.content?.stats;
-  const p = pair(stats, /^ball_?possess?ion$/i, /^ball possession$/i);
-  if (!p) return null;
-  const poss = juveHome ? p[0] : p[1];
-  if (!(poss >= 0 && poss <= 100)) return null;
-
-  const hs = num(data?.header?.teams?.[0]?.score);
-  const as = num(data?.header?.teams?.[1]?.score);
-  if (hs == null || as == null) return null;
-  const gf = juveHome ? hs : as;
-  const ga = juveHome ? as : hs;
-
-  // xG per laga = jumlah xG per tembakan; kalau peta tembakan tidak ada, pakai statistik xG laga.
   let xgFor: number | null = null;
   let xgAgainst: number | null = null;
   const shots: any[] = Array.isArray(data?.content?.shotmap?.shots) ? data.content.shotmap.shots : [];
@@ -123,6 +106,29 @@ export function parseMatchPossession(data: any, teamId: string): PossMatch | nul
       xgAgainst = juveHome ? x[1] : x[0];
     }
   }
+  return { xgFor, xgAgainst };
+}
+
+/** Ringkas satu pertandingan FotMob → penguasaan bola, skor, dan xG. Null bila penguasaan bola atau skor tidak ada. */
+export function parseMatchPossession(data: any, teamId: string): PossMatch | null {
+  const home = data?.general?.homeTeam;
+  const away = data?.general?.awayTeam;
+  const juveHome = String(home?.id) === teamId;
+  if (!juveHome && String(away?.id) !== teamId) return null;
+
+  const stats = data?.content?.stats;
+  const p = pair(stats, /^ball_?possess?ion$/i, /^ball possession$/i);
+  if (!p) return null;
+  const poss = juveHome ? p[0] : p[1];
+  if (!(poss >= 0 && poss <= 100)) return null;
+
+  const hs = num(data?.header?.teams?.[0]?.score);
+  const as = num(data?.header?.teams?.[1]?.score);
+  if (hs == null || as == null) return null;
+  const gf = juveHome ? hs : as;
+  const ga = juveHome ? as : hs;
+
+  const { xgFor, xgAgainst } = matchXg(data, teamId, juveHome);
 
   const opp = String((juveHome ? away?.name : home?.name) ?? '').trim() || 'Lawan';
   const pts = gf > ga ? 3 : gf === ga ? 1 : 0;

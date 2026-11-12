@@ -4,9 +4,6 @@
 .pg-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
 .pg-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
 .pg-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
-.pg-pills { display: flex; gap: 8px; padding: 14px 20px 0; overflow-x: auto; }
-.pg-pill { border: 1px solid #333; background: transparent; color: #ccc; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
-.pg-pill.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
 .pg-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
 
 .pg-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 14px; }

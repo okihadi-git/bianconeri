@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useFetch } from '@/components/kp';
 import type { MatchRow, SituasiSkorResponse } from '@/lib/situasiskor';
 import './situasiskor.css';
@@ -33,8 +32,7 @@ function Flow({ m }: { m: MatchRow }) {
 
 /** Statistik → Analitik → 03 Situasi skor (unggul/imbang/tertinggal, gol per 15 menit, alur skor tiap laga). */
 export default function SituasiSkor() {
-  const [comp, setComp] = useState('all');
-  const res = useFetch<SituasiSkorResponse>(`/api/analitik/situasi-skor?comp=${encodeURIComponent(comp)}`);
+  const res = useFetch<SituasiSkorResponse>(`/api/analitik/situasi-skor`);
   const d = res.data;
 
   const t = d?.minutes.total ?? 0;
@@ -50,16 +48,6 @@ export default function SituasiSkor() {
         <h2>SITUASI SKOR</h2>
         <small>Unggul, imbang, tertinggal, dan kapan gol terjadi</small>
       </header>
-
-      {d && d.competitions.length > 1 ? (
-        <div className="ss-pills" role="tablist" aria-label="Kompetisi">
-          {[{ id: 'all', name: 'Semua' }, ...d.competitions].map((c) => (
-            <button key={c.id} type="button" role="tab" aria-selected={comp === c.id} className={`ss-pill${comp === c.id ? ' on' : ''}`} onClick={() => setComp(c.id)}>
-              {c.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       {res.loading ? <div className="ss-empty">Memuat situasi skor… (pertama kali bisa beberapa detik)</div> : null}
       {!res.loading && (res.error || !d) ? <div className="ss-empty">Data belum bisa dimuat. Coba muat ulang beberapa saat lagi.</div> : null}

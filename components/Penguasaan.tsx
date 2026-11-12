@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useFetch } from '@/components/kp';
 import type { Bucket, PossMatch, PossessionResponse } from '@/lib/penguasaan';
 import './penguasaan.css';
@@ -151,8 +150,7 @@ function trendText(r: number) {
 
 /** Statistik → Analitik → 06 Penguasaan bola (per laga, hasil menurut penguasaan, hubungan dengan selisih xG). */
 export default function Penguasaan() {
-  const [comp, setComp] = useState('all');
-  const res = useFetch<PossessionResponse>(`/api/analitik/penguasaan?comp=${encodeURIComponent(comp)}`);
+  const res = useFetch<PossessionResponse>(`/api/analitik/penguasaan`);
   const d = res.data;
 
   return (
@@ -162,16 +160,6 @@ export default function Penguasaan() {
         <h2>PENGUASAAN BOLA</h2>
         <small>Possession per laga dan pengaruhnya ke hasil</small>
       </header>
-
-      {d && d.competitions.length > 1 ? (
-        <div className="pb-pills" role="tablist" aria-label="Kompetisi">
-          {[{ id: 'all', name: 'Semua' }, ...d.competitions].map((c) => (
-            <button key={c.id} type="button" role="tab" aria-selected={comp === c.id} className={`pb-pill${comp === c.id ? ' on' : ''}`} onClick={() => setComp(c.id)}>
-              {c.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       {res.loading ? <div className="pb-empty">Memuat penguasaan bola… (pertama kali bisa beberapa detik)</div> : null}
       {!res.loading && (res.error || !d) ? <div className="pb-empty">Data belum bisa dimuat. Coba muat ulang beberapa saat lagi.</div> : null}

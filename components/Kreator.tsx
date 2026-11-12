@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Face from '@/components/Face';
 import { useFetch } from '@/components/kp';
 import type { KreatorResponse } from '@/lib/kreator';
@@ -13,8 +12,7 @@ const WAY_COLORS = ['#ffc72c', '#f6a3c4', '#4f7cff', '#2fbf71', '#e8e8e8', '#ff8
 
 /** Statistik → Analitik → 01 Peluang diciptakan (10 kreator teratas Juventus). */
 export default function Kreator() {
-  const [comp, setComp] = useState('all');
-  const res = useFetch<KreatorResponse>(`/api/analitik/kreator?comp=${encodeURIComponent(comp)}`);
+  const res = useFetch<KreatorResponse>(`/api/analitik/kreator`);
   const d = res.data;
 
   return (
@@ -24,16 +22,6 @@ export default function Kreator() {
         <h2>PELUANG DICIPTAKAN</h2>
         <small>Siapa kreator utama Juventus</small>
       </header>
-
-      {d && d.competitions.length > 1 ? (
-        <div className="kr-pills" role="tablist" aria-label="Kompetisi">
-          {[{ id: 'all', name: 'Semua' }, ...d.competitions].map((c) => (
-            <button key={c.id} type="button" role="tab" aria-selected={comp === c.id} className={`kr-pill${comp === c.id ? ' on' : ''}`} onClick={() => setComp(c.id)}>
-              {c.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       {res.loading ? <div className="kr-empty">Memuat peluang diciptakan… (pertama kali bisa beberapa detik)</div> : null}
       {!res.loading && (res.error || !d) ? <div className="kr-empty">Data belum bisa dimuat. Coba muat ulang beberapa saat lagi.</div> : null}

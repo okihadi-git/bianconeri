@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useFetch } from '@/components/kp';
 import { KINDS, type Counts, type SetPiecesResponse } from '@/lib/bolamati';
 import './bolamati.css';
@@ -30,8 +29,7 @@ function Stack({ title, counts }: { title: string; counts: Counts }) {
 
 /** Statistik → Analitik → 05 Bola mati (menyerang & bertahan). */
 export default function BolaMati() {
-  const [comp, setComp] = useState('all');
-  const res = useFetch<SetPiecesResponse>(`/api/analitik/bola-mati?comp=${encodeURIComponent(comp)}`);
+  const res = useFetch<SetPiecesResponse>(`/api/analitik/bola-mati`);
   const d = res.data;
   const t = d?.totals;
 
@@ -42,16 +40,6 @@ export default function BolaMati() {
         <h2>BOLA MATI</h2>
         <small>Menyerang &amp; bertahan</small>
       </header>
-
-      {d && d.competitions.length > 1 ? (
-        <div className="bm-pills" role="tablist" aria-label="Kompetisi">
-          {[{ id: 'all', name: 'Semua' }, ...d.competitions].map((c) => (
-            <button key={c.id} type="button" role="tab" aria-selected={comp === c.id} className={`bm-pill${comp === c.id ? ' on' : ''}`} onClick={() => setComp(c.id)}>
-              {c.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       {res.loading ? <div className="bm-empty">Memuat data bola mati… (pertama kali bisa beberapa detik)</div> : null}
       {!res.loading && (res.error || !d) ? <div className="bm-empty">Data belum bisa dimuat. Coba muat ulang beberapa saat lagi.</div> : null}

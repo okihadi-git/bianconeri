@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { useFetch } from '@/components/kp';
 import { BIN_TICKS, type PenggantiResponse, type SuperSub } from '@/lib/pengganti';
 import './pengganti.css';
@@ -21,8 +20,7 @@ function Contrib({ p }: { p: SuperSub }) {
 
 /** Statistik → Analitik → 04 Pemain pengganti (dampak bangku cadangan). */
 export default function Pengganti() {
-  const [comp, setComp] = useState('all');
-  const res = useFetch<PenggantiResponse>(`/api/analitik/pengganti?comp=${encodeURIComponent(comp)}`);
+  const res = useFetch<PenggantiResponse>(`/api/analitik/pengganti`);
   const d = res.data;
   const max = Math.max(1, ...(d?.bins ?? []));
   const coach = d?.coach ? d.coach.trim().split(/\s+/).slice(-1)[0] : '';
@@ -34,16 +32,6 @@ export default function Pengganti() {
         <h2>PEMAIN PENGGANTI</h2>
         <small>Dampak dari bangku cadangan</small>
       </header>
-
-      {d && d.competitions.length > 1 ? (
-        <div className="pg-pills" role="tablist" aria-label="Kompetisi">
-          {[{ id: 'all', name: 'Semua' }, ...d.competitions].map((c) => (
-            <button key={c.id} type="button" role="tab" aria-selected={comp === c.id} className={`pg-pill${comp === c.id ? ' on' : ''}`} onClick={() => setComp(c.id)}>
-              {c.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
 
       {res.loading ? <div className="pg-empty">Memuat data pergantian… (pertama kali bisa beberapa detik)</div> : null}
       {!res.loading && (res.error || !d) ? <div className="pg-empty">Data belum bisa dimuat. Coba muat ulang beberapa saat lagi.</div> : null}
