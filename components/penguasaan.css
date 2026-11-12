@@ -1,0 +1,93 @@
+/* Statistik → Analitik → 06 Penguasaan bola (tema hitam Juventus, aksen kuning; biru = di bawah 50%) */
+.pb { --pb-up: var(--juve-yellow, #ffc72c); --pb-down: #4f7cff; --pb-w: #1f9d55; --pb-d: #8c90a4; --pb-l: #d63447; background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.pb-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.pb-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.pb-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.pb-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.pb-pills { display: flex; gap: 8px; padding: 14px 20px 0; overflow-x: auto; }
+.pb-pill { border: 1px solid #333; background: transparent; color: #ccc; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.pb-pill.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
+.pb-empty, .pb-none { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+
+.pb-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 6px; }
+.pb-card { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 104px; }
+.pb-card small { color: var(--juve-yellow, #ffc72c); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.pb-card b { font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.05; white-space: nowrap; }
+.pb-card b em { font-style: normal; font-family: inherit; font-size: 16px; color: #d8d8e4; }
+.pb-card span { color: #a8a8b8; font-size: 12.5px; }
+.pb-card.hero { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); }
+.pb-card.hero small, .pb-card.hero b, .pb-card.hero span { color: #000; }
+.pb-h { margin: 18px 20px 12px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+
+/* grafik per laga */
+.pb-chart { padding: 0 20px; }
+.pb-plot { display: grid; grid-template-columns: 44px minmax(0, 1fr); height: 250px; }
+.pb-axis { position: relative; }
+.pb-axis span { position: absolute; right: 8px; transform: translateY(-50%); font-size: 12px; color: #a8a8b8; font-weight: 600; }
+.pb-area { position: relative; }
+.pb-grid { position: absolute; left: 0; right: 0; border-top: 1px dashed #2f2f3a; }
+.pb-grid.base { border-top: 2px solid #8c90a4aa; z-index: 1; }
+.pb-cols { position: absolute; inset: 0; display: grid; gap: 0; }
+.pb-col { position: relative; }
+.pb-col b { position: absolute; left: 14%; right: 14%; border-radius: 4px; }
+.pb-col b.up { background: var(--pb-up); }
+.pb-col b.down { background: var(--pb-down); }
+.pb-col:hover b { filter: brightness(1.15); }
+.pb-line { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.pb-line polyline { stroke: #fff; stroke-width: 2.2; stroke-linejoin: round; opacity: .9; }
+.pb-dot { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: #fff; border: 2px solid #000; box-sizing: border-box; pointer-events: none; text-decoration: none; }
+.pb-res { display: grid; margin-top: 16px; }
+.pb-res div { display: grid; justify-items: center; gap: 4px; }
+.pb-res i { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 800; color: #fff; }
+.pb-res i.M { background: var(--pb-w); }
+.pb-res i.S { background: var(--pb-d); }
+.pb-res i.K { background: var(--pb-l); }
+.pb-res small { font-size: 11.5px; color: #a8a8b8; font-weight: 700; letter-spacing: .02em; }
+.pb-key { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: #a8a8b8; }
+.pb-key li { display: inline-flex; align-items: center; gap: 6px; }
+.pb-key i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.pb-key i.up { background: var(--pb-up); }
+.pb-key i.down { background: var(--pb-down); }
+
+/* hasil menurut penguasaan + sebar */
+.pb-cols2 { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; padding-top: 4px; }
+.pb-cols2 .pb-h { margin-left: 20px; }
+.pb-cols2 > div:first-child { padding-left: 0; }
+.pb-buckets { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; padding: 0 0 0 20px; }
+.pb-bucket { background: #141414; border: 1px solid #262626; border-radius: 12px; padding: 14px 16px 12px; display: grid; gap: 2px; }
+.pb-bucket h4 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 14px; }
+.pb-bucket > small { color: #a8a8b8; font-size: 11.5px; }
+.pb-gauge { position: relative; margin: 6px 4px 0; }
+.pb-gauge svg { display: block; width: 100%; height: auto; }
+.pb-gauge path { fill: none; stroke-width: 16; stroke-linecap: round; }
+.pb-gauge .track { stroke: #2a2f3d; }
+.pb-gauge .fill { stroke: var(--juve-yellow, #ffc72c); }
+.pb-gauge > div { position: absolute; left: 0; right: 0; bottom: 4px; display: grid; justify-items: center; }
+.pb-gauge b { font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1; }
+.pb-gauge span { font-size: 11px; color: #a8a8b8; margin-top: 18px; }
+.pb-bucket dl { display: grid; grid-template-columns: auto auto; gap: 4px 8px; margin: 8px 0 0; font-size: 12px; }
+.pb-bucket dt { color: #a8a8b8; }
+.pb-bucket dd { margin: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.pb-scatter { display: block; width: calc(100% - 20px); height: auto; margin-right: 20px; }
+.pb-scatter .ax { stroke: #ffffff55; stroke-dasharray: 4 4; }
+.pb-scatter .lb { fill: #a8a8b8; font-size: 11px; font-weight: 700; }
+.pb-scatter .tr { stroke: var(--juve-yellow, #ffc72c); stroke-width: 2.4; stroke-linecap: round; }
+.pb-scatter .pt { stroke: #fff; stroke-width: 1.8; }
+.pb-scatter .pt.M { fill: var(--pb-w); }
+.pb-scatter .pt.S { fill: var(--pb-d); }
+.pb-scatter .pt.K { fill: var(--pb-l); }
+.pb-trend { margin: 6px 20px 0 0; color: #a8a8b8; font-size: 12.5px; line-height: 1.5; }
+.pb-note { margin: 16px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1000px) {
+  .pb-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pb-cols2 { grid-template-columns: 1fr; }
+  .pb-trend { margin-left: 20px; }
+  .pb-scatter { margin-left: 10px; }
+  .pb-head small { display: none; }
+}
+@media (max-width: 640px) {
+  .pb-res small { font-size: 9px; }
+  .pb-res i { width: 18px; height: 18px; font-size: 9px; }
+}

@@ -1,4 +1,5 @@
 // Analitik → Situasi skor Juventus. FotMob matchDetails (kejadian gol). Cache Next dipakai bersama section 01 dan 02.
+import { isFriendly } from './official';
 import { FOTMOB_TEAM_ID } from './squad';
 import { finishedFixtureIds, getJson } from './kreator-server';
 import { aggregate, parseMatchFlow, type MatchFlow, type SituasiSkorResponse } from './situasiskor';
@@ -13,18 +14,20 @@ export async function fetchSituasiSkor(comp = 'all'): Promise<SituasiSkorRespons
   if (!fixtures.length) return empty('Jadwal laga selesai Juventus belum bisa dimuat dari FotMob.');
 
   const flows: MatchFlow[] = [];
+  let friendlies = 0; // laga persahabatan tidak dihitung
   for (let i = 0; i < fixtures.length; i += 6) {
     const batch = fixtures.slice(i, i + 6);
     const res = await Promise.all(batch.map((f) => getJson(`https://www.fotmob.com/api/data/matchDetails?matchId=${f.id}`, 6 * 3600)));
     res.forEach((d) => {
-      const m = d ? parseMatchFlow(d, FOTMOB_TEAM_ID) : null;
+      if (d && isFriendly(d)) friendlies += 1;
+      const m = d && !isFriendly(d) ? parseMatchFlow(d, FOTMOB_TEAM_ID) : null;
       if (m) flows.push(m);
     });
   }
 
   if (!flows.length) return empty('FotMob tidak mengirim kejadian gol untuk laga Juventus (endpoint tidak resmi, mungkin diblokir).');
   const warnings: string[] = [];
-  if (flows.length < fixtures.length) warnings.push(`Kejadian gol lengkap hanya tersedia untuk ${flows.length} dari ${fixtures.length} laga selesai.`);
+  if (flows.length < fixtures.length - friendlies) warnings.push(`Kejadian gol lengkap hanya tersedia untuk ${flows.length} dari ${fixtures.length - friendlies} laga selesai.`);
 
   const compMap = new Map<string, { id: string; name: string; matches: number }>();
   for (const m of flows) {

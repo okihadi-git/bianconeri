@@ -1,5 +1,6 @@
 // Analitik → Peluang diciptakan Juventus. FotMob (umpan kunci, xA, tembakan per situasi) + database gaji (opsional).
 // FotMob tidak resmi: semua kegagalan jadi data kosong + peringatan, tidak pernah melempar error.
+import { isFriendly } from './official';
 import { FOTMOB_TEAM_ID, fotmobPhoto } from './squad';
 import { fetchSalaries } from './salaries-server';
 import { salaryFrom, yearlyOf } from './salaries';
@@ -45,18 +46,20 @@ export async function fetchKreator(comp = 'all'): Promise<KreatorResponse> {
   if (!fixtures.length) return empty('Jadwal laga selesai Juventus belum bisa dimuat dari FotMob.');
 
   const matches: MatchChance[] = [];
+  let friendlies = 0; // laga persahabatan tidak dihitung
   for (let i = 0; i < fixtures.length; i += 6) {
     const batch = fixtures.slice(i, i + 6);
     const res = await Promise.all(batch.map((f) => getJson(`https://www.fotmob.com/api/data/matchDetails?matchId=${f.id}`, 6 * 3600)));
     res.forEach((d) => {
-      const m = d ? parseMatchDetails(d, FOTMOB_TEAM_ID) : null;
+      if (d && isFriendly(d)) friendlies += 1;
+      const m = d && !isFriendly(d) ? parseMatchDetails(d, FOTMOB_TEAM_ID) : null;
       if (m) matches.push(m);
     });
   }
 
   const warnings: string[] = [];
   if (!matches.length) return empty('FotMob tidak mengirim statistik pemain untuk laga Juventus (endpoint tidak resmi, mungkin diblokir).');
-  if (matches.length < fixtures.length) warnings.push(`Statistik pemain hanya tersedia untuk ${matches.length} dari ${fixtures.length} laga selesai.`);
+  if (matches.length < fixtures.length - friendlies) warnings.push(`Statistik pemain hanya tersedia untuk ${matches.length} dari ${fixtures.length - friendlies} laga selesai.`);
 
   const compMap = new Map<string, { id: string; name: string; matches: number }>();
   for (const m of matches) {
