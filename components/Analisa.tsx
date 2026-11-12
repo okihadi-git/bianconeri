@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import KesulitanJadwal from '@/components/KesulitanJadwal';
 import LawanBerikutnya from '@/components/LawanBerikutnya';
 
 const TABS = [
@@ -13,7 +14,7 @@ const TABS = [
   { key: 'keuangan', label: 'Peringkat & keuangan' },
 ] as const;
 
-/** Statistik → Analisa. Baru "Lawan berikutnya" yang sudah ada isinya. */
+/** Statistik → Analisa. Yang sudah ada isinya: "Lawan berikutnya" dan "Kesulitan jadwal". */
 export default function Analisa() {
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('lawan');
   return (
@@ -27,6 +28,8 @@ export default function Analisa() {
       </div>
       {tab === 'lawan' ? (
         <LawanBerikutnya />
+      ) : tab === 'jadwal' ? (
+        <KesulitanJadwal />
       ) : (
         <section className="kp-card">
           <header className="kp-card-head">

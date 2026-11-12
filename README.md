@@ -80,6 +80,10 @@ Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil pe
 - Pencetak gol per pertandingan tidak tersedia di data FotMob, jadi baris hasil tidak menampilkannya.
 - `sources` pada respons API menunjukkan jumlah data per sumber; `warnings` menjelaskan bila ada yang kosong.
 
+## Statistik → Analisa → Kesulitan jadwal
+
+`/statistik/analisa` tab "Kesulitan jadwal": 6 laga Serie A berikutnya Juventus dibandingkan dengan satu rival (bawaan: tim tepat di atas di klasemen), lewat `/api/analisa/jadwal`. Tiap laga diberi xPts (3 × peluang menang + peluang seri) dari model Poisson yang sama dengan "Lawan berikutnya" dan "Peluang juara" (`teamStrengths` + `outcomeProbs`, kekuatan dari gol musim ini ditarik ke rata-rata liga). Batas: Mudah ≥ 2,1 · Sedang 1,5–2,1 · Berat < 1,5. Laga Eropa/piala Juventus di sela jadwal hanya disebut, tidak dihitung. Logika murni ada di `lib/jadwal.ts`; helper aman-browser di `lib/jadwal-ui.ts`.
+
 ## Catatan
 
 - Halaman `/juventus` sudah dihapus; tautan lama diarahkan oleh `next.config.mjs`.
