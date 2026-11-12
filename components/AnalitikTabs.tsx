@@ -10,6 +10,7 @@ import Penguasaan from '@/components/Penguasaan';
 import RekorBeruntun from '@/components/RekorBeruntun';
 import JadwalPadat from '@/components/JadwalPadat';
 import MusimIniVsLalu from '@/components/MusimIniVsLalu';
+import ProfilSkuad from '@/components/ProfilSkuad';
 import './analitik-tabs.css';
 
 /** Sub-tab di dalam Statistik → Analitik. Satu entri per section; tambah section baru cukup menambah satu baris di sini. */
@@ -23,6 +24,7 @@ const SECTIONS = [
   { id: 'rekor-beruntun', num: '08', label: 'Rekor Beruntun', View: RekorBeruntun },
   { id: 'jadwal-padat', num: '09', label: 'Jadwal Padat', View: JadwalPadat },
   { id: 'musim-ini-vs-lalu', num: '10', label: 'Musim Ini vs Lalu', View: MusimIniVsLalu },
+  { id: 'profil-skuad', num: '11', label: 'Profil Skuad', View: ProfilSkuad },
 ] as const;
 
 type Id = (typeof SECTIONS)[number]['id'];
