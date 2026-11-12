@@ -5,6 +5,7 @@ import Kreator from '@/components/Kreator';
 import Penyelesaian from '@/components/Penyelesaian';
 import SituasiSkor from '@/components/SituasiSkor';
 import Pengganti from '@/components/Pengganti';
+import BolaMati from '@/components/BolaMati';
 import './analitik-tabs.css';
 
 /** Sub-tab di dalam Statistik → Analitik. Satu entri per section; tambah section baru cukup menambah satu baris di sini. */
@@ -13,6 +14,7 @@ const SECTIONS = [
   { id: 'penyelesaian', num: '02', label: 'Penyelesaian', View: Penyelesaian },
   { id: 'situasi-skor', num: '03', label: 'Situasi Skor', View: SituasiSkor },
   { id: 'pemain-pengganti', num: '04', label: 'Pemain Pengganti', View: Pengganti },
+  { id: 'bola-mati', num: '05', label: 'Bola Mati', View: BolaMati },
 ] as const;
 
 type Id = (typeof SECTIONS)[number]['id'];
