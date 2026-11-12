@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Kreator from '@/components/Kreator';
 import Penyelesaian from '@/components/Penyelesaian';
 import SituasiSkor from '@/components/SituasiSkor';
+import Pengganti from '@/components/Pengganti';
 import './analitik-tabs.css';
 
 /** Sub-tab di dalam Statistik → Analitik. Satu entri per section; tambah section baru cukup menambah satu baris di sini. */
@@ -11,6 +12,7 @@ const SECTIONS = [
   { id: 'peluang-diciptakan', num: '01', label: 'Peluang Diciptakan', View: Kreator },
   { id: 'penyelesaian', num: '02', label: 'Penyelesaian', View: Penyelesaian },
   { id: 'situasi-skor', num: '03', label: 'Situasi Skor', View: SituasiSkor },
+  { id: 'pemain-pengganti', num: '04', label: 'Pemain Pengganti', View: Pengganti },
 ] as const;
 
 type Id = (typeof SECTIONS)[number]['id'];
