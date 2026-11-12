@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import KesulitanJadwal from '@/components/KesulitanJadwal';
 import LawanBerikutnya from '@/components/LawanBerikutnya';
+import PolaLaga from '@/components/PolaLaga';
 
 const TABS = [
   { key: 'lawan', label: 'Lawan berikutnya' },
@@ -14,7 +15,7 @@ const TABS = [
   { key: 'keuangan', label: 'Peringkat & keuangan' },
 ] as const;
 
-/** Statistik → Analisa. Yang sudah ada isinya: "Lawan berikutnya" dan "Kesulitan jadwal". */
+/** Statistik → Analisa. Yang sudah ada isinya: "Lawan berikutnya", "Kesulitan jadwal", dan "Pola laga". */
 export default function Analisa() {
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('lawan');
   return (
@@ -30,6 +31,8 @@ export default function Analisa() {
         <LawanBerikutnya />
       ) : tab === 'jadwal' ? (
         <KesulitanJadwal />
+      ) : tab === 'pola' ? (
+        <PolaLaga />
       ) : (
         <section className="kp-card">
           <header className="kp-card-head">

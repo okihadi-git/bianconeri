@@ -1,0 +1,44 @@
+/* Statistik → Analisa → Pola laga (tema terang) */
+.pl { padding-bottom: 8px; }
+.pl-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 4px; }
+.pl-chip { border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: 6px 16px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.pl-chip:hover { border-color: #c9c9c9; }
+.pl-chip.on { background: var(--red, #d6001c); border-color: var(--red, #d6001c); color: #fff; }
+.pl-h { margin: 22px 20px 10px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+
+.pl-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 0 20px; }
+.pl-tile { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 92px; background: #fff; min-width: 0; }
+.pl-tile small { color: var(--muted); font-size: 13px; font-weight: 600; }
+.pl-tile b { font-family: var(--display); font-weight: 400; font-size: 32px; line-height: 1.05; }
+.pl-tile span { color: var(--muted); font-size: 11.5px; }
+.pl-tile.dark { background: #141b34; border-color: #141b34; color: #fff; }
+.pl-tile.dark small { color: var(--juve-yellow, #ffc72c); }
+.pl-tile.dark span { color: #b9c0d8; }
+.pl-tile.warm { background: #fdf0dc; border-color: #e8a33d; }
+.pl-tile.warm small, .pl-tile.warm span { color: #8a6a3a; }
+
+.pl-legend { margin: 14px 20px 0; color: var(--muted); font-size: 12.5px; }
+.pl-legend i { display: inline-block; width: 16px; height: 4px; border-radius: 2px; margin: 0 6px 3px 10px; vertical-align: middle; }
+.pl-legend i:first-child { margin-left: 0; }
+.pl-legend i.for { background: var(--red, #d6001c); }
+.pl-legend i.ag { background: #9ea0b4; }
+.pl-chart { padding: 4px 20px 0; }
+.pl-svg { width: 100%; height: auto; display: block; }
+.pl-grid { stroke: #e4e4ee; }
+.pl-axis { font-size: 16px; fill: #8a8a99; }
+.pl-xl { font-size: 17px; fill: #8a8a99; }
+.pl-xr { font-size: 19px; font-weight: 800; fill: var(--ink); font-family: var(--display); }
+.pl-bar-for { fill: var(--red, #d6001c); }
+.pl-bar-ag { fill: #9ea0b4; }
+.pl-none { margin: 14px 20px 0; color: var(--muted); font-size: 13px; }
+
+.pl-tablewrap { margin: 0 20px; overflow-x: auto; }
+.pl-table { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.pl-table th { background: #eef0f5; font-size: 10.5px; letter-spacing: .1em; color: #6b7280; padding: 10px 14px; text-align: center; }
+.pl-table td { padding: 13px 14px; text-align: center; border-bottom: 1px solid var(--line); }
+.pl-table td:first-child { text-align: left; font-weight: 700; white-space: nowrap; }
+.pl-ppg { font-weight: 800; }
+.pl-note { margin: 14px 20px 8px; font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+@media (max-width: 900px) { .pl-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .pl-tiles { grid-template-columns: 1fr; } }
