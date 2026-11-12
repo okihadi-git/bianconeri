@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react';
 import Face from '@/components/Face';
 import { useFetch } from '@/components/kp';
 import type { MatchRating, PlayerRow, PlayerStatsResponse, PosGroup } from '@/lib/playerstats';
-import './stathub.css';
+import '@/components/stathub.css';
 
 /* ---------- konstanta ---------- */
 
