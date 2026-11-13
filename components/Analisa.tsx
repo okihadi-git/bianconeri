@@ -1,11 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import AnalisaPemain from '@/components/AnalisaPemain';
 import KesulitanJadwal from '@/components/KesulitanJadwal';
-import Kiper from '@/components/Kiper';
 import LawanBerikutnya from '@/components/LawanBerikutnya';
-import Penonton from '@/components/Penonton';
-import Peringkat from '@/components/Peringkat';
 import PolaLaga from '@/components/PolaLaga';
 
 const TABS = [
@@ -18,7 +16,7 @@ const TABS = [
   { key: 'keuangan', label: 'Peringkat & keuangan' },
 ] as const;
 
-/** Statistik → Analisa. Yang sudah ada isinya: "Lawan berikutnya", "Kesulitan jadwal", "Pola laga", "Kiper", "Penonton", dan "Peringkat & keuangan" (baru bagian peringkat klub; keuangan belum). */
+/** Statistik → Analisa. Yang sudah ada isinya: "Lawan berikutnya", "Kesulitan jadwal", "Pola laga", dan "Pemain". */
 export default function Analisa() {
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('lawan');
   return (
@@ -36,12 +34,8 @@ export default function Analisa() {
         <KesulitanJadwal />
       ) : tab === 'pola' ? (
         <PolaLaga />
-      ) : tab === 'kiper' ? (
-        <Kiper />
-      ) : tab === 'penonton' ? (
-        <Penonton />
-      ) : tab === 'keuangan' ? (
-        <Peringkat />
+      ) : tab === 'pemain' ? (
+        <AnalisaPemain />
       ) : (
         <section className="kp-card">
           <header className="kp-card-head">

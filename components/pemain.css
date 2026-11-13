@@ -1,0 +1,27 @@
+/* Statistik → Analisa → Pemain (tema terang) */
+.pm { padding-bottom: 10px; }
+.pm-intro { margin: 0; padding: 16px 20px 0; font-size: 14.5px; line-height: 1.55; }
+.pm-h { margin: 20px 20px 10px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+.pm-wrap { margin: 0 20px; overflow-x: auto; }
+.pm-table { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.pm-table th { background: #eef0f5; font-size: 10.5px; letter-spacing: .08em; color: #6b7280; padding: 10px 14px; text-align: center; white-space: nowrap; }
+.pm-table td { padding: 11px 14px; text-align: center; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.pm-table th.l, .pm-table td.l { text-align: left; }
+.pm-table td small { display: block; color: #8a8aa0; font-size: 11.5px; margin-top: 1px; }
+.pm-name { font-weight: 700; white-space: nowrap; }
+.pm-diff { display: inline-block; min-width: 58px; padding: 3px 10px; border-radius: 999px; background: #eef0f5; color: #4b5563; font-size: 12.5px; font-weight: 800; }
+.pm-diff.up { background: #e1f5e8; color: #1f7a46; }
+.pm-note { margin: 10px 20px 0; font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.pm-note a { color: inherit; text-decoration: underline; }
+
+.pm-duets { list-style: none; margin: 0; padding: 0 20px; display: grid; gap: 8px; }
+.pm-duets li { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; font-weight: 700; font-size: 14px; background: #fff; }
+.pm-duets b { font-size: 13px; }
+.pm-duets small { display: inline; color: var(--muted); font-weight: 400; font-size: 11.5px; }
+
+.pm-ms td { padding: 10px 14px; }
+.pm-pill { display: inline-block; min-width: 52px; text-align: center; padding: 3px 10px; border-radius: 999px; background: #eef0f5; color: #4b5563; font-size: 12px; font-weight: 800; margin-right: 6px; }
+.pm-pill.near { background: #b36b00; color: #fff; }
+.pm-pill.hot { background: #c0293a; color: #fff; }
+
+@media (max-width: 640px) { .pm-table th, .pm-table td { padding: 9px 10px; } }
