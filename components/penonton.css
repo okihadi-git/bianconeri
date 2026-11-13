@@ -1,0 +1,24 @@
+/* Statistik → Analisa → Penonton (tema terang) */
+.kn { padding-bottom: 8px; }
+.kn-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 18px 20px 0; }
+.kn-tile { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 92px; background: #fff; min-width: 0; }
+.kn-tile small { color: var(--muted); font-size: 13px; font-weight: 600; }
+.kn-tile b { font-family: var(--display); font-weight: 400; font-size: 32px; line-height: 1.05; }
+.kn-tile span { color: var(--muted); font-size: 11.5px; }
+.kn-tile.dark { background: #141b34; border-color: #141b34; color: #fff; }
+.kn-tile.dark small { color: var(--juve-yellow, #ffc72c); }
+.kn-tile.dark span { color: #b9c0d8; }
+
+.kn-tablewrap { margin: 16px 20px 0; overflow-x: auto; }
+.kn-table { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.kn-table th { background: #eef0f5; font-size: 10.5px; letter-spacing: .1em; color: #6b7280; padding: 10px 14px; text-align: left; white-space: nowrap; }
+.kn-table th:last-child { text-align: center; }
+.kn-table td { padding: 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.kn-table td:first-child { white-space: nowrap; }
+.kn-table td:first-child b { display: block; font-weight: 700; }
+.kn-table td:first-child small { display: block; margin-top: 3px; color: var(--muted); font-size: 11.5px; }
+.kn-att { text-align: center; font-weight: 800; white-space: nowrap; }
+.kn-note { margin: 14px 20px 8px; font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+
+@media (max-width: 900px) { .kn-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .kn-tiles { grid-template-columns: 1fr; } .kn-table td:first-child { white-space: normal; } }
