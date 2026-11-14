@@ -1,0 +1,144 @@
+/* Statistik → Analisa (semua sub-tab, tema terang).
+   Kelas bersama berawalan "an-". Kelas khusus satu tab: kj- (Kesulitan jadwal), pola- (Pola laga), pm- (Pemain).
+   Bagian Lawan berikutnya dan Peringkat memakai an-head/an-wx/an-form dan an-club/an-crest di bawah. */
+
+/* ---------- bersama ---------- */
+.an { padding-bottom: 14px; }
+.an-h { margin: 22px 20px 10px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+
+.an-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; padding: 0 20px; }
+.an-tiles.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.an-tiles.top { padding-top: 18px; }
+.an-tile { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 92px; background: #fff; min-width: 0; }
+.an-tile small { color: var(--muted); font-size: 13px; font-weight: 600; }
+.an-tile b { font-family: var(--display); font-weight: 400; font-size: 32px; line-height: 1.05; overflow-wrap: anywhere; }
+.an-tile span { color: var(--muted); font-size: 11.5px; }
+.an-tile.dark { background: #141b34; border-color: #141b34; color: #fff; }
+.an-tile.dark small { color: var(--juve-yellow, #ffc72c); }
+.an-tile.dark span { color: #b9c0d8; }
+.an-tile.warm { background: #fdf0dc; border-color: #e8a33d; }
+.an-tile.warm small, .an-tile.warm span { color: #8a6a3a; }
+
+.an-tablewrap { margin: 0 20px; overflow-x: auto; }
+.an-tiles + .an-tablewrap { margin-top: 16px; }
+.an-table { width: 100%; border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums; }
+.an-table th { background: #eef0f5; font-size: 10.5px; letter-spacing: .1em; color: #6b7280; padding: 10px 14px; text-align: center; white-space: nowrap; }
+.an-table td { padding: 12px 14px; text-align: center; border-bottom: 1px solid var(--line); vertical-align: middle; }
+.an-table th:first-child, .an-table td:first-child { text-align: left; }
+/* perataan per sel: harus setelah aturan :first-child di atas */
+.an-table th.l, .an-table td.l { text-align: left; }
+.an-table th.c, .an-table td.c { text-align: center; }
+.an-table.names td:first-child { font-weight: 700; white-space: nowrap; }
+.an-table td small { display: block; margin-top: 2px; color: #8a8aa0; font-size: 11.5px; }
+.an-table td.two { white-space: nowrap; }
+.an-table td.two b { display: block; font-weight: 700; }
+.an-table td.two small { margin-top: 3px; color: var(--muted); }
+.an-table td.att { font-weight: 800; white-space: nowrap; }
+.an-table th.rank { width: 72px; text-align: center; }
+.an-table tr.me td { background: #fff3c4; font-weight: 800; }
+.an-table tr.gap td { text-align: center; color: var(--muted); padding: 2px; letter-spacing: .3em; }
+.an-table .who { display: inline-flex; align-items: center; gap: 10px; }
+
+.an-note { margin: 12px 20px 0; font-size: 12.5px; color: var(--muted); line-height: 1.55; }
+.an-note a { color: var(--juve-blue, #1b3a8a); text-decoration: underline; }
+.an-note b { color: #4a5068; }
+.an-warn { margin: 12px 20px 0; padding: 8px 12px; border-radius: 8px; background: #fff8e1; color: #8a6200; font-size: 12.5px; }
+
+.an-logo { object-fit: contain; flex: none; display: inline-block; border-radius: 50%; background: #fff; }
+.an-logo.none { background: #e4e4ea; }
+
+/* ---------- Lawan berikutnya ---------- */
+.an-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px 4px; }
+.an-logos { display: flex; }
+.an-logos .an-logo { border: 2px solid #fff; box-shadow: 0 0 0 1px var(--line); }
+.an-logos .an-logo + .an-logo { margin-left: -10px; }
+.an-head h3 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1.1; }
+.an-head small { color: var(--muted); font-size: 13px; }
+.an-form { display: inline-flex; gap: 6px; }
+.an-form i { font-style: normal; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 5px; color: #fff; font-weight: 800; font-size: 13px; }
+.an-f-M { background: #1f9d55; } .an-f-S { background: #7d8199; } .an-f-K { background: #c0293a; }
+
+.an-recent { list-style: none; margin: 0; padding: 0 20px; display: grid; gap: 8px; }
+.an-recent li { display: flex; justify-content: space-between; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.an-recent li span { color: var(--muted); font-size: 12px; }
+.an-recent li span b { color: var(--ink); font-size: 13px; }
+
+.an-wx { display: flex; align-items: center; gap: 14px; padding: 0 20px 10px; }
+.an-wx-icon { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 14px; background: #eef0f5; font-size: 28px; }
+.an-wx b { display: block; font-family: var(--display); font-weight: 400; font-size: 22px; }
+.an-wx small { color: var(--muted); font-size: 12.5px; }
+.an-wx-stats { margin: 0 20px; display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--line); border-radius: 12px; }
+.an-wx-stats > div { padding: 10px 14px; display: grid; gap: 2px; }
+.an-wx-stats > div + div { border-left: 1px solid var(--line); }
+.an-wx-stats b { font-family: var(--display); font-weight: 400; font-size: 22px; }
+.an-wx-stats span { color: var(--muted); font-size: 12px; }
+
+/* ---------- Kesulitan jadwal ---------- */
+.kj-pick { padding: 14px 20px 4px; font-size: 14px; color: #5a6076; }
+.kj-pick select { margin-left: 6px; padding: 6px 10px; border: 1px solid #d9dce6; border-radius: 8px; background: #fff; font: inherit; color: #111a3a; }
+.kj-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 22px; padding: 10px 20px 4px; align-items: start; }
+.kj-team { margin: 4px 0 12px; display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 800; }
+.kj-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.kj-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid #dfe2ec; border-radius: 10px; background: #fff; min-width: 0; }
+.kj-main { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.kj-main b { font-weight: 800; overflow-wrap: anywhere; }
+.kj-main b small { font-size: 12px; font-weight: 600; color: #8a90a6; }
+.kj-main span { font-size: 12px; color: #7a8099; }
+.kj-side { display: grid; justify-items: end; gap: 3px; flex: none; }
+.kj-side small { font-size: 12px; color: #7a8099; }
+.kj-chip { padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.kj-mudah { background: #e3f4ea; color: #1f8a4c; }
+.kj-sedang { background: #b86a00; color: #ffffff; }
+.kj-berat { background: #c8102e; color: #ffffff; }
+.kj-total { margin: 14px 2px 4px; font-size: 14px; color: #3b4156; }
+.kj-total b { font-weight: 800; color: #111a3a; }
+.kj-none { margin: 0; color: #7a8099; }
+.kj-others { margin: 6px 20px 0; padding-top: 12px; font-size: 14px; color: #3b4156; line-height: 1.55; }
+
+/* ---------- Pola laga ---------- */
+.pola-chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 20px 4px; }
+.pola-chip { border: 1px solid var(--line); background: #fff; color: var(--ink); border-radius: 999px; padding: 6px 16px; font-size: 13px; font-weight: 700; cursor: pointer; }
+.pola-chip:hover { border-color: #c9c9c9; }
+.pola-chip.on { background: var(--red, #d6001c); border-color: var(--red, #d6001c); color: #fff; }
+.pola-legend { margin: 14px 20px 0; color: var(--muted); font-size: 12.5px; }
+.pola-legend i { display: inline-block; width: 16px; height: 4px; border-radius: 2px; margin: 0 6px 3px 10px; vertical-align: middle; }
+.pola-legend i:first-child { margin-left: 0; }
+.pola-legend i.for { background: var(--red, #d6001c); }
+.pola-legend i.ag { background: #9ea0b4; }
+.pola-chart { padding: 4px 20px 0; }
+.pola-svg { width: 100%; height: auto; display: block; }
+.pola-grid { stroke: #e4e4ee; }
+.pola-axis { font-size: 16px; fill: #8a8a99; }
+.pola-xl { font-size: 17px; fill: #8a8a99; }
+.pola-xr { font-size: 19px; font-weight: 800; fill: var(--ink); font-family: var(--display); }
+.pola-bar-for { fill: var(--red, #d6001c); }
+.pola-bar-ag { fill: #9ea0b4; }
+.pola-none { margin: 14px 20px 0; color: var(--muted); font-size: 13px; }
+.pola-ppg { font-weight: 800; }
+
+/* ---------- Pemain ---------- */
+.pm-intro { margin: 0; padding: 16px 20px 0; font-size: 14.5px; line-height: 1.55; }
+.pm-name { font-weight: 700; white-space: nowrap; }
+.pm-diff { display: inline-block; min-width: 58px; padding: 3px 10px; border-radius: 999px; background: #eef0f5; color: #4b5563; font-size: 12.5px; font-weight: 800; }
+.pm-diff.up { background: #e1f5e8; color: #1f7a46; }
+.pm-duets { list-style: none; margin: 0; padding: 0 20px; display: grid; gap: 8px; }
+.pm-duets li { display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 10px 16px; font-weight: 700; font-size: 14px; background: #fff; }
+.pm-duets b { font-size: 13px; }
+.pm-duets small { display: inline; color: var(--muted); font-weight: 400; font-size: 11.5px; }
+.pm-pill { display: inline-block; min-width: 52px; text-align: center; padding: 3px 10px; border-radius: 999px; background: #eef0f5; color: #4b5563; font-size: 12px; font-weight: 800; margin-right: 6px; }
+.pm-pill.near { background: #b36b00; color: #fff; }
+.pm-pill.hot { background: #c0293a; color: #fff; }
+
+/* ---------- Peringkat & keuangan ---------- */
+.an-club { display: flex; align-items: center; gap: 12px; padding: 16px 20px 0; }
+.an-club .an-crest { width: 40px; height: 40px; }
+.an-club b { display: block; font-family: var(--display); font-weight: 400; font-size: 24px; line-height: 1.1; }
+.an-club small { color: var(--muted); font-size: 12px; }
+.an-crest { width: 22px; height: 22px; object-fit: contain; flex: none; }
+.an-crest.ph { display: inline-grid; place-items: center; border-radius: 50%; background: #e7e9f0; color: #6b7280; font-style: normal; font-size: 11px; font-weight: 800; }
+
+/* ---------- responsif ---------- */
+@media (max-width: 900px) { .an-tiles, .an-tiles.c3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 860px) { .kj-cols { grid-template-columns: 1fr; gap: 14px; } }
+@media (max-width: 640px) { .an-table th, .an-table td { padding: 9px 10px; } }
+@media (max-width: 480px) { .an-tiles, .an-tiles.c3 { grid-template-columns: 1fr; } .an-head h3 { font-size: 22px; } .an-table td.two { white-space: normal; } }

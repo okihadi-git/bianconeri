@@ -80,9 +80,19 @@ Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil pe
 - Pencetak gol per pertandingan tidak tersedia di data FotMob, jadi baris hasil tidak menampilkannya.
 - `sources` pada respons API menunjukkan jumlah data per sumber; `warnings` menjelaskan bila ada yang kosong.
 
+## Statistik → Analisa (struktur kode)
+
+Semua sub-tab Analisa ada di tiga folder, dan ketujuhnya terisi:
+
+- `components/analisa/` — `index.tsx` (daftar tab), satu komponen per tab (`Lawan`, `Jadwal`, `Pola`, `Pemain`, `Kiper`, `Penonton`, `Peringkat`), `ui.tsx` (Card, Tile, Logo, `useTab` untuk pesan memuat/gagal), dan satu stylesheet `analisa.css`.
+- `lib/analisa/` — `X.ts` = tipe + logika murni, `X-server.ts` = pengambilan data luar. Bersama: `util.ts` (format angka, `pointsOf`, `minuteOf`) dan `http.ts` (`getJson` + User-Agent).
+- `app/api/analisa/[tab]/route.ts` — satu route untuk semua tab (`/api/analisa/{lawan|jadwal|pola|pemain|kiper|penonton|peringkat}`); tab baru = satu baris di `ENDPOINTS`.
+
+Tab Kiper hanya menghitung kiper (label posisi G/GK, skuad FotMob, atau statistik khas kiper); "kebobolan" saja tidak cukup untuk dianggap kiper.
+
 ## Statistik → Analisa → Kesulitan jadwal
 
-`/statistik/analisa` tab "Kesulitan jadwal": 6 laga Serie A berikutnya Juventus dibandingkan dengan satu rival (bawaan: tim tepat di atas di klasemen), lewat `/api/analisa/jadwal`. Tiap laga diberi xPts (3 × peluang menang + peluang seri) dari model Poisson yang sama dengan "Lawan berikutnya" dan "Peluang juara" (`teamStrengths` + `outcomeProbs`, kekuatan dari gol musim ini ditarik ke rata-rata liga). Batas: Mudah ≥ 2,1 · Sedang 1,5–2,1 · Berat < 1,5. Laga Eropa/piala Juventus di sela jadwal hanya disebut, tidak dihitung. Logika murni ada di `lib/jadwal.ts`; helper aman-browser di `lib/jadwal-ui.ts`.
+`/statistik/analisa` tab "Kesulitan jadwal": 6 laga Serie A berikutnya Juventus dibandingkan dengan satu rival (bawaan: tim tepat di atas di klasemen), lewat `/api/analisa/jadwal`. Tiap laga diberi xPts (3 × peluang menang + peluang seri) dari model Poisson yang sama dengan "Lawan berikutnya" dan "Peluang juara" (`teamStrengths` + `outcomeProbs`, kekuatan dari gol musim ini ditarik ke rata-rata liga). Batas: Mudah ≥ 2,1 · Sedang 1,5–2,1 · Berat < 1,5. Laga Eropa/piala Juventus di sela jadwal hanya disebut, tidak dihitung. Logika murni ada di `lib/analisa/jadwal.ts`; helper aman-browser di `lib/analisa/jadwal-ui.ts`.
 
 ## Catatan
 
