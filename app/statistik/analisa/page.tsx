@@ -1,4 +1,4 @@
-import Analisa from '@/components/Analisa';
+import Analisa from '@/components/analisa';
 
 export default function AnalisaPage() {
   return (
