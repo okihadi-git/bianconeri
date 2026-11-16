@@ -1,8 +1,0 @@
-/* Foto pemain bulat dipakai di lineup live, tabel Statistik, dll. */
-.fc { display: inline-block; border-radius: 50%; object-fit: cover; background: #e9e9e9; flex: none; }
-.fc-ph { display: inline-flex; align-items: center; justify-content: center; font-weight: 800; color: var(--juve-blue); background: #dfe6f5; }
-.st-who { display: flex; align-items: center; gap: 10px; }
-.lv-shirt.has-photo { width: 46px; height: 46px; overflow: visible; background: #ffffff; }
-.lv-shirt.has-photo .fc { width: 100% !important; height: 100% !important; }
-.lv-num { position: absolute; bottom: -6px; left: -7px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; display: grid; place-items: center; background: #000000; color: #ffffff; border: 1.5px solid #ffffff; font-size: 10px; font-weight: 800; font-family: var(--font-kp-body), sans-serif; }
-.lv-sub-ava { flex: none; }
