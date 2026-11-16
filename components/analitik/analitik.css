@@ -1,0 +1,557 @@
+/* ===== analitik-tabs.css ===== */
+/* Sub-tab di dalam Statistik → Analitik */
+.an-tabs { display: flex; gap: 8px; margin: 0 0 14px; overflow-x: auto; padding-bottom: 2px; }
+.an-tab { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #333; background: #0d0d0d; color: #ccc; padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.an-tab span { background: #262626; color: var(--juve-yellow, #ffc72c); font-family: var(--display); font-weight: 400; font-size: 13px; padding: 1px 7px; border-radius: 3px; }
+.an-tab:hover { border-color: #555; color: #fff; }
+.an-tab.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
+.an-tab.on span { background: #000; color: var(--juve-yellow, #ffc72c); }
+
+/* ===== bolamati.css ===== */
+/* Statistik → Analitik → 05 Bola mati (tema hitam Juventus, aksen kuning) */
+.bm { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.bm-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.bm-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.bm-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.bm-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.bm-pills { display: flex; gap: 8px; padding: 14px 20px 0; overflow-x: auto; }
+.bm-pill { border: 1px solid #333; background: transparent; color: #ccc; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.bm-pill.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
+.bm-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+
+.bm-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 14px; }
+.bm-card { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 104px; }
+.bm-card small { color: var(--juve-yellow, #ffc72c); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.bm-card b { font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.05; white-space: nowrap; }
+.bm-card span { color: #a8a8b8; font-size: 12.5px; }
+.bm-card.hero { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); }
+.bm-card.hero small, .bm-card.hero b, .bm-card.hero span { color: #000; }
+
+.bm-block { padding: 8px 20px 0; }
+.bm h3 { margin: 6px 0 10px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+.bm-stack { display: flex; gap: 2px; height: 34px; border-radius: 17px; overflow: hidden; }
+.bm-stack div { display: grid; place-items: center; min-width: 0; font-size: 12.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 1px #0006; }
+.bm-stack .k-open, .bm-stack .k-penalty { color: #1a1a1a; text-shadow: none; }
+.bm-none { color: #8d8da0; font-size: 13px; padding: 8px 0; }
+
+.bm-legend { list-style: none; margin: 16px 20px 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12px; color: #a8a8b8; }
+.bm-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.bm-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.bm-note { margin: 16px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1000px) {
+  .bm-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bm-head small { display: none; }
+}
+
+/* ===== kreator.css ===== */
+/* Statistik → Analitik → 01 Peluang diciptakan (tema hitam Juventus, aksen kuning) */
+.kr { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.kr-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.kr-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.kr-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.kr-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.kr-pills { display: flex; gap: 8px; padding: 14px 20px 0; overflow-x: auto; }
+.kr-pill { border: 1px solid #333; background: transparent; color: #ccc; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; }
+.kr-pill.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
+.kr-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+.kr-empty.small { padding: 18px 0; text-align: left; }
+
+.kr-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 18px 20px; }
+.kr-card { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 104px; }
+.kr-card small { color: var(--juve-yellow, #ffc72c); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.kr-card b { font-family: var(--display); font-weight: 400; font-size: 38px; line-height: 1.05; }
+.kr-card span { color: #a8a8b8; font-size: 12.5px; }
+.kr-card.hero { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); }
+.kr-card.hero small, .kr-card.hero b, .kr-card.hero span { color: #000; }
+
+.kr-grid { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; padding: 4px 20px 8px; }
+.kr h3 { margin: 6px 0 12px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+.kr-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.kr-row { display: grid; grid-template-columns: 22px 40px minmax(0, 1fr) auto; align-items: center; gap: 12px; background: #141414; border: 1px solid #262626; border-radius: 10px; padding: 10px 14px; }
+.kr-rank { color: var(--juve-yellow, #ffc72c); font-family: var(--display); font-size: 18px; text-align: center; }
+.kr-mid { display: grid; gap: 6px; min-width: 0; }
+.kr-mid b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kr-mid small { color: #8d8da0; font-size: 11.5px; }
+.kr-bar { height: 8px; border-radius: 4px; background: #2a2a2a; overflow: hidden; }
+.kr-bar i { display: block; height: 100%; background: var(--juve-yellow, #ffc72c); border-radius: 4px; }
+.kr-nums { text-align: right; font-size: 13px; display: grid; gap: 2px; white-space: nowrap; }
+.kr-nums b { font-size: 17px; }
+.kr-nums span { color: #d8d8e4; }
+.kr-nums em { font-style: normal; color: #8d8da0; font-size: 11px; }
+
+.kr-donutwrap { display: grid; gap: 16px; justify-items: center; }
+.kr-donut { width: 170px; height: 170px; border-radius: 50%; display: grid; place-items: center; }
+.kr-donut > div { width: 112px; height: 112px; border-radius: 50%; background: var(--navy-bg, #000); display: grid; place-content: center; text-align: center; }
+.kr-donut b { font-family: var(--display); font-weight: 400; font-size: 32px; line-height: 1; }
+.kr-donut span { font-size: 11.5px; color: #a8a8b8; }
+.kr-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; width: 100%; font-size: 13.5px; }
+.kr-legend li { display: flex; align-items: center; gap: 10px; }
+.kr-legend i { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.kr-legend b { margin-left: auto; }
+.kr-note { margin: 14px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 900px) {
+  .kr-cards { grid-template-columns: repeat(2, 1fr); }
+  .kr-grid { grid-template-columns: 1fr; }
+  .kr-head small { display: none; }
+}
+@media (max-width: 520px) {
+  .kr-row { grid-template-columns: 18px 36px minmax(0, 1fr); }
+  .kr-nums { grid-column: 3; text-align: left; display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; }
+}
+
+/* ===== musim.css ===== */
+/* Statistik → Analitik → 10 Musim ini vs musim lalu (tema hitam Juventus, aksen kuning) */
+.ms { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.ms-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.ms-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.ms-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.ms-numtag { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.ms-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+.ms-summary { margin: 0; padding: 18px 20px 4px; font-size: 16px; }
+.good { color: #3ecf7c; }
+.bad { color: #ff6b81; }
+
+.ms-cols { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; padding: 14px 20px 4px; align-items: start; }
+.ms-table { display: grid; }
+.ms-r { display: grid; grid-template-columns: 96px minmax(60px, 1fr) 34px minmax(60px, 1fr) 34px 44px; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px dashed #2c2c2c; }
+.ms-r:last-child { border-bottom: 0; }
+.ms-th { border-bottom: 0; padding-bottom: 4px; font-size: 10.5px; letter-spacing: .1em; color: var(--juve-yellow, #ffc72c); font-weight: 700; }
+.ms-th span:nth-child(2), .ms-th span:nth-child(4) { grid-column: span 2; }
+.ms-th span:nth-child(3), .ms-th span:nth-child(5) { display: none; }
+.ms-lab { font-size: 13.5px; font-weight: 600; }
+.ms-bar { height: 10px; border-radius: 999px; background: #242424; overflow: hidden; }
+.ms-bar i { display: block; height: 100%; border-radius: 999px; }
+.ms-bar.now i { background: linear-gradient(90deg, #e0a800, var(--juve-yellow, #ffc72c)); }
+.ms-bar.prev i { background: #9aa0b4; }
+.ms-v { text-align: right; font-size: 14px; }
+.ms-d { text-align: right; font-size: 14px; }
+.ms-d.good { color: #3ecf7c; }
+.ms-d.bad { color: #ff6b81; }
+.ms-d.eq { color: #a8a8b8; }
+
+.ms-svg { width: 100%; height: auto; display: block; }
+.ms-grid { stroke: #2c2c2c; stroke-dasharray: 3 4; }
+.ms-axis { font-size: 11px; fill: #8d8da0; }
+.ms-line { fill: none; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.ms-line.now { stroke: var(--juve-yellow, #ffc72c); }
+.ms-line.prev { stroke: #9aa0b4; }
+.ms-dot { fill: var(--juve-yellow, #ffc72c); stroke: #000; stroke-width: 1; }
+.ms-legend { margin: 4px 0 0; color: #a8a8b8; font-size: 12px; line-height: 1.6; }
+.ms-legend i { display: inline-block; width: 18px; height: 4px; border-radius: 2px; margin: 0 6px 2px 10px; vertical-align: middle; }
+.ms-legend i:first-child { margin-left: 0; }
+.ms-legend i.now { background: var(--juve-yellow, #ffc72c); }
+.ms-legend i.prev { background: #9aa0b4; }
+.ms-note { margin: 10px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1000px) { .ms-cols { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .ms-r { grid-template-columns: 78px minmax(40px, 1fr) 28px minmax(40px, 1fr) 28px 38px; gap: 8px; } .ms-head small { display: none; } }
+
+/* ===== padat.css ===== */
+/* Statistik → Analitik → 09 Jadwal padat (tema hitam Juventus, aksen kuning) */
+.pd { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.pd-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.pd-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.pd-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.pd-numtag { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.pd-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+.pd-empty.small { padding: 24px 0; font-size: 13px; }
+
+.pd-cols { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 28px; padding: 20px; align-items: start; }
+.pd-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.pd-card { background: #141414; border: 1px solid #262626; border-radius: 10px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-width: 0; }
+.pd-card strong { font-size: 14px; }
+.pd-card small { color: #a8a8b8; font-size: 12px; }
+.pd-row { display: flex; align-items: baseline; gap: 8px; margin-top: 8px; }
+.pd-row b { font-family: var(--display); font-weight: 400; font-size: 30px; line-height: 1.05; }
+.pd-row span { color: #a8a8b8; font-size: 12px; }
+.pd-row.pos .pd-xg { color: #3ecf7c; }
+.pd-row.neg .pd-xg { color: #ff6b81; }
+
+.pd-chart h3 { margin: 0 0 8px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+.pd-svg { width: 100%; height: auto; display: block; }
+.pd-zero { stroke: #6b6b7e; stroke-dasharray: 4 5; }
+.pd-axis { font-size: 11px; fill: #8d8da0; }
+.pd-legend { margin: 6px 0 0; color: #a8a8b8; font-size: 12px; line-height: 1.6; }
+.pd-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin: 0 4px 0 8px; vertical-align: -1px; }
+.pd-legend i:first-child { margin-left: 0; }
+.pd-note { margin: 4px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1000px) { .pd-cols { grid-template-columns: 1fr; } }
+@media (max-width: 640px) { .pd-cards { grid-template-columns: 1fr 1fr; } .pd-head small { display: none; } }
+
+/* ===== pengganti.css ===== */
+/* Statistik → Analitik → 04 Pemain pengganti (tema hitam Juventus, aksen kuning) */
+.pg { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.pg-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.pg-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.pg-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.pg-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.pg-pills { display: flex; gap: 8px; padding: 14px 20px 0; overflow-x: auto; }
+.pg-pill { border: 1px solid #333; background: transparent; color: #ccc; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.pg-pill.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
+.pg-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+
+.pg-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 14px; }
+.pg-card { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 104px; }
+.pg-card small { color: var(--juve-yellow, #ffc72c); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.pg-card b { font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.05; }
+.pg-card span { color: #a8a8b8; font-size: 12.5px; }
+.pg-card.hero { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); }
+.pg-card.hero small, .pg-card.hero b, .pg-card.hero span { color: #000; }
+
+.pg-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 36px; padding: 18px 20px 4px; }
+.pg h3 { margin: 0 0 12px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+
+.pg-chart { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 6px; }
+.pg-col { display: grid; gap: 8px; }
+.pg-barwrap { height: 140px; display: flex; align-items: flex-end; }
+.pg-barwrap i { display: block; width: 100%; border-radius: 4px 4px 0 0; background: linear-gradient(#ffd75e, var(--juve-yellow, #ffc72c) 60%, #e0a800); }
+.pg-barwrap i.zero { background: #3a3a3a; }
+.pg-col code { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: #a8a8b8; text-align: center; }
+
+.pg-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pg-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 12px; background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 10px 14px; }
+.pg-list b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pg-icons { display: inline-flex; align-items: center; gap: 5px; }
+.pg-icons em { font-style: normal; color: #8d8da0; font-size: 13px; }
+.pg-ball { width: 13px; height: 13px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #cfd6ea 70%); border: 2px solid #4f7cff; box-sizing: border-box; display: inline-block; }
+.pg-a { font-style: normal; font-size: 10.5px; font-weight: 800; line-height: 1; background: #ff4d8d; color: #fff; border-radius: 4px; padding: 3px 5px; }
+.pg-apps { color: #a8a8b8; font-size: 12px; min-width: 62px; text-align: right; white-space: nowrap; }
+.pg-note { margin: 16px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1000px) {
+  .pg-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pg-cols { grid-template-columns: 1fr; gap: 24px; }
+  .pg-head small { display: none; }
+}
+
+/* ===== penguasaan.css ===== */
+/* Statistik → Analitik → 06 Penguasaan bola (tema hitam Juventus, aksen kuning; biru = di bawah 50%) */
+.pb { --pb-up: var(--juve-yellow, #ffc72c); --pb-down: #4f7cff; --pb-w: #1f9d55; --pb-d: #8c90a4; --pb-l: #d63447; background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.pb-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.pb-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.pb-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.pb-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.pb-pills { display: flex; gap: 8px; padding: 14px 20px 0; overflow-x: auto; }
+.pb-pill { border: 1px solid #333; background: transparent; color: #ccc; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.pb-pill.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
+.pb-empty, .pb-none { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+
+.pb-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 6px; }
+.pb-card { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 104px; }
+.pb-card small { color: var(--juve-yellow, #ffc72c); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.pb-card b { font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.05; white-space: nowrap; }
+.pb-card b em { font-style: normal; font-family: inherit; font-size: 16px; color: #d8d8e4; }
+.pb-card span { color: #a8a8b8; font-size: 12.5px; }
+.pb-card.hero { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); }
+.pb-card.hero small, .pb-card.hero b, .pb-card.hero span { color: #000; }
+.pb-h { margin: 18px 20px 12px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+
+/* grafik per laga */
+.pb-chart { padding: 0 20px; }
+.pb-plot { display: grid; grid-template-columns: 44px minmax(0, 1fr); height: 250px; }
+.pb-axis { position: relative; }
+.pb-axis span { position: absolute; right: 8px; transform: translateY(-50%); font-size: 12px; color: #a8a8b8; font-weight: 600; }
+.pb-area { position: relative; }
+.pb-grid { position: absolute; left: 0; right: 0; border-top: 1px dashed #2f2f3a; }
+.pb-grid.base { border-top: 2px solid #8c90a4aa; z-index: 1; }
+.pb-cols { position: absolute; inset: 0; display: grid; gap: 0; }
+.pb-col { position: relative; }
+.pb-col b { position: absolute; left: 14%; right: 14%; border-radius: 4px; }
+.pb-col b.up { background: var(--pb-up); }
+.pb-col b.down { background: var(--pb-down); }
+.pb-col:hover b { filter: brightness(1.15); }
+.pb-line { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.pb-line polyline { stroke: #fff; stroke-width: 2.2; stroke-linejoin: round; opacity: .9; }
+.pb-dot { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: #fff; border: 2px solid #000; box-sizing: border-box; pointer-events: none; text-decoration: none; }
+.pb-res { display: grid; margin-top: 16px; }
+.pb-res div { display: grid; justify-items: center; gap: 4px; }
+.pb-res i { width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 11px; font-weight: 800; color: #fff; }
+.pb-res i.M { background: var(--pb-w); }
+.pb-res i.S { background: var(--pb-d); }
+.pb-res i.K { background: var(--pb-l); }
+.pb-res small { font-size: 11.5px; color: #a8a8b8; font-weight: 700; letter-spacing: .02em; }
+.pb-key { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: #a8a8b8; }
+.pb-key li { display: inline-flex; align-items: center; gap: 6px; }
+.pb-key i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.pb-key i.up { background: var(--pb-up); }
+.pb-key i.down { background: var(--pb-down); }
+
+/* hasil menurut penguasaan + sebar */
+.pb-cols2 { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 28px; padding-top: 4px; }
+.pb-cols2 .pb-h { margin-left: 20px; }
+.pb-cols2 > div:first-child { padding-left: 0; }
+.pb-buckets { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; padding: 0 0 0 20px; }
+.pb-bucket { background: #141414; border: 1px solid #262626; border-radius: 12px; padding: 14px 16px 12px; display: grid; gap: 2px; }
+.pb-bucket h4 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 14px; }
+.pb-bucket > small { color: #a8a8b8; font-size: 11.5px; }
+.pb-gauge { position: relative; margin: 6px 4px 0; }
+.pb-gauge svg { display: block; width: 100%; height: auto; }
+.pb-gauge path { fill: none; stroke-width: 16; stroke-linecap: round; }
+.pb-gauge .track { stroke: #2a2f3d; }
+.pb-gauge .fill { stroke: var(--juve-yellow, #ffc72c); }
+.pb-gauge > div { position: absolute; left: 0; right: 0; bottom: 4px; display: grid; justify-items: center; }
+.pb-gauge b { font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1; }
+.pb-gauge span { font-size: 11px; color: #a8a8b8; margin-top: 18px; }
+.pb-bucket dl { display: grid; grid-template-columns: auto auto; gap: 4px 8px; margin: 8px 0 0; font-size: 12px; }
+.pb-bucket dt { color: #a8a8b8; }
+.pb-bucket dd { margin: 0; text-align: right; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.pb-scatter { display: block; width: calc(100% - 20px); height: auto; margin-right: 20px; }
+.pb-scatter .ax { stroke: #ffffff55; stroke-dasharray: 4 4; }
+.pb-scatter .lb { fill: #a8a8b8; font-size: 11px; font-weight: 700; }
+.pb-scatter .tr { stroke: var(--juve-yellow, #ffc72c); stroke-width: 2.4; stroke-linecap: round; }
+.pb-scatter .pt { stroke: #fff; stroke-width: 1.8; }
+.pb-scatter .pt.M { fill: var(--pb-w); }
+.pb-scatter .pt.S { fill: var(--pb-d); }
+.pb-scatter .pt.K { fill: var(--pb-l); }
+.pb-trend { margin: 6px 20px 0 0; color: #a8a8b8; font-size: 12.5px; line-height: 1.5; }
+.pb-note { margin: 16px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1000px) {
+  .pb-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pb-cols2 { grid-template-columns: 1fr; }
+  .pb-trend { margin-left: 20px; }
+  .pb-scatter { margin-left: 10px; }
+  .pb-head small { display: none; }
+}
+@media (max-width: 640px) {
+  .pb-res small { font-size: 9px; }
+  .pb-res i { width: 18px; height: 18px; font-size: 9px; }
+}
+
+/* ===== penyelesaian.css ===== */
+/* Statistik → Analitik → 02 Penyelesaian (tema hitam Juventus, aksen kuning) */
+.pe { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.pe-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.pe-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.pe-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.pe-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.pe-pills { display: flex; gap: 8px; padding: 14px 20px 0; overflow-x: auto; }
+.pe-pill { border: 1px solid #333; background: transparent; color: #ccc; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.pe-pill.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
+.pe-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+
+.pe-body { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, .8fr) minmax(0, 1.2fr); gap: 22px; padding: 18px 20px 4px; align-items: start; }
+
+.pe-select { display: inline-flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 6px 8px 6px 12px; border: 1px solid #333; border-radius: 10px; background: #141414; }
+.pe-select span { color: #a8a8b8; font-size: 12px; font-weight: 700; }
+.pe-select select { background: transparent; color: #fff; border: 0; font-size: 15px; font-weight: 700; padding: 4px 6px; outline: none; cursor: pointer; }
+.pe-select option { background: #141414; color: #fff; }
+
+.pe-pitch { display: block; width: 100%; height: auto; border-radius: 14px; border: 1px solid #262626; background: #0a0a0a; }
+.pe-lines polygon, .pe-lines path { stroke: #ffffffb3; stroke-width: 1.4; fill: none; }
+.pe-lines .pe-goal { stroke: #fff; fill: #ffffff22; }
+.pe-goalline { stroke: var(--juve-yellow, #ffc72c); stroke-width: 1.4; opacity: .85; }
+.pe-shot circle { stroke: #fff; stroke-width: 1.5; }
+.pe-shot.goal circle { fill: var(--juve-yellow, #ffc72c); stroke: #fff; }
+.pe-shot.saved circle { fill: #ff4757; }
+.pe-shot.miss circle { fill: #00000022; }
+.pe-shot.blocked circle { fill: #8c90a4; }
+.pe-shot.blocked path { stroke: #fff; stroke-width: 1.6; fill: none; stroke-linecap: round; }
+.pe-shot:hover circle { stroke-width: 2.6; }
+
+.pe-legend { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: #d8d8e4; }
+.pe-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.pe-legend i { width: 13px; height: 13px; border-radius: 50%; border: 2px solid #fff; display: inline-block; box-sizing: border-box; }
+.pe-legend i.goal { background: var(--juve-yellow, #ffc72c); }
+.pe-legend i.saved { background: #ff4757; }
+.pe-legend i.miss { background: transparent; }
+.pe-legend i.blocked { background: #8c90a4; }
+.pe-legend .sz { color: #a8a8b8; }
+.pe-legend .sz i { border-width: 1px; background: transparent; }
+.pe-legend .sz i.s1 { width: 6px; height: 6px; }
+.pe-legend .sz i.s2 { width: 10px; height: 10px; }
+.pe-legend .sz i.s3 { width: 15px; height: 15px; margin-right: 4px; }
+
+.pe-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pe-stat { background: #141414; border: 1px solid #262626; border-radius: 10px; padding: 12px 14px; display: grid; gap: 2px; min-height: 66px; align-content: center; }
+.pe-stat b { font-family: var(--display); font-weight: 400; font-size: 26px; line-height: 1.05; }
+.pe-stat span { color: #a8a8b8; font-size: 12px; }
+.pe .pos { color: #2fbf71; }
+.pe .neg { color: #ff4d5e; }
+
+.pe-diff h3 { margin: 0 0 10px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+.pe-diff ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.pe-drow { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr) 52px; align-items: center; gap: 10px; padding: 8px 10px; border: 0; border-radius: 8px; background: transparent; color: #fff; text-align: left; cursor: pointer; }
+.pe-drow:hover, .pe-drow.on { background: #1a1a1a; }
+.pe-drow.on { box-shadow: inset 2px 0 0 var(--juve-yellow, #ffc72c); }
+.pe-dwho { display: grid; gap: 2px; min-width: 0; }
+.pe-dwho b { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pe-dwho small { color: #8d8da0; font-size: 11px; }
+.pe-track { position: relative; height: 10px; }
+.pe-track i { position: absolute; top: 0; height: 100%; border-radius: 3px; }
+.pe-track i.pos { background: #2fbf71; }
+.pe-track i.neg { background: #ff4d5e; }
+.pe-track em { position: absolute; top: -4px; bottom: -4px; width: 1px; background: #ffffffaa; }
+.pe-dval { text-align: right; font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+.pe-legend-note { margin: 10px 4px 0; color: #8d8da0; font-size: 11.5px; line-height: 1.5; }
+.pe-note { margin: 14px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1100px) {
+  .pe-body { grid-template-columns: minmax(0, 1.2fr) minmax(0, .8fr); }
+  .pe-diff { grid-column: 1 / -1; }
+}
+@media (max-width: 700px) {
+  .pe-body { grid-template-columns: 1fr; }
+  .pe-head small { display: none; }
+}
+
+/* ===== rekor.css ===== */
+/* Statistik → Analitik → 08 Rekor beruntun (tema hitam Juventus, aksen kuning) */
+.rk { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.rk-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.rk-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.rk-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.rk-numtag { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.rk-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+
+.rk-form { display: flex; flex-wrap: wrap; gap: 6px; padding: 18px 20px 0; }
+.rk-chip { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 5px; font-size: 12px; font-weight: 800; color: #fff; cursor: default; }
+.rk-chip.M { background: #1f9d55; }
+.rk-chip.S { background: #7d8199; }
+.rk-chip.K { background: #d81e3a; }
+.rk-cap { margin: 8px 20px 0; color: #8d8da0; font-size: 12.5px; }
+
+.rk-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 0; }
+.rk-card { display: flex; align-items: center; gap: 16px; background: #141414; border: 1px solid #262626; border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.rk-num { font-family: var(--display); font-weight: 400; font-size: 48px; line-height: 1; color: var(--juve-yellow, #ffc72c); min-width: 34px; text-align: center; }
+.rk-body { display: grid; gap: 4px; min-width: 0; flex: 1; }
+.rk-body strong { font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rk-body span { color: #a8a8b8; font-size: 12px; }
+.rk-bar, .rk-tbar { height: 6px; border-radius: 999px; background: #2e2e2e; overflow: hidden; margin-top: 4px; }
+.rk-bar i { display: block; height: 100%; border-radius: 999px; background: var(--juve-yellow, #ffc72c); min-width: 0; }
+
+.rk-target { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 8px 16px; margin: 14px 20px 0; padding: 14px 18px; background: #141414; border: 1px solid #262626; border-radius: 10px; }
+.rk-tlabel { font-size: 14px; white-space: nowrap; }
+.rk-tbar { height: 12px; margin: 0; }
+.rk-tbar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #b88a2b, #e8c65a); }
+.rk-tcount { font-size: 14px; white-space: nowrap; }
+.rk-tsub { grid-column: 1 / -1; color: #a8a8b8; font-size: 12.5px; }
+.rk-note { margin: 14px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1100px) { .rk-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .rk-cards { grid-template-columns: 1fr; }
+  .rk-target { grid-template-columns: 1fr; }
+  .rk-head small { display: none; }
+}
+
+/* ===== situasiskor.css ===== */
+/* Statistik → Analitik → 03 Situasi skor (tema hitam Juventus, aksen kuning; biru = tertinggal/kebobolan) */
+.ss { --ss-lead: var(--juve-yellow, #ffc72c); --ss-level: #7c8097; --ss-trail: #4f7cff; background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.ss-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.ss-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.ss-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.ss-num { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.ss-pills { display: flex; gap: 8px; padding: 14px 20px 0; overflow-x: auto; }
+.ss-pill { border: 1px solid #333; background: transparent; color: #ccc; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; }
+.ss-pill.on { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); color: #000; }
+.ss-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+
+.ss-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 14px; }
+.ss-card { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 104px; }
+.ss-card small { color: var(--juve-yellow, #ffc72c); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.ss-card b { font-family: var(--display); font-weight: 400; font-size: 40px; line-height: 1.05; white-space: nowrap; }
+.ss-card span { color: #a8a8b8; font-size: 12.5px; }
+.ss-card.hero { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); }
+.ss-card.hero small, .ss-card.hero b, .ss-card.hero span { color: #000; }
+
+.ss-stack { display: flex; height: 26px; margin: 0 20px; border-radius: 13px; overflow: hidden; background: #1a1a1a; }
+.ss-stack i { display: block; height: 100%; }
+.ss-stack .lead, .ss-key .lead { background: var(--ss-lead); }
+.ss-stack .level, .ss-key .level { background: var(--ss-level); }
+.ss-stack .trail, .ss-key .trail { background: var(--ss-trail); }
+.ss-key { list-style: none; margin: 8px 20px 0; padding: 0; display: flex; gap: 16px; font-size: 12px; color: #a8a8b8; }
+.ss-key li { display: inline-flex; align-items: center; gap: 6px; }
+.ss-key i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.ss-cols .ss-key { margin: 12px 0 0; }
+
+.ss-cols { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 36px; padding: 20px 20px 4px; }
+.ss h3 { margin: 0 0 12px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+
+.ss-bins { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.ss-bins li { display: grid; grid-template-columns: 16px minmax(0, 1fr) 62px minmax(0, 1fr) 16px; align-items: center; gap: 8px; }
+.ss-bins .n { font-size: 12px; font-weight: 700; color: #d8d8e4; }
+.ss-bins .n.c { text-align: right; }
+.ss-bins .l, .ss-bins .r { height: 16px; display: flex; }
+.ss-bins .l { justify-content: flex-end; }
+.ss-bins .l i, .ss-bins .r i { display: block; height: 100%; min-width: 0; border-radius: 4px; }
+.ss-bins .l i { background: var(--ss-lead); }
+.ss-bins .r i { background: var(--ss-trail); }
+.ss-bins code { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: #a8a8b8; text-align: center; }
+
+.ss-matches { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.ss-m { display: grid; grid-template-columns: minmax(110px, 190px) minmax(0, 1fr) 52px; align-items: center; gap: 12px; }
+.ss-mn { font-size: 12.5px; color: #e4e4ee; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ss-flow { position: relative; height: 14px; border-radius: 7px; background: var(--ss-level); }
+.ss-flow i { position: absolute; top: 0; height: 100%; }
+.ss-flow i.lead { background: var(--ss-lead); }
+.ss-flow i.level { background: var(--ss-level); }
+.ss-flow i.trail { background: var(--ss-trail); }
+.ss-flow i:first-child { border-radius: 7px 0 0 7px; }
+.ss-flow i:last-of-type { border-radius: 0 7px 7px 0; }
+.ss-flow i:only-of-type { border-radius: 7px; }
+.ss-ball { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #fff; border: 2px solid #000; box-sizing: border-box; box-shadow: 0 0 0 1px #ffffff55; }
+.ss-ball.opp { background: #dbe4ff; }
+.ss-score { text-align: center; font-weight: 800; font-size: 13px; padding: 4px 0; border-radius: 6px; color: #fff; font-variant-numeric: tabular-nums; }
+.ss-score.M { background: #1f9d55; }
+.ss-score.S { background: #6b6f85; }
+.ss-score.K { background: #d63447; }
+.ss-note { margin: 16px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1000px) {
+  .ss-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ss-cols { grid-template-columns: 1fr; gap: 24px; }
+  .ss-head small { display: none; }
+}
+@media (max-width: 520px) {
+  .ss-m { grid-template-columns: minmax(0, 1fr) 48px; }
+  .ss-flow { grid-column: 1 / -1; grid-row: 2; }
+}
+
+/* ===== skuad.css ===== */
+/* Statistik → Analitik → 11 Profil skuad (tema hitam Juventus, aksen kuning) */
+.sk { background: var(--navy-bg, #000); color: #fff; border: 1px solid var(--border-line, #262626); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.sk-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--border-line, #262626); }
+.sk-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .5px; }
+.sk-head small { margin-left: auto; color: #a8a8b8; font-size: 13px; }
+.sk-numtag { background: var(--juve-yellow, #ffc72c); color: #000; font-family: var(--display); padding: 4px 12px; font-size: 18px; border-radius: 3px; }
+.sk-empty { padding: 36px 20px; text-align: center; color: #a8a8b8; }
+.sk-empty.small { padding: 24px 0; font-size: 13px; text-align: left; }
+
+.sk-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; padding: 18px 20px 6px; }
+.sk-card { background: #141414; border: 1px solid #262626; border-radius: 8px; padding: 14px 16px; display: grid; gap: 4px; align-content: start; min-height: 110px; }
+.sk-card small { color: var(--juve-yellow, #ffc72c); font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.sk-card b { font-family: var(--display); font-weight: 400; font-size: 44px; line-height: 1.05; }
+.sk-card span { color: #a8a8b8; font-size: 12.5px; }
+.sk-card.hero { background: var(--juve-yellow, #ffc72c); border-color: var(--juve-yellow, #ffc72c); }
+.sk-card.hero small, .sk-card.hero b, .sk-card.hero span { color: #000; }
+
+.sk-cols { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; padding: 18px 20px 4px; align-items: start; }
+.sk h3 { margin: 0 0 14px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+
+.sk-donut { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.sk-donut svg { width: 150px; height: 150px; flex: none; }
+.sk-dc { font-family: var(--display); font-size: 26px; fill: #fff; }
+.sk-ds { font-size: 8.5px; fill: #a8a8b8; }
+.sk-legend { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; flex: 1; min-width: 130px; }
+.sk-legend li { display: grid; grid-template-columns: 12px 1fr auto; align-items: center; gap: 8px; font-size: 13px; }
+.sk-legend i { width: 10px; height: 10px; border-radius: 3px; }
+.sk-legend b { text-align: right; }
+
+.sk-countries { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.sk-countries li { display: grid; grid-template-columns: minmax(96px, 120px) minmax(0, 1fr) 40px; align-items: center; gap: 12px; font-size: 13px; }
+.sk-cn { display: flex; align-items: center; gap: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sk-cn img { border-radius: 2px; flex: none; }
+.sk-noflag { width: 20px; height: 14px; border-radius: 2px; background: #333; flex: none; }
+.sk-cbar { height: 8px; border-radius: 999px; background: #242424; overflow: hidden; }
+.sk-cbar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #e0a800, var(--juve-yellow, #ffc72c)); }
+.sk-countries b { text-align: right; }
+.sk-countries li.sk-more { display: block; color: #8d8da0; font-size: 12px; }
+.sk-note { margin: 18px 20px 6px; color: #8d8da0; font-size: 12px; line-height: 1.55; }
+
+@media (max-width: 1100px) { .sk-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } .sk-cols { grid-template-columns: 1fr; gap: 26px; } }
+@media (max-width: 560px) { .sk-cards { grid-template-columns: 1fr; } .sk-head small { display: none; } }

@@ -2,6 +2,22 @@
 
 Dashboard Juventus: skor live, klasemen, jadwal, skuad, dan statistik. UI berbahasa Indonesia, waktu dalam WIB.
 
+## Struktur folder
+
+```
+app/                    Halaman & API (Next.js App Router) — tiap fitur punya folder sendiri
+  api/<fitur>/route.ts  Satu route per sumber data; logika ada di lib/
+components/             Komponen React, dikelompokkan per fitur (CSS ikut satu folder dengan komponennya)
+  shared/               Dipakai banyak halaman: kp.tsx, Face, team, RatingModal
+  layout/               Header, TimTabs, StatTabs
+  beranda/  pemain/  kompetisi/  analitik/  analisa/  bedah-taktik/  pusat-laga/  klub/  statistik/
+lib/                    Logika & akses data, dikelompokkan seperti components/
+  core/                 Dasar yang dipakai semua: espn, fotmob, juve, live, squad, types, names, countries, wib, pitch, ratings
+  berita/  pemain/  tim/  kompetisi/  analitik/  analisa/  bedah-taktik/  pusat-laga/
+```
+
+Aturan penamaan: `x.ts` = logika murni (aman dipakai di browser), `x-server.ts` = pengambilan data (hanya server). Impor memakai alias `@/` dari root.
+
 ## Menjalankan
 
 ```bash
@@ -40,7 +56,7 @@ lib/                  espn.ts, juve.ts, live.ts, squad.ts, wiki.ts, clubs.ts, ty
 - **Transfermarkt JSON API** (tidak resmi): skuad, nilai pasar, kontrak, usia. Cadangan: **FotMob**.
 
 - **FotMob playerData** (tidak resmi): tanggal lahir, riwayat klub, caps timnas, rating 10 laga terakhir, status cedera (popup pemain).
-- **Wikipedia, Wikidata, Wikimedia Commons** (API resmi, gratis, tanpa kunci): halaman Klub. Teks CC BY-SA 4.0, wajib atribusi. Opsional: isi env `WIKI_CONTACT` dengan URL repo atau email supaya User-Agent sesuai kebijakan Wikimedia. Klub baru = tambah satu entri di `lib/clubs.ts`.
+- **Wikipedia, Wikidata, Wikimedia Commons** (API resmi, gratis, tanpa kunci): halaman Klub. Teks CC BY-SA 4.0, wajib atribusi. Opsional: isi env `WIKI_CONTACT` dengan URL repo atau email supaya User-Agent sesuai kebijakan Wikimedia. Klub baru = tambah satu entri di `lib/tim/clubs.ts`.
 
 Semua sumber lain tidak resmi; format dan aksesnya bisa berubah atau diblokir sewaktu-waktu. Bila sumber tidak punya suatu nilai, tampilannya `–`, tidak diisi angka karangan.
 
@@ -55,7 +71,7 @@ Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil pe
 - **Skuad** (`/skuad`): dua baris kartu ringkasan (usia, cedera, gaji, nilai pasar), urutan "Gaji tertinggi", gaji per pekan di tiap kartu.
 - **Kontrak** (`/kontrak`): tabel gaji, bonus, sisa kontrak, nilai pasar; klik pemain membuka popup profil.
 - **Cedera** (`/cedera`): kartu pemain cedera dari status FotMob (`/api/cedera`), berita terkait sebagai tautan.
-- **Lineup**: `lib/pitch.ts` menyusun baris dan urutan kiri-kanan dari kode posisi ESPN; dipakai tab Skor live dan popup rating.
+- **Lineup**: `lib/core/pitch.ts` menyusun baris dan urutan kiri-kanan dari kode posisi ESPN; dipakai tab Skor live dan popup rating.
 - **Gaji**: tabel Supabase `player_salaries` lewat `/api/gaji`. Env: `SUPABASE_URL`+`SUPABASE_KEY` atau `NEXT_PUBLIC_SUPABASE_URL`+`NEXT_PUBLIC_SUPABASE_ANON_KEY`. Respons kosong menyertakan `reason`.
 
 ## Halaman Women
@@ -76,26 +92,20 @@ Klik pemain di tab Skuad. Statistik (starter liga, gol, assist, kartu, profil pe
 - **Pemain pinjaman** = transfer pinjaman keluar dari tim utama sejak 1 Juni musim berjalan (`transfers` di data FotMob tim utama); statistiknya dari 5 laga terakhir di klub peminjam.
 - **Naik ke tim utama** = pemain skuad Next Gen yang namanya cocok ketat dengan pemain yang tercatat bermain di statistik ESPN tim utama.
 - Juventus Youth (U20/Primavera) tidak ditampilkan: FotMob tidak memuat laga Primavera 1 Juventus musim ini.
-- **Performa pemain Next Gen** (`/api/akademi/performa`) menjumlahkan semua laga selesai musim ini dari `matchDetails` FotMob: laga, starter, menit (dari data pergantian), gol, assist, kartu, dan rata-rata rating. Kekosongan data dijelaskan di `warnings` dan `coverage` (jumlah laga yang punya lineup/kejadian/rating). Panel "Siap naik ke tim utama?" memakai indeks buatan Matchday Hub (rumus di `lib/akademi-index.ts`), bukan penilaian klub.
+- **Performa pemain Next Gen** (`/api/akademi/performa`) menjumlahkan semua laga selesai musim ini dari `matchDetails` FotMob: laga, starter, menit (dari data pergantian), gol, assist, kartu, dan rata-rata rating. Kekosongan data dijelaskan di `warnings` dan `coverage` (jumlah laga yang punya lineup/kejadian/rating). Panel "Siap naik ke tim utama?" memakai indeks buatan Matchday Hub (rumus di `lib/tim/akademi-index.ts`), bukan penilaian klub.
 - Pencetak gol per pertandingan tidak tersedia di data FotMob, jadi baris hasil tidak menampilkannya.
 - `sources` pada respons API menunjukkan jumlah data per sumber; `warnings` menjelaskan bila ada yang kosong.
-
-## Statistik → Analisa (struktur kode)
-
-Semua sub-tab Analisa ada di tiga folder, dan ketujuhnya terisi:
-
-- `components/analisa/` — `index.tsx` (daftar tab), satu komponen per tab (`Lawan`, `Jadwal`, `Pola`, `Pemain`, `Kiper`, `Penonton`, `Peringkat`), `ui.tsx` (Card, Tile, Logo, `useTab` untuk pesan memuat/gagal), dan satu stylesheet `analisa.css`.
-- `lib/analisa/` — `X.ts` = tipe + logika murni, `X-server.ts` = pengambilan data luar. Bersama: `util.ts` (format angka, `pointsOf`, `minuteOf`) dan `http.ts` (`getJson` + User-Agent).
-- `app/api/analisa/[tab]/route.ts` — satu route untuk semua tab (`/api/analisa/{lawan|jadwal|pola|pemain|kiper|penonton|peringkat}`); tab baru = satu baris di `ENDPOINTS`.
-
-Tab Kiper hanya menghitung kiper (label posisi G/GK, skuad FotMob, atau statistik khas kiper); "kebobolan" saja tidak cukup untuk dianggap kiper.
 
 ## Statistik → Analisa → Kesulitan jadwal
 
 `/statistik/analisa` tab "Kesulitan jadwal": 6 laga Serie A berikutnya Juventus dibandingkan dengan satu rival (bawaan: tim tepat di atas di klasemen), lewat `/api/analisa/jadwal`. Tiap laga diberi xPts (3 × peluang menang + peluang seri) dari model Poisson yang sama dengan "Lawan berikutnya" dan "Peluang juara" (`teamStrengths` + `outcomeProbs`, kekuatan dari gol musim ini ditarik ke rata-rata liga). Batas: Mudah ≥ 2,1 · Sedang 1,5–2,1 · Berat < 1,5. Laga Eropa/piala Juventus di sela jadwal hanya disebut, tidak dihitung. Logika murni ada di `lib/analisa/jadwal.ts`; helper aman-browser di `lib/analisa/jadwal-ui.ts`.
 
+## Bedah Taktik → Formasi & XI
+
+`/statistik/bedah-taktik` bagian "Formasi & XI" (`/api/statistik/formasi`): formasi awal tiap laga resmi yang sudah selesai (lineup ESPN) dan XI yang paling sering main. Posisi pemain di lapangan memakai `layoutLines` (`lib/core/pitch.ts`), sama dengan Skor live. XI diisi per slot formasi utama dengan pemain yang paling sering menempati slot itu; angka = jumlah laga sebagai starter. Logika murni: `lib/bedah-taktik/formasi.ts`.
+
 ## Catatan
 
 - Halaman `/juventus` sudah dihapus; tautan lama diarahkan oleh `next.config.mjs`.
-- Hasil laga tetap tampil di Skor live selama 72 jam sejak kick-off (`RECENT_HOURS` di `lib/live.ts`).
+- Hasil laga tetap tampil di Skor live selama 72 jam sejak kick-off (`RECENT_HOURS` di `lib/core/live.ts`).
 - Jangan commit `.env.local`; salin `.env.example` bila diperlukan.

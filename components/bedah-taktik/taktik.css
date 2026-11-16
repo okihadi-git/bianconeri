@@ -1,0 +1,38 @@
+/* Statistik → Bedah Taktik */
+.bt-nav { display: flex; gap: 8px; padding: 12px; background: #fff; border: 1px solid var(--line, #e4e4e4); border-radius: 14px; overflow-x: auto; margin-bottom: 16px; }
+.bt-chip { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 0; border-radius: 999px; background: #eef0f5; color: #1c2430; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.bt-chip:hover { background: #e2e5ee; }
+.bt-chip.on { background: #111827; color: #fff; }
+.bt-card { background: #fff; border: 1px solid var(--line, #e4e4e4); border-radius: 14px; overflow: hidden; padding-bottom: 8px; }
+.bt-head { display: flex; align-items: center; gap: 14px; padding: 18px 20px; border-bottom: 1px solid var(--line, #e4e4e4); }
+.bt-head h2 { margin: 0; font-family: var(--display); font-weight: 400; font-size: 28px; }
+.bt-head small { margin-left: auto; color: var(--muted, #7a7a7a); font-size: 13px; }
+.bt-ico { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: #111; font-size: 18px; }
+.bt-empty { padding: 36px 20px; text-align: center; color: var(--muted, #7a7a7a); }
+.bt-list { list-style: none; margin: 0; padding: 16px 20px 8px; display: grid; gap: 10px; }
+.bt-list li { display: flex; align-items: center; gap: 16px; background: #eef0f5; border-left: 4px solid var(--juve-yellow, #ffc72c); border-radius: 10px; padding: 12px 18px; font-size: 14.5px; }
+.bt-list em { font-style: normal; font-family: var(--display); font-size: 20px; color: #111; min-width: 14px; }
+.bt-list p { margin: 0; line-height: 1.5; }
+.bt-note { margin: 8px 20px 10px; font-size: 12px; color: var(--muted, #7a7a7a); line-height: 1.55; }
+@media (max-width: 600px) { .bt-head small { display: none; } }
+
+/* Formasi & XI */
+.bt-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; padding: 20px; align-items: start; }
+@media (max-width: 860px) { .bt-two { grid-template-columns: 1fr; } }
+.bt-h3 { margin: 0 0 12px; font-family: var(--display); font-weight: 400; font-size: 17px; }
+.bt-forms { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.bt-forms li { display: grid; grid-template-columns: 64px 1fr 58px; gap: 12px; align-items: center; font-size: 13px; }
+.bt-forms b { font-weight: 800; }
+.bt-forms i { display: block; height: 10px; border-radius: 5px; background: #e4e6ee; overflow: hidden; }
+.bt-forms u { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--juve-pink-deep, #c2447f), #e57aa8); text-decoration: none; }
+.bt-forms span { text-align: right; font-family: ui-monospace, Menlo, monospace; font-size: 12.5px; }
+.bt-note-flat { margin: 10px 0 0; }
+.bt-pitch { display: block; width: 100%; max-width: 440px; height: auto; border-radius: 6px; }
+.bt-pitch .turf { fill: #2f9a50; }
+.bt-pitch .stripe { fill: #ffffff; fill-opacity: .05; }
+.bt-pitch .stripe.alt { fill-opacity: 0; }
+.bt-pitch .line * { fill: none; stroke: #ffffffcc; stroke-width: .35; }
+.bt-pitch .line .dot { fill: #ffffffcc; stroke: none; }
+.bt-pitch .pl { fill: var(--juve-pink-deep, #c2447f); stroke: #ffffff; stroke-width: .6; }
+.bt-pitch .no { fill: #ffffff; font-size: 3.7px; font-weight: 800; font-family: var(--display), sans-serif; }
+.bt-pitch .nm { fill: #ffffff; font-size: 2.7px; font-weight: 800; paint-order: stroke; stroke: #0a2a14; stroke-width: .9px; stroke-linejoin: round; }
