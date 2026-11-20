@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import Keuangan from '@/components/analisa/Keuangan';
 import KesulitanJadwal from '@/components/analisa/KesulitanJadwal';
+import Kiper from '@/components/analisa/Kiper';
 import LawanBerikutnya from '@/components/analisa/LawanBerikutnya';
+import Penonton from '@/components/analisa/Penonton';
 
 const TABS = [
   { key: 'lawan', label: 'Lawan berikutnya' },
@@ -14,7 +17,7 @@ const TABS = [
   { key: 'keuangan', label: 'Peringkat & keuangan' },
 ] as const;
 
-/** Statistik → Analisa. Yang sudah ada isinya: "Lawan berikutnya" dan "Kesulitan jadwal". */
+/** Statistik → Analisa. Sudah terisi: Lawan berikutnya, Kesulitan jadwal, Kiper, Penonton, Keuangan. Menunggu modulnya: Pola laga, Pemain, Peringkat UEFA. */
 export default function Analisa() {
   const [tab, setTab] = useState<(typeof TABS)[number]['key']>('lawan');
   return (
@@ -30,6 +33,15 @@ export default function Analisa() {
         <LawanBerikutnya />
       ) : tab === 'jadwal' ? (
         <KesulitanJadwal />
+      ) : tab === 'kiper' ? (
+        <Kiper />
+      ) : tab === 'penonton' ? (
+        <Penonton />
+      ) : tab === 'keuangan' ? (
+        <>
+          <Keuangan />
+          <p className="kp-note an-pending">Peringkat koefisien UEFA belum tersedia.</p>
+        </>
       ) : (
         <section className="kp-card">
           <header className="kp-card-head">

@@ -49,3 +49,70 @@ span.sh-cardb.r { background: #e0414f; color: #fff; }
 .sh-hcard strong { font-family: var(--display); font-weight: 400; font-size: 32px; color: #ffc72c; }
 .sh-hcard .fc { object-position: top; }
 .sh-last { display: flex; gap: 5px; justify-content: center; }
+
+/* Beban menit & risiko rotasi */
+.bm-timeline { display: flex; justify-content: space-between; gap: 20px; padding: 4px 20px 16px; flex-wrap: wrap; }
+.bm-cap { display: block; font-size: 10.5px; letter-spacing: 0.1em; color: #6b7280; font-weight: 800; margin-bottom: 8px; }
+.bm-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.bm-chip { display: grid; padding: 6px 12px; border-radius: 10px; background: #eceef4; border: 1px solid #dfe2ec; font-size: 13px; font-weight: 700; line-height: 1.2; }
+.bm-chip small { font-size: 11px; color: #8a91a6; font-weight: 700; }
+.bm-chip.soon { background: #fde9ee; border-color: #f2bcc8; }
+.bm-chip.soon small { color: #c0293a; }
+.bm-none { color: var(--muted); font-size: 13px; padding: 8px 0; }
+.bm-now { align-self: stretch; display: grid; place-items: center; border-left: 2px solid #e0141f; padding-left: 6px; }
+.bm-now span { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 10px; letter-spacing: 0.12em; font-weight: 800; color: #e0141f; }
+.bm-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; padding: 0 20px 16px; }
+.bm-tiles > div { border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 4px; }
+.bm-tiles small { color: var(--muted); font-size: 13px; }
+.bm-tiles b { font-family: var(--display); font-weight: 400; font-size: 38px; line-height: 1.05; }
+.bm-tiles span { color: var(--muted); font-size: 13px; }
+.bm-bar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding: 0 20px 12px; }
+.bm-bar small { color: var(--muted); font-size: 12.5px; }
+.bm-bar label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.bm-bar select { padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: inherit; font-weight: 800; }
+.bm-table { min-width: 760px; }
+.bm-table th.strong { color: #222; }
+.bm-s { display: inline-block; padding: 4px 14px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.bm-s-tinggi { background: #e5484d; color: #fff; } .bm-s-waspada { background: #ffb02e; color: #3a2400; } .bm-s-aman { background: #dcf3e6; color: #1f7a45; }
+.bm-bars { display: inline-flex; align-items: flex-end; gap: 4px; height: 38px; }
+.bm-bars i { display: block; width: 14px; border-radius: 2px; }
+.bm-bars i.st { background: #e0141f; }
+.bm-bars i.sub { background: #a9aebf; }
+.bm-bars i.none { height: 2px; background: #d8dbe6; }
+
+/* Statistik tim per laga */
+.tm-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding: 4px 20px 16px; }
+.tm-tiles > div { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 3px; align-content: start; background: #fff; }
+.tm-tiles small { color: var(--muted); font-size: 13px; }
+.tm-tiles b { font-family: var(--display); font-weight: 400; font-size: 32px; line-height: 1.05; }
+.tm-tiles span { color: var(--muted); font-size: 12px; }
+.tm-tiles .hero { background: linear-gradient(135deg, #0c1330, #1b2a66); border-color: #0c1330; color: #fff; }
+.tm-tiles .hero small { color: #ffc72c; font-weight: 700; }
+.tm-tiles .hero span { color: #cdd4e5; }
+.tm-table { min-width: 860px; }
+.tm-table td.l b { display: block; }
+.tm-score { display: inline-block; min-width: 42px; padding: 3px 10px; border-radius: 8px; font-weight: 800; font-size: 13px; }
+.tm-score.w { background: #dcf3e6; color: #1f7a45; } .tm-score.d { background: #e6e8ee; color: #3b4054; } .tm-score.l { background: #fde1e4; color: #c0293a; }
+
+/* Kartu & ancaman skorsing */
+.kt-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; padding: 4px 20px 16px; }
+.kt-tiles > div { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 3px; align-content: start; background: #fff; }
+.kt-tiles small { color: var(--muted); font-size: 13px; }
+.kt-tiles b { font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1.05; }
+.kt-tiles span { color: var(--muted); font-size: 12.5px; }
+.kt-tiles .hero { background: linear-gradient(135deg, #0c1330, #1b2a66); border-color: #0c1330; color: #fff; }
+.kt-tiles .hero small { color: #ffc72c; font-weight: 700; } .kt-tiles .hero span { color: #cdd4e5; }
+.kt-tiles .warn { background: #fff3df; border-color: #e9a64a; }
+.kt-table { min-width: 940px; }
+.kt-table th { white-space: nowrap; }
+.kt-ic { display: inline-block; width: 11px; height: 11px; border-radius: 2px; vertical-align: -1px; margin-right: 4px; }
+.kt-ic.y { background: #f5a623; } .kt-ic.r { background: #e5484d; }
+.kt-badge { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.kt-ok { background: #dcf3e6; color: #1f7a45; } .kt-mid { background: #ffe9c2; color: #8a5a00; } .kt-hi { background: #fde1e4; color: #c0293a; } .kt-na { background: #e8eaf1; color: #5b6580; }
+.sh-sub.left { text-align: left; margin-top: 3px; }
+.kt-red { display: inline-flex; align-items: center; gap: 4px; font-size: 13px; margin-right: 8px; }
+.kt-rules { margin: 12px 20px 0; border-top: 1px solid var(--line); padding-top: 12px; }
+.kt-rules summary { cursor: pointer; font-weight: 800; }
+.kt-rules ul { margin: 10px 0 6px 18px; padding: 0; display: grid; gap: 8px; font-size: 13px; line-height: 1.55; }
+.kt-rules p { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.sh-foot a { color: var(--juve-blue, #1b3a8a); text-decoration: underline; }

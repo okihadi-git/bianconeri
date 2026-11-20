@@ -34,6 +34,40 @@ export interface MatchRating {
   best: boolean;
 }
 
+/** Satu penampilan pemain (hanya laga yang ia mainkan). Dipakai tab Beban menit. */
+export interface Appearance {
+  matchId: string;
+  iso: string;
+  minutes: number;
+  started: boolean;
+  /** kartu di laga itu (menurut ESPN) */
+  yellow: number;
+  red: number;
+}
+
+/** Statistik tim satu laga dari boxscore ESPN: [Juventus, lawan]; null = ESPN tidak melaporkan. */
+export interface MatchTeamStats {
+  possession: [number | null, number | null];
+  shots: [number | null, number | null];
+  onTarget: [number | null, number | null];
+  xg: [number | null, number | null];
+  corners: [number | null, number | null];
+  fouls: [number | null, number | null];
+  attendance: number | null;
+}
+
+/** Laga Juventus yang sudah selesai, urut dari yang terlama. */
+export interface PlayedMatch {
+  id: string;
+  iso: string;
+  league: string;
+  opp: string;
+  home: boolean;
+  /** [gol Juventus, gol lawan] */
+  score: [number, number];
+  stats?: MatchTeamStats;
+}
+
 export interface PlayerRow {
   id: string;
   name: string;
@@ -46,6 +80,8 @@ export interface PlayerRow {
   by: Record<string, StatLine>;
   /** rating per laga (estimasi), urut menurut tanggal */
   ratings?: MatchRating[];
+  /** penampilan per laga (menit dan starter), urut menurut tanggal */
+  apps?: Appearance[];
 }
 
 /** Angka tim per kompetisi. */
@@ -61,6 +97,8 @@ export interface PlayerStatsResponse {
   matches: Record<string, number>;
   /** gol, kebobolan, dan clean sheet Juventus per kompetisi */
   team?: Record<string, TeamLine>;
+  /** seluruh laga selesai (semua kompetisi), urut dari yang terlama */
+  matchList?: PlayedMatch[];
   players: PlayerRow[];
   updatedAt: string;
 }
@@ -107,7 +145,8 @@ export async function buildPlayerStats(
   const done = events.filter(isCompleted);
   const matches: Record<string, number> = {};
   const team: Record<string, TeamLine> = {};
-  const people = new Map<string, { name: string; votes: Record<string, number>; by: Record<string, StatLine>; ratings: MatchRating[] }>();
+  const matchList: PlayedMatch[] = [];
+  const people = new Map<string, { name: string; votes: Record<string, number>; by: Record<string, StatLine>; ratings: MatchRating[]; apps: Appearance[] }>();
 
   const summaries: { event: any; summary: any }[] = [];
   for (let i = 0; i < done.length; i += 8) {
@@ -130,6 +169,28 @@ export async function buildPlayerStats(
     t.gf += juveSide.score;
     t.ga += oppSide.score;
     if (oppSide.score === 0) t.cleanSheets += 1;
+    // statistik tim dari boxscore ESPN (nama statistik bisa beda antar kompetisi, jadi dicocokkan longgar)
+    const boxTeams: any[] = summary?.boxscore?.teams ?? [];
+    const boxJ = boxTeams.find((x) => String(x?.team?.id) === juveSide.id);
+    const boxO = boxTeams.find((x) => String(x?.team?.id) === oppSide.id);
+    const teamStat = (box: any, re: RegExp): number | null => {
+      const st = (box?.statistics ?? []).find((x: any) => re.test(String(x?.name ?? '')));
+      const v = parseFloat(String(st?.displayValue ?? st?.value ?? ''));
+      return Number.isFinite(v) ? v : null;
+    };
+    const both = (re: RegExp): [number | null, number | null] => [teamStat(boxJ, re), teamStat(boxO, re)];
+    const attendance = Number(summary?.gameInfo?.attendance ?? summary?.header?.competitions?.[0]?.attendance ?? 0) || null;
+    matchList.push({
+      id: String(event.id),
+      iso: String(live.iso ?? event.date ?? ''),
+      league,
+      opp: oppSide.name,
+      home: juveSide === live.home,
+      score: [juveSide.score, oppSide.score],
+      stats: boxJ || boxO
+        ? { possession: both(/^possessionPct$/i), shots: both(/^totalShots$/i), onTarget: both(/^shotsOnTarget$/i), xg: both(/expected.?goals|^xg$/i), corners: both(/^wonCorners$/i), fouls: both(/^foulsCommitted$/i), attendance }
+        : undefined,
+    });
 
     // rating estimasi tiap pemain Juventus di laga ini; kegagalan tidak boleh merusak statistik lainnya
     const ratedById = new Map<string, RatedPlayer>();
@@ -157,13 +218,14 @@ export async function buildPlayerStats(
       const off = minuteOf(p.subOff) ?? length;
 
       const entry = raw.get(p.id);
-      const person = people.get(p.id) ?? { name: p.name, votes: {}, by: {}, ratings: [] };
+      const person = people.get(p.id) ?? { name: p.name, votes: {}, by: {}, ratings: [], apps: [] };
       people.set(p.id, person);
       const line = (person.by[league] ??= emptyLine());
 
       line.played += 1;
       line.started += started ? 1 : 0;
       line.minutes += Math.max(0, off - on);
+      person.apps.push({ matchId: String(event.id), iso: String(live.iso ?? event.date ?? ''), minutes: Math.max(0, off - on), started, yellow: p.yellow, red: p.red });
       line.goals += p.goals;
       line.yellow += p.yellow;
       line.red += p.red;
@@ -200,8 +262,8 @@ export async function buildPlayerStats(
 
   const players: PlayerRow[] = [...people.entries()].map(([id, p]) => {
     const pos = Object.entries(p.votes).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '';
-    return { id, name: p.name, group: groupOf(pos), pos, by: p.by, ratings: p.ratings.sort((a, b) => a.iso.localeCompare(b.iso)) };
+    return { id, name: p.name, group: groupOf(pos), pos, by: p.by, ratings: p.ratings.sort((a, b) => a.iso.localeCompare(b.iso)), apps: p.apps.sort((a, b) => a.iso.localeCompare(b.iso)) };
   });
 
-  return { matches, team, players, updatedAt: new Date().toISOString() };
+  return { matches, team, matchList: matchList.sort((a, b) => a.iso.localeCompare(b.iso)), players, updatedAt: new Date().toISOString() };
 }
